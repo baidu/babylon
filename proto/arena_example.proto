@@ -1,0 +1,92 @@
+package babylon;
+
+//option cc_mutable_donated_string = true;
+option cc_enable_arenas = true;
+
+message ArenaExample {
+    enum EnumExample {
+        ENUM1 = 1;
+        ENUM2 = 2;
+    }
+
+    optional uint64 p = 1;
+    optional bytes s = 2;
+    optional ArenaExample m = 3;
+    repeated uint64 rp = 4;
+    repeated bytes rs = 5;
+    repeated ArenaExample rm = 6;
+    optional EnumExample e = 7;
+    repeated EnumExample re = 8;
+    optional bytes ds = 9 [default = "10086"];
+};
+
+enum TestEnum {
+    E1 = 1;
+    E2 = 2;
+}
+
+message TestMessage {
+    optional bool b = 1;            // <-> bool
+    optional int32 i8 = 2;          // <-> int8_t
+    optional int32 i16 = 3;         // <-> int16_t
+    optional int32 i32 = 4;         // <-> int32_t
+    optional int64 i64 = 5;         // <-> int64_t
+    optional uint32 u8 = 6;         // <-> uint8_t
+    optional uint32 u16 = 7;        // <-> uint16_t
+    optional uint32 u32 = 8;        // <-> uint32_t
+    optional uint64 u64 = 9;        // <-> uint64_t
+    optional sint32 s32 = 10;       //  -
+    optional sint64 s64 = 11;       //  -
+    optional fixed32 f32 = 12;      //  -
+    optional fixed64 f64 = 13;      //  -
+    optional sfixed32 sf32 = 14;    //  -
+    optional sfixed64 sf64 = 15;    //  -
+    optional float f = 16;          // <-> float
+    optional double d = 17;         // <-> double
+    optional TestEnum e = 18;       // <-> enum / int
+    optional string s = 19;         // <-> std::string
+    optional bytes by = 20;         // <-> std::string
+    optional TestMessage m = 21;    // <-> T / std::unique_ptr<T>
+    optional TestMessage pm = 22;   // <-> T / std::unique_ptr<T>
+
+    repeated bool rb = 23;          // <-  std::vector<bool>
+    repeated int32 ri8 = 24;        // <-  std::vector<int8_t>
+    repeated int32 ri16 = 25;       // <-  std::vector<int16_t>
+    repeated int32 ri32 = 26;       // <-  std::vector<int32_t>
+    repeated int64 ri64 = 27;       // <-  std::vector<int64_t>
+    repeated uint32 ru8 = 28;       // <-  std::vector<uint8_t>
+    repeated uint32 ru16 = 29;      // <-  std::vector<uint16_t>
+    repeated uint32 ru32 = 30;      // <-  std::vector<uint32_t>
+    repeated uint64 ru64 = 31;      // <-  std::vector<uint64_t>
+    repeated sint32 rs32 = 32;      // -
+    repeated sint64 rs64 = 33;      // -
+    repeated fixed32 rf32 = 34;     // -
+    repeated fixed64 rf64 = 35;     // -
+    repeated sfixed32 rsf32 = 36;   // -
+    repeated sfixed64 rsf64 = 37;   // -
+    repeated float rf = 38;         // <-  std::vector<float>
+    repeated double rd = 39;        // <-  std::vector<double>
+    repeated TestEnum re = 40;      // <-  std::vector<enum> / std::vector<int>
+    repeated string rs = 41;        // -
+    repeated bytes rby = 42;        // -
+    repeated TestMessage rm = 43;   // -
+
+    repeated bool rpb = 44 [packed = true];         // <-> std::vector<bool>
+    repeated int32 rpi8 = 45 [packed = true];       // <-> std::vector<int8_t>
+    repeated int32 rpi16 = 46 [packed = true];      // <-> std::vector<int16_t>
+    repeated int32 rpi32 = 47 [packed = true];      // <-> std::vector<int32_t>
+    repeated int64 rpi64 = 48 [packed = true];      // <-> std::vector<int64_t>
+    repeated uint32 rpu8 = 49 [packed = true];      // <-> std::vector<uint8_t>
+    repeated uint32 rpu16 = 50 [packed = true];     // <-> std::vector<uint16_t>
+    repeated uint32 rpu32 = 51 [packed = true];     // <-> std::vector<uint32_t>
+    repeated uint64 rpu64 = 52 [packed = true];     // <-> std::vector<uint64_t>
+    repeated sint32 rps32 = 53 [packed = true];     // -
+    repeated sint64 rps64 = 54 [packed = true];     // -
+    repeated fixed32 rpf32 = 55 [packed = true];    // -
+    repeated fixed64 rpf64 = 56 [packed = true];    // -
+    repeated sfixed32 rpsf32 = 57 [packed = true];  // -
+    repeated sfixed64 rpsf64 = 58 [packed = true];  // -
+    repeated float rpf = 59 [packed = true];        // <-> std::vector<float>
+    repeated double rpd = 60 [packed = true];       // <-> std::vector<double>
+    repeated TestEnum rpe = 61 [packed = true];     // <-> std::vector<enum> / std::vector<int>
+};
