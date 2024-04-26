@@ -15,6 +15,6 @@ jobs:
         bazelisk-version: 1.19.0
         disk-cache: gcc12-basic-asan
         repository-cache: true
-    - run: CC=gcc-12 ASAN_OPTIONS=detect_odr_violation=0 bazel test --config asan ...
+    - run: CC=gcc-12 bazel test --config asan ...
     - if: ${{ always() }}
       run: env && cat /home/runner/.bazel/execroot/_main/bazel-out/k8-fastbuild/testlogs/test/reusable/test_allocator/test.log
