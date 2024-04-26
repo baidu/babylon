@@ -17,7 +17,7 @@ jobs:
         repository-cache: true
     - run: CC=gcc-12 bazel test --config asan ...
 
-  gcc12-basic-asan:
+  gcc12-basic-tsan:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
