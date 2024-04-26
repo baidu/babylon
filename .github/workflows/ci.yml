@@ -13,6 +13,6 @@ jobs:
       with:
         bazelisk-cache: true
         bazelisk-version: 1.19.0
-        disk-cache: ${{github.workflow}}
+        disk-cache: true
         repository-cache: true
-    - run: bazel build any
+    - run: bazel build ...
