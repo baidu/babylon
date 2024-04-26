@@ -40,8 +40,6 @@ jobs:
         disk-cache: clang14-basic-asan
         repository-cache: true
     - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config asan ...
-    - if: ${{always()}}
-      run: env && cat /home/runner/.bazel/execroot/_main/bazel-out/k8-fastbuild/testlogs/test/test_type_traits/test.log
 
   clang14-basic-tsan:
     runs-on: ubuntu-latest
