@@ -16,4 +16,6 @@ jobs:
         disk-cache: gcc12-basic-asan
         repository-cache: true
     - run: CC=gcc-12 bazel test --config asan ...
-    - run: cat /home/runner/.bazel/execroot/_main/bazel-out/k8-fastbuild/testlogs/test/reusable/test_allocator/test.log 1>&2
+    - uses: actions/upload-artifact@v4
+      with:
+        file: /home/runner/.bazel/execroot/_main/bazel-out/k8-fastbuild/testlogs
