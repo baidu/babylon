@@ -5,7 +5,7 @@ on:
     branches: ["main"]
 
 jobs:
-  gcc:
+  gcc12-basic-asan:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -13,6 +13,6 @@ jobs:
       with:
         bazelisk-cache: true
         bazelisk-version: 1.19.0
-        disk-cache: true
+        disk-cache: gcc12-basic-asan
         repository-cache: true
-    - run: bazel build ...
+    - run: CC=gcc-12 bazel test --config asan ...
