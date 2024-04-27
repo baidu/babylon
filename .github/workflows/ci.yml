@@ -43,7 +43,7 @@ jobs:
         repository-cache: true
     - run: CC=gcc-12 bazel test --config arenastring --config asan ...
 
-  gcc12-arenastring-asan:
+  gcc12-mutable-donated-string-asan:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -79,7 +79,7 @@ jobs:
         repository-cache: true
     - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config tsan ...
 
-  clang14-basic-asan:
+  clang14-arenastring-asan:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -91,7 +91,7 @@ jobs:
         repository-cache: true
     - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config arenastring --config asan ...
 
-  clang14-basic-asan:
+  clang14-mutable-donated-string-asan:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -114,3 +114,7 @@ jobs:
         disk-cache: coverage
         repository-cache: true
     - run: CC=gcc-12 bazel coverage --combined_report=lcov --instrumentation_filter "^//src,-//src/babylon/reusable/patch" ...
+    - uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{github.token}}
+        file: bazel-out/_coverage/_coverage_report.dat
