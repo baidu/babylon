@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  push:
+    branches: ["main"]
   pull_request:
     branches: ["main"]
 
@@ -29,6 +31,30 @@ jobs:
         repository-cache: true
     - run: CC=gcc-12 bazel test --config tsan ...
 
+  gcc12-arenastring-asan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: bazel-contrib/setup-bazel@0.8.2
+      with:
+        bazelisk-cache: true
+        bazelisk-version: 1.19.0
+        disk-cache: gcc12-arenastring-asan
+        repository-cache: true
+    - run: CC=gcc-12 bazel test --config arenastring --config asan ...
+
+  gcc12-arenastring-asan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: bazel-contrib/setup-bazel@0.8.2
+      with:
+        bazelisk-cache: true
+        bazelisk-version: 1.19.0
+        disk-cache: gcc12-mutable-donated-string-asan
+        repository-cache: true
+    - run: CC=gcc-12 bazel test --config mutable-donated-string --config asan ...
+
   clang14-basic-asan:
     runs-on: ubuntu-latest
     steps:
@@ -53,6 +79,30 @@ jobs:
         repository-cache: true
     - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config tsan ...
 
+  clang14-basic-asan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: bazel-contrib/setup-bazel@0.8.2
+      with:
+        bazelisk-cache: true
+        bazelisk-version: 1.19.0
+        disk-cache: clang14-arenastring-asan
+        repository-cache: true
+    - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config arenastring --config asan ...
+
+  clang14-basic-asan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: bazel-contrib/setup-bazel@0.8.2
+      with:
+        bazelisk-cache: true
+        bazelisk-version: 1.19.0
+        disk-cache: clang14-mutable-donated-string-asan
+        repository-cache: true
+    - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config mutable-donated-string --config asan ...
+
   coverage:
     runs-on: ubuntu-latest
     steps:
@@ -63,4 +113,4 @@ jobs:
         bazelisk-version: 1.19.0
         disk-cache: coverage
         repository-cache: true
-    - run: CC=gcc-12 bazel coverage --combined_report=lcov --instrumentation_filter "^//src" ...
+    - run: CC=gcc-12 bazel coverage --combined_report=lcov --instrumentation_filter "^//src,-//src/babylon/reusable/patch" ...
