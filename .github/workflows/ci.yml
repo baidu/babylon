@@ -118,3 +118,4 @@ jobs:
       with:
         github-token: ${{github.token}}
         file: bazel-out/_coverage/_coverage_report.dat
+        format: lcov
