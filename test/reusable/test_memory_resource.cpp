@@ -1,7 +1,7 @@
 #include "babylon/reusable/memory_resource.h"
 
 #if BABYLON_USE_PROTOBUF
-#include "arena_example.pb.h"
+#include <arena_example.pb.h>
 #endif // BABYLON_USE_PROTOBUF
 
 #include "gtest/gtest.h"
