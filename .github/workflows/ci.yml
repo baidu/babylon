@@ -52,3 +52,15 @@ jobs:
         disk-cache: clang14-basic-tsan
         repository-cache: true
     - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config tsan ...
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: bazel-contrib/setup-bazel@0.8.2
+      with:
+        bazelisk-cache: true
+        bazelisk-version: 1.19.0
+        disk-cache: coverage
+        repository-cache: true
+    - run: CC=gcc-12 bazel coverage --combined_report=lcov ...
