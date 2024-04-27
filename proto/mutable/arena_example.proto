@@ -1,5 +1,6 @@
 package babylon;
 
+option cc_mutable_donated_string = true;
 option cc_enable_arenas = true;
 
 message ArenaExample {
