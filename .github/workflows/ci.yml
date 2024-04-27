@@ -114,6 +114,7 @@ jobs:
         disk-cache: coverage
         repository-cache: true
     - run: CC=gcc-12 bazel coverage --combined_report=lcov --instrumentation_filter "^//src,-//src/babylon/reusable/patch" ...
+    - run: tail bazel-out/_coverage/_coverage_report.dat
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
