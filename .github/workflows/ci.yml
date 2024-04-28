@@ -93,17 +93,24 @@ jobs:
   #      repository-cache: true
   #  - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config arenastring --config asan ...
 
-  #clang14-mutable-donated-string-asan:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #  - uses: actions/checkout@v4
-  #  - uses: bazel-contrib/setup-bazel@0.8.2
-  #    with:
-  #      bazelisk-cache: true
-  #      bazelisk-version: 1.19.0
-  #      disk-cache: clang14-mutable-donated-string-asan
-  #      repository-cache: true
-  #  - run: bazel test --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config mutable-donated-string --config asan ...
+  clang14-mutable-donated-string-asan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: bazel-repo
+        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        restore-keys: |
+          bazel-repo-
+    - uses: actions/cache@v4
+      with:
+        path: bazel-disk
+        key: bazel-disk-clang14-mutable-donated-string-${{github.sha}}
+        restore-keys: |
+          bazel-disk-clang14-mutable-donated-string-
+          bazel-disk-
+    - run: bazel test --config ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config mutable-donated-string --config asan ...
 
   coverage:
     runs-on: ubuntu-latest
@@ -122,8 +129,7 @@ jobs:
         restore-keys: |
           bazel-disk-coverage-
           bazel-disk-
-    - run: bazel coverage --config ci --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' ...
-    - run: ls -l bazel-out/_coverage/
+    - run: bazel coverage --config ci --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test/...
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
