@@ -118,6 +118,7 @@ jobs:
         repository-cache: true
     - run: bazel coverage --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' ...
     - run: ls -l bazel-out/_coverage/
+    - run: gcc -v
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
