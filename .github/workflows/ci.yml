@@ -115,7 +115,7 @@ jobs:
         bazelisk-version: 1.19.0
         external-cache: true
         repository-cache: true
-    - uses: actions/cache/restore@v4
+    - uses: actions/cache/restore@v3
       with:
         path: /home/runner/.cache/bazel-disk
         key: ${{github.ref}}-coverage
@@ -127,7 +127,7 @@ jobs:
         key: ${{ runner.os }}-primes
     - run: bazel coverage --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test:test_any
     - run: ls -l bazel-out/_coverage/
-    - uses: actions/cache/save@v4
+    - uses: actions/cache/save@v3
       with:
         path: /home/runner/.cache/bazel-disk
         key: ${{github.ref}}-coverage
