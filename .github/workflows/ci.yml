@@ -113,9 +113,12 @@ jobs:
       with:
         bazelisk-cache: true
         bazelisk-version: 1.19.0
-        disk-cache: coverage
         external-cache: true
         repository-cache: true
+    - uses: actions/cache/restore@v4
+      with:
+        path: /home/runner/.cache/bazel-disk
+        key: ${{github.ref}}-coverage
     - name: Cache Primes
       id: cache-primes
       uses: actions/cache@v4
