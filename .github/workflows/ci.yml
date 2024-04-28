@@ -103,7 +103,7 @@ jobs:
   #      bazelisk-version: 1.19.0
   #      disk-cache: clang14-mutable-donated-string-asan
   #      repository-cache: true
-  #  - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config mutable-donated-string --config asan ...
+  #  - run: bazel test --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config mutable-donated-string --config asan ...
 
   coverage:
     runs-on: ubuntu-latest
@@ -116,7 +116,7 @@ jobs:
         disk-cache: coverage
         external-cache: true
         repository-cache: true
-    - run: bazel coverage --combined_report=lcov --instrumentation_filter='src' ...
+    - run: bazel coverage --action_env CC=gcc-12 --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' ...
     - run: tail bazel-out/_coverage/_coverage_report.dat
     - run: ls -l bazel-out/_coverage/
     - run: which bazel
@@ -126,4 +126,3 @@ jobs:
       with:
         github-token: ${{github.token}}
         file: bazel-out/_coverage/_coverage_report.dat
-        format: lcov
