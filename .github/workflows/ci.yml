@@ -114,14 +114,14 @@ jobs:
         bazelisk-cache: true
         bazelisk-version: 1.19.0
         external-cache: true
-    - uses: actions/cache@v4
-      with:
-        path: bazel-repo
-        key: bazel-repo-${{hashFiles(WORKSPACE)}}
-    - uses: actions/cache@v4
-      with:
-        path: bazel-disk
-        key: bazel-disk-${{github.sha}}-coverage
+    #- uses: actions/cache@v4
+    #  with:
+    #    path: bazel-repo
+    #    key: bazel-repo-${{hashFiles(WORKSPACE)}}
+    #- uses: actions/cache@v4
+    #  with:
+    #    path: bazel-disk
+    #    key: bazel-disk-${{github.sha}}-coverage
     - run: bazel coverage --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test:test_any
     - run: ls -l bazel-out/_coverage/
     - uses: coverallsapp/github-action@v2
