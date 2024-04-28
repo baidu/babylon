@@ -129,6 +129,7 @@ jobs:
     - run: ls -l bazel-out/_coverage/
     - run: ls -l bazel-repo
     - run: ls -l bazel-disk
+    - run: ls -l bazel-babylon/
     - run: ls -l ~/.cache/
     - run: ls -l ~/.cache/bazel
     - run: ls -l ~/.cache/bazel/_bazel_runner/
