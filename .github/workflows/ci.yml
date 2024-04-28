@@ -121,6 +121,8 @@ jobs:
     - run: gcc -v
     - run: gcc-11 -v
     - run: gcc-12 -v
+    - run: which gcc-11
+    - run: which gcc-12
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
