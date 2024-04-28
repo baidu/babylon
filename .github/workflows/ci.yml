@@ -129,6 +129,7 @@ jobs:
     - run: ls -l bazel-disk
     - run: ls -l ~/.cache/
     - run: ls -l ~/.cache/bazel
+    - run: ls -l ~/.cache/bazel/_bazel_runner/
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
