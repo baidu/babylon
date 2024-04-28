@@ -122,9 +122,8 @@ jobs:
         path: bazel-disk
         key: bazel-disk-${{github.sha}}-coverage
     - run: bazel coverage --config ci --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test:test_any
+    - run: which bazel
     - run: ls -l bazel-out/_coverage/
-    - run: ls -l ~/.bazel
-    - run: ls -l bazel-base
     - run: ls -l bazel-repo
     - run: ls -l bazel-disk
     - run: ls -l ~/.cache/
