@@ -439,89 +439,6 @@ index 2421d98c0..d1f6e72ce 100644
            case 290: {
              ObjcClassPrefix = input.ReadString();
              break;
-diff --git a/global_compile_flags.json b/global_compile_flags.json
-new file mode 100644
-index 000000000..1b08d22c7
---- /dev/null
-+++ b/global_compile_flags.json
-@@ -0,0 +1,77 @@
-+{
-+    "gcc940-x86_64-ubuntu20-gnu": {
-+        "global_cppflags": [
-+            "-g0 -UNDEBUG"
-+        ],
-+        "global_cflags": [
-+            "-fsanitize=address"
-+        ],
-+        "global_cxxflags": [
-+            "-fsanitize=address"
-+        ],
-+        "global_ldflags": [
-+            "-fsanitize=address"
-+        ]
-+    },
-+    "gcc940-aarch64-ubuntu20-gnu": {
-+        "global_cppflags": [
-+            "-g0 -UNDEBUG"
-+        ]
-+    },
-+    "gcc10": {
-+        "global_cppflags": [
-+            "-g0 -UNDEBUG"
-+        ],
-+        "global_cflags": [
-+            "-fsanitize=address"
-+        ],
-+        "global_cxxflags": [
-+            "-fsanitize=address"
-+        ],
-+        "global_ldflags": [
-+            "-fsanitize=address"
-+        ]
-+    },
-+    "clang10": {
-+        "global_cppflags": [
-+            "-g0 -UNDEBUG"
-+        ],
-+        "global_cflags": [
-+            "-fsanitize=address"
-+        ],
-+        "global_cxxflags": [
-+            "-fsanitize=address -stdlib=libc++"
-+        ],
-+        "global_ldflags": [
-+            "-fsanitize=address -stdlib=libc++"
-+        ]
-+    },
-+    "gcc12": {
-+        "global_cppflags": [
-+            "-g0 -UNDEBUG"
-+        ],
-+        "global_cflags": [
-+            "-fsanitize=address"
-+        ],
-+        "global_cxxflags": [
-+            "-fsanitize=address"
-+        ],
-+        "global_ldflags": [
-+            "-fsanitize=address"
-+        ]
-+    },
-+    "clang14": {
-+        "global_cppflags": [
-+            "-g0 -UNDEBUG"
-+        ],
-+        "global_cflags": [
-+            "-fsanitize=address"
-+        ],
-+        "global_cxxflags": [
-+            "-fsanitize=address -stdlib=libc++"
-+        ],
-+        "global_ldflags": [
-+            "-fsanitize=address -stdlib=libc++"
-+        ]
-+    }
-+}
 diff --git a/php/ext/google/protobuf/wkt.inc b/php/ext/google/protobuf/wkt.inc
 index 4579c7e30..929602208 100644
 --- a/php/ext/google/protobuf/wkt.inc
@@ -4856,7 +4773,7 @@ index dea2aecab..c7839ce3a 100644
  inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
 diff --git a/src/google/protobuf/arenastring_impl.cc b/src/google/protobuf/arenastring_impl.cc
 new file mode 100644
-index 000000000..0227648c8
+index 000000000..c128b2ba0
 --- /dev/null
 +++ b/src/google/protobuf/arenastring_impl.cc
 @@ -0,0 +1,155 @@
@@ -5550,6 +5467,19 @@ index 000000000..7928c4bf0
 +} // namespace google
 +
 +#include "google/protobuf/port_undef.inc"
+diff --git a/src/google/protobuf/compiler/cpp/field.cc b/src/google/protobuf/compiler/cpp/field.cc
+index e9ccf46bb..dfa6a5ae9 100644
+--- a/src/google/protobuf/compiler/cpp/field.cc
++++ b/src/google/protobuf/compiler/cpp/field.cc
+@@ -306,7 +306,7 @@ void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
+                                 : "_impl_._inlined_string_donated_";
+ 
+   vars.emplace_back("inlined_string_donated",
+-                    absl::StrFormat("(%s[%d] & %s) != 0;", array, index, mask));
++                    absl::StrFormat("(%s[%d] & %s) != 0", array, index, mask));
+   vars.emplace_back("donating_states_word",
+                     absl::StrFormat("%s[%d]", array, index));
+   vars.emplace_back("mask_for_undonate", absl::StrFormat("~%s", mask));
 diff --git a/src/google/protobuf/compiler/cpp/field_generators/string_field.cc b/src/google/protobuf/compiler/cpp/field_generators/string_field.cc
 index 748a8d688..118e29ffe 100644
 --- a/src/google/protobuf/compiler/cpp/field_generators/string_field.cc
@@ -11045,10 +10975,10 @@ index e26fc80ed..e2ba2ae7b 100644
    PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
 diff --git a/test/test_arena_string.cpp b/test/test_arena_string.cpp
 new file mode 100644
-index 000000000..9ad1e2b32
+index 000000000..f620bd28c
 --- /dev/null
 +++ b/test/test_arena_string.cpp
-@@ -0,0 +1,1444 @@
+@@ -0,0 +1,1464 @@
 +#include <google/protobuf/arena.h>
 +#include <google/protobuf/descriptor.pb.h>
 +#include <google/protobuf/arenastring_impl.h>
@@ -11258,6 +11188,26 @@ index 000000000..9ad1e2b32
 +    delete std_string;
 +}
 +#endif // __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI
++
++TEST_F(ArenaStringTest, support_resize) {
++    auto accessor = MaybeArenaStringAccessor::create(arena, "10086");
++    accessor.resize(4);
++    auto data = &accessor[0];
++    ASSERT_EQ(4, accessor.size());
++    ASSERT_EQ("1008", accessor);
++    ASSERT_EQ(data, accessor.data());
++    accessor.resize(2);
++    data = &accessor[0];
++    ASSERT_EQ(2, accessor.size());
++    ASSERT_EQ("10", accessor);
++    ASSERT_EQ(data, accessor.data());
++    accessor.resize(4);
++    data = &accessor[0];
++    ASSERT_EQ(4, accessor.size());
++    ASSERT_EQ(::absl::string_view("10\0\0", 4), accessor);
++    ASSERT_EQ(data, accessor.data());
++    accessor.destroy();
++}
 +
 +TEST_F(ArenaStringTest, support_resize_uninitialized) {
 +    auto accessor = MaybeArenaStringAccessor::create(arena, "10086");
