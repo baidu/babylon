@@ -124,7 +124,9 @@ jobs:
     - run: bazel coverage --config ci --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test:test_any
     - run: ls -l bazel-out/_coverage/
     - run: ls -l ~/.bazel
-    - run: ls -l bazel-babylon/
+    - run: ls -l bazel-base
+    - run: ls -l bazel-repo
+    - run: ls -l bazel-disk
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
