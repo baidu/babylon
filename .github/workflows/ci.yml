@@ -116,8 +116,18 @@ jobs:
         disk-cache: coverage
         external-cache: true
         repository-cache: true
+    - name: Cache Primes
+      id: cache-primes
+      uses: actions/cache@v4
+      with:
+        path: prime-numbers
+        key: ${{ runner.os }}-primes
     - run: bazel coverage --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' ...
     - run: ls -l bazel-out/_coverage/
+    - uses: actions/cache/save@v4
+      with:
+        path: /home/runner/.cache/bazel-disk
+        key: ${{github.ref}}-coverage
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
