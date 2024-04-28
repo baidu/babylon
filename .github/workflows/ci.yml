@@ -117,8 +117,9 @@ jobs:
         repository-cache: true
     - uses: actions/cache@v4
       with:
-        path: /home/runner/.cache/bazel-disk
+        path: bazel-disk
         key: bazel-disk-${{github.sha}}-coverage
+    - run: echo build --disk_cache=bazel-disk >> .bazelrc
     - run: bazel coverage --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test:test_any
     - run: ls -l bazel-out/_coverage/
     - uses: coverallsapp/github-action@v2
