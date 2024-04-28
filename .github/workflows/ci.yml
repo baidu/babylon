@@ -117,11 +117,7 @@ jobs:
         external-cache: true
         repository-cache: true
     - run: bazel coverage --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' ...
-    - run: tail bazel-out/_coverage/_coverage_report.dat
     - run: ls -l bazel-out/_coverage/
-    - run: which bazel
-    - run: cat .bazelrc
-    - run: cat ~/.bazelrc
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
