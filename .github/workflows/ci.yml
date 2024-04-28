@@ -116,9 +116,11 @@ jobs:
         disk-cache: coverage
         external-cache: true
         repository-cache: true
-    - run: bazel coverage --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' ...
+    - run: bazel coverage --action_env CC=gcc-11 --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' ...
     - run: ls -l bazel-out/_coverage/
     - run: gcc -v
+    - run: gcc-11 -v
+    - run: gcc-12 -v
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
