@@ -4,7 +4,7 @@
 
 #include "babylon/reusable/manager.h"
 
-#include "arena_example.pb.h"
+#include <arena_example.pb.h>
 
 #include "gtest/gtest.h"
 

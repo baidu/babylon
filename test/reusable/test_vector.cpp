@@ -29,7 +29,7 @@ TEST_F(ReusableVectorTest, trivial_as_element) {
     ASSERT_TRUE(::std::is_trivially_destructible<SwissVector<SwissString>>::value);
     struct S {
         ~S() {}
-    };
+    } s;
     ASSERT_FALSE(::std::is_trivially_destructible<SwissVector<S>>::value);
 }
 

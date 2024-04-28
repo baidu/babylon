@@ -4,7 +4,7 @@
 
 #include "babylon/logging/interface.h"
 
-#include "arena_example.pb.h"
+#include <arena_example.pb.h>
 
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
