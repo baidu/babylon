@@ -113,7 +113,6 @@ jobs:
       with:
         bazelisk-cache: true
         bazelisk-version: 1.19.0
-        external-cache: true
     - uses: actions/cache@v4
       with:
         path: bazel-repo
@@ -124,6 +123,8 @@ jobs:
         key: bazel-disk-${{github.sha}}-coverage
     - run: bazel coverage --config ci --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test:test_any
     - run: ls -l bazel-out/_coverage/
+    - run: ls -l ~/.bazel
+    - run: ls -l bazel-babylon/
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
