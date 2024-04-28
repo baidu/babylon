@@ -12,3 +12,4 @@ test:tsan --copt=-fsanitize=thread --host_copt=-fsanitize=thread --linkopt=-fsan
 
 build:ci --disk_cache=bazel-disk
 build:ci --repository_cache=bazel-repo
+/*startup --output_base=bazel-base*/

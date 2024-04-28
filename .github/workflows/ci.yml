@@ -123,7 +123,7 @@ jobs:
         key: bazel-disk-coverage-${{github.sha}}
         restore-keys: |
           bazel-disk-coverage-
-    - run: bazel coverage --config ci --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test:test_time
+    - run: bazel coverage --config ci --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' ...
     - run: which bazel
     - run: readlink -f /usr/local/bin/bazel
     - run: ls -l bazel-out/_coverage/
