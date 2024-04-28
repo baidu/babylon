@@ -117,7 +117,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: bazel-repo
-        key: bazel-repo-${{hashFiles(WORKSPACE)}}
+        key: bazel-repo-${{hashFiles('WORKSPACE')}}
     #- uses: actions/cache@v4
     #  with:
     #    path: bazel-disk
