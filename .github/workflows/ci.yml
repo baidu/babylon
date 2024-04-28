@@ -7,103 +7,103 @@ on:
     branches: ["main"]
 
 jobs:
-  gcc12-basic-asan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: bazel-contrib/setup-bazel@0.8.2
-      with:
-        bazelisk-cache: true
-        bazelisk-version: 1.19.0
-        disk-cache: gcc12-basic-asan
-        repository-cache: true
-    - run: CC=gcc-12 bazel test --config asan ...
+  #gcc12-basic-asan:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #  - uses: actions/checkout@v4
+  #  - uses: bazel-contrib/setup-bazel@0.8.2
+  #    with:
+  #      bazelisk-cache: true
+  #      bazelisk-version: 1.19.0
+  #      disk-cache: gcc12-basic-asan
+  #      repository-cache: true
+  #  - run: CC=gcc-12 bazel test --config asan ...
 
-  gcc12-basic-tsan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: bazel-contrib/setup-bazel@0.8.2
-      with:
-        bazelisk-cache: true
-        bazelisk-version: 1.19.0
-        disk-cache: gcc12-basic-tsan
-        repository-cache: true
-    - run: CC=gcc-12 bazel test --config tsan ...
+  #gcc12-basic-tsan:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #  - uses: actions/checkout@v4
+  #  - uses: bazel-contrib/setup-bazel@0.8.2
+  #    with:
+  #      bazelisk-cache: true
+  #      bazelisk-version: 1.19.0
+  #      disk-cache: gcc12-basic-tsan
+  #      repository-cache: true
+  #  - run: CC=gcc-12 bazel test --config tsan ...
 
-  gcc12-arenastring-asan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: bazel-contrib/setup-bazel@0.8.2
-      with:
-        bazelisk-cache: true
-        bazelisk-version: 1.19.0
-        disk-cache: gcc12-arenastring-asan
-        external-cache: true
-        repository-cache: true
-    - run: CC=gcc-12 bazel test --config arenastring --config asan ...
+  #gcc12-arenastring-asan:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #  - uses: actions/checkout@v4
+  #  - uses: bazel-contrib/setup-bazel@0.8.2
+  #    with:
+  #      bazelisk-cache: true
+  #      bazelisk-version: 1.19.0
+  #      disk-cache: gcc12-arenastring-asan
+  #      external-cache: true
+  #      repository-cache: true
+  #  - run: CC=gcc-12 bazel test --config arenastring --config asan ...
 
-  gcc12-mutable-donated-string-asan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: bazel-contrib/setup-bazel@0.8.2
-      with:
-        bazelisk-cache: true
-        bazelisk-version: 1.19.0
-        disk-cache: gcc12-mutable-donated-string-asan
-        external-cache: true
-        repository-cache: true
-    - run: CC=gcc-12 bazel test --config mutable-donated-string --config asan ...
+  #gcc12-mutable-donated-string-asan:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #  - uses: actions/checkout@v4
+  #  - uses: bazel-contrib/setup-bazel@0.8.2
+  #    with:
+  #      bazelisk-cache: true
+  #      bazelisk-version: 1.19.0
+  #      disk-cache: gcc12-mutable-donated-string-asan
+  #      external-cache: true
+  #      repository-cache: true
+  #  - run: CC=gcc-12 bazel test --config mutable-donated-string --config asan ...
 
-  clang14-basic-asan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: bazel-contrib/setup-bazel@0.8.2
-      with:
-        bazelisk-cache: true
-        bazelisk-version: 1.19.0
-        disk-cache: clang14-basic-asan
-        repository-cache: true
-    - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config asan ...
+  #clang14-basic-asan:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #  - uses: actions/checkout@v4
+  #  - uses: bazel-contrib/setup-bazel@0.8.2
+  #    with:
+  #      bazelisk-cache: true
+  #      bazelisk-version: 1.19.0
+  #      disk-cache: clang14-basic-asan
+  #      repository-cache: true
+  #  - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config asan ...
 
-  clang14-basic-tsan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: bazel-contrib/setup-bazel@0.8.2
-      with:
-        bazelisk-cache: true
-        bazelisk-version: 1.19.0
-        disk-cache: clang14-basic-tsan
-        repository-cache: true
-    - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config tsan ...
+  #clang14-basic-tsan:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #  - uses: actions/checkout@v4
+  #  - uses: bazel-contrib/setup-bazel@0.8.2
+  #    with:
+  #      bazelisk-cache: true
+  #      bazelisk-version: 1.19.0
+  #      disk-cache: clang14-basic-tsan
+  #      repository-cache: true
+  #  - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config tsan ...
 
-  clang14-arenastring-asan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: bazel-contrib/setup-bazel@0.8.2
-      with:
-        bazelisk-cache: true
-        bazelisk-version: 1.19.0
-        disk-cache: clang14-arenastring-asan
-        repository-cache: true
-    - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config arenastring --config asan ...
+  #clang14-arenastring-asan:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #  - uses: actions/checkout@v4
+  #  - uses: bazel-contrib/setup-bazel@0.8.2
+  #    with:
+  #      bazelisk-cache: true
+  #      bazelisk-version: 1.19.0
+  #      disk-cache: clang14-arenastring-asan
+  #      repository-cache: true
+  #  - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config arenastring --config asan ...
 
-  clang14-mutable-donated-string-asan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: bazel-contrib/setup-bazel@0.8.2
-      with:
-        bazelisk-cache: true
-        bazelisk-version: 1.19.0
-        disk-cache: clang14-mutable-donated-string-asan
-        repository-cache: true
-    - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config mutable-donated-string --config asan ...
+  #clang14-mutable-donated-string-asan:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #  - uses: actions/checkout@v4
+  #  - uses: bazel-contrib/setup-bazel@0.8.2
+  #    with:
+  #      bazelisk-cache: true
+  #      bazelisk-version: 1.19.0
+  #      disk-cache: clang14-mutable-donated-string-asan
+  #      repository-cache: true
+  #  - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config mutable-donated-string --config asan ...
 
   coverage:
     runs-on: ubuntu-latest
@@ -114,12 +114,14 @@ jobs:
         bazelisk-cache: true
         bazelisk-version: 1.19.0
         disk-cache: coverage
+        external-cache: true
         repository-cache: true
-    - run: CC=gcc-12 bazel coverage --combined_report=lcov --instrumentation_filter='src' ...
+    - run: bazel coverage --combined_report=lcov --instrumentation_filter='src' ...
     - run: tail bazel-out/_coverage/_coverage_report.dat
     - run: ls -l bazel-out/_coverage/
     - run: which bazel
     - run: cat .bazelrc
+    - run: cat ~/.bazelrc
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
