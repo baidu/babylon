@@ -40,6 +40,7 @@ jobs:
         bazelisk-cache: true
         bazelisk-version: 1.19.0
         disk-cache: gcc12-arenastring-asan
+        external-cache: true
         repository-cache: true
     - run: CC=gcc-12 bazel test --config arenastring --config asan ...
 
@@ -52,6 +53,7 @@ jobs:
         bazelisk-cache: true
         bazelisk-version: 1.19.0
         disk-cache: gcc12-mutable-donated-string-asan
+        external-cache: true
         repository-cache: true
     - run: CC=gcc-12 bazel test --config mutable-donated-string --config asan ...
 
@@ -113,7 +115,7 @@ jobs:
         bazelisk-version: 1.19.0
         disk-cache: coverage
         repository-cache: true
-    - run: CC=gcc-12 bazel coverage --combined_report=lcov --instrumentation_filter 'src/babylon,-src/babylon/reusable/patch' ...
+    - run: CC=gcc-12 bazel coverage --combined_report=lcov --instrumentation_filter='' ...
     - run: tail bazel-out/_coverage/_coverage_report.dat
     - run: ls -l bazel-out/_coverage/
     - run: which bazel
