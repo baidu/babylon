@@ -122,7 +122,7 @@ jobs:
       with:
         path: prime-numbers
         key: ${{ runner.os }}-primes
-    - run: bazel coverage --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' ...
+    - run: bazel coverage --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test:test_any
     - run: ls -l bazel-out/_coverage/
     - uses: actions/cache/save@v4
       with:
