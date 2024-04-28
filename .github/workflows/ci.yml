@@ -7,91 +7,138 @@ on:
     branches: ["main"]
 
 jobs:
-  #gcc12-basic-asan:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #  - uses: actions/checkout@v4
-  #  - uses: bazel-contrib/setup-bazel@0.8.2
-  #    with:
-  #      bazelisk-cache: true
-  #      bazelisk-version: 1.19.0
-  #      disk-cache: gcc12-basic-asan
-  #      repository-cache: true
-  #  - run: CC=gcc-12 bazel test --config asan ...
+  gcc12-basic-asan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: bazel-repo
+        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        restore-keys: |
+          bazel-repo-
+    - uses: actions/cache@v4
+      with:
+        path: bazel-disk
+        key: bazel-disk-gcc12-basic-asan-${{github.sha}}
+        restore-keys: |
+          bazel-disk-gcc12-basic-asan-
+          bazel-disk-
+    - run: bazel test --config ci --action_env=CC=gcc-12 --config asan ...
 
-  #gcc12-basic-tsan:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #  - uses: actions/checkout@v4
-  #  - uses: bazel-contrib/setup-bazel@0.8.2
-  #    with:
-  #      bazelisk-cache: true
-  #      bazelisk-version: 1.19.0
-  #      disk-cache: gcc12-basic-tsan
-  #      repository-cache: true
-  #  - run: CC=gcc-12 bazel test --config tsan ...
+  gcc12-basic-tsan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: bazel-repo
+        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        restore-keys: |
+          bazel-repo-
+    - uses: actions/cache@v4
+      with:
+        path: bazel-disk
+        key: bazel-disk-gcc12-basic-tsan-${{github.sha}}
+        restore-keys: |
+          bazel-disk-gcc12-basic-tsan-
+          bazel-disk-
+    - run: bazel test --config ci --action_env=CC=gcc-12 --config tsan ...
 
-  #gcc12-arenastring-asan:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #  - uses: actions/checkout@v4
-  #  - uses: bazel-contrib/setup-bazel@0.8.2
-  #    with:
-  #      bazelisk-cache: true
-  #      bazelisk-version: 1.19.0
-  #      disk-cache: gcc12-arenastring-asan
-  #      external-cache: true
-  #      repository-cache: true
-  #  - run: CC=gcc-12 bazel test --config arenastring --config asan ...
+  gcc12-arenastring-asan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: bazel-repo
+        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        restore-keys: |
+          bazel-repo-
+    - uses: actions/cache@v4
+      with:
+        path: bazel-disk
+        key: bazel-disk-gcc12-arenastring-${{github.sha}}
+        restore-keys: |
+          bazel-disk-gcc12-arenastring-
+          bazel-disk-
+    - run: bazel test --config ci --action_env=CC=gcc-12 --config arenastring --config asan ...
 
-  #gcc12-mutable-donated-string-asan:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #  - uses: actions/checkout@v4
-  #  - uses: bazel-contrib/setup-bazel@0.8.2
-  #    with:
-  #      bazelisk-cache: true
-  #      bazelisk-version: 1.19.0
-  #      disk-cache: gcc12-mutable-donated-string-asan
-  #      external-cache: true
-  #      repository-cache: true
-  #  - run: CC=gcc-12 bazel test --config mutable-donated-string --config asan ...
+  gcc12-mutable-donated-string-asan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: bazel-repo
+        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        restore-keys: |
+          bazel-repo-
+    - uses: actions/cache@v4
+      with:
+        path: bazel-disk
+        key: bazel-disk-gcc12-mutable-donated-string-${{github.sha}}
+        restore-keys: |
+          bazel-disk-gcc12-mutable-donated-string-
+          bazel-disk-
+    - run: bazel test --config ci --action_env=CC=gcc-12 --config mutable-donated-string --config asan ...
 
-  #clang14-basic-asan:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #  - uses: actions/checkout@v4
-  #  - uses: bazel-contrib/setup-bazel@0.8.2
-  #    with:
-  #      bazelisk-cache: true
-  #      bazelisk-version: 1.19.0
-  #      disk-cache: clang14-basic-asan
-  #      repository-cache: true
-  #  - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config asan ...
+  clang14-basic-asan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: bazel-repo
+        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        restore-keys: |
+          bazel-repo-
+    - uses: actions/cache@v4
+      with:
+        path: bazel-disk
+        key: bazel-disk-clang14-basic-asan-${{github.sha}}
+        restore-keys: |
+          bazel-disk-clang14-basic-asan-
+          bazel-disk-
+    - run: bazel test --config ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config asan ...
 
-  #clang14-basic-tsan:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #  - uses: actions/checkout@v4
-  #  - uses: bazel-contrib/setup-bazel@0.8.2
-  #    with:
-  #      bazelisk-cache: true
-  #      bazelisk-version: 1.19.0
-  #      disk-cache: clang14-basic-tsan
-  #      repository-cache: true
-  #  - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config tsan ...
+  clang14-basic-tsan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: bazel-repo
+        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        restore-keys: |
+          bazel-repo-
+    - uses: actions/cache@v4
+      with:
+        path: bazel-disk
+        key: bazel-disk-clang14-basic-tsan-${{github.sha}}
+        restore-keys: |
+          bazel-disk-clang14-basic-tsan-
+          bazel-disk-
+    - run: bazel test --config ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config tsan ...
 
-  #clang14-arenastring-asan:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #  - uses: actions/checkout@v4
-  #  - uses: bazel-contrib/setup-bazel@0.8.2
-  #    with:
-  #      bazelisk-cache: true
-  #      bazelisk-version: 1.19.0
-  #      disk-cache: clang14-arenastring-asan
-  #      repository-cache: true
-  #  - run: CC=clang-14 bazel test --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config arenastring --config asan ...
+  clang14-arenastring-asan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: bazel-repo
+        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        restore-keys: |
+          bazel-repo-
+    - uses: actions/cache@v4
+      with:
+        path: bazel-disk
+        key: bazel-disk-clang14-arenastring-${{github.sha}}
+        restore-keys: |
+          bazel-disk-clang14-arenastring-
+          bazel-disk-
+    - run: bazel test --config ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config arenastring --config asan ...
 
   clang14-mutable-donated-string-asan:
     runs-on: ubuntu-latest
