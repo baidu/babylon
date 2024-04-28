@@ -109,30 +109,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    #- uses: bazel-contrib/setup-bazel@0.8.2
-    #  with:
-    #    bazelisk-cache: true
-    #    bazelisk-version: 1.19.0
     - uses: actions/cache@v4
       with:
         path: bazel-repo
         key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        restore-keys: |
+          bazel-repo-
     - uses: actions/cache@v4
       with:
         path: bazel-disk
         key: bazel-disk-coverage-${{github.sha}}
         restore-keys: |
           bazel-disk-coverage-
+          bazel-disk-
     - run: bazel coverage --config ci --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' ...
-    - run: which bazel
-    - run: readlink -f /usr/local/bin/bazel
     - run: ls -l bazel-out/_coverage/
-    - run: ls -l bazel-repo
-    - run: ls -l bazel-disk
-    - run: ls -l bazel-babylon/
-    - run: ls -l ~/.cache/
-    - run: ls -l ~/.cache/bazel
-    - run: ls -l ~/.cache/bazel/_bazel_runner/
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
