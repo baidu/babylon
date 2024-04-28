@@ -10,6 +10,5 @@ test:asan --copt=-fsanitize=address --host_copt=-fsanitize=address --linkopt=-fs
 test:asan --test_env ASAN_OPTIONS=detect_odr_violation=1
 test:tsan --copt=-fsanitize=thread --host_copt=-fsanitize=thread --linkopt=-fsanitize=thread --host_linkopt=-fsanitize=thread
 
-build:ci --output_base=bazel-base
 build:ci --disk_cache=bazel-disk
 build:ci --repository_cache=bazel-repo

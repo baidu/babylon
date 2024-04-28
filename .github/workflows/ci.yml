@@ -109,10 +109,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: bazel-contrib/setup-bazel@0.8.2
-      with:
-        bazelisk-cache: true
-        bazelisk-version: 1.19.0
+    #- uses: bazel-contrib/setup-bazel@0.8.2
+    #  with:
+    #    bazelisk-cache: true
+    #    bazelisk-version: 1.19.0
     - uses: actions/cache@v4
       with:
         path: bazel-repo
@@ -127,6 +127,7 @@ jobs:
     - run: ls -l bazel-base
     - run: ls -l bazel-repo
     - run: ls -l bazel-disk
+    - run: ls -l ~/.cache/
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
