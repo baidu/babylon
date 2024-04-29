@@ -2,8 +2,11 @@
 
 #include "babylon/environment.h"
 #include "babylon/new.h"
-#include "babylon/protect.h"
 #include "babylon/type_traits.h"
+
+// clang-format off
+#include "babylon/protect.h"
+// clang-format on
 
 #include <algorithm>
 #include <atomic>
@@ -240,5 +243,8 @@ class ConcurrentVector {
 
 BABYLON_NAMESPACE_END
 
-#include "babylon/concurrent/vector.hpp"
+// clang-format off
 #include "babylon/unprotect.h"
+// clang-format on
+
+#include "babylon/concurrent/vector.hpp"

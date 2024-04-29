@@ -10,20 +10,16 @@ using ::babylon::StringView;
 
 /*
 #if __cplusplus >= 201402L
-inline constexpr StringView use_assing_operator_in_constexpr(StringView original) {
-    StringView tmp;
-    tmp = original;
-    return tmp;
+inline constexpr StringView use_assing_operator_in_constexpr(StringView
+original) { StringView tmp; tmp = original; return tmp;
 }
 
-inline constexpr StringView use_remove_prefix_in_constexpr(StringView original, size_t num) {
-    original.remove_prefix(num);
-    return original;
+inline constexpr StringView use_remove_prefix_in_constexpr(StringView original,
+size_t num) { original.remove_prefix(num); return original;
 }
 
-inline constexpr StringView use_remove_suffix_in_constexpr(StringView original, size_t num) {
-    original.remove_suffix(num);
-    return original;
+inline constexpr StringView use_remove_suffix_in_constexpr(StringView original,
+size_t num) { original.remove_suffix(num); return original;
 }
 
 inline constexpr StringView use_swap_in_constexpr(StringView original) {
@@ -35,36 +31,36 @@ inline constexpr StringView use_swap_in_constexpr(StringView original) {
 */
 
 TEST(string_view, construct_as_constexpr) {
-    {
-        constexpr StringView view {};
-        ASSERT_TRUE(view.empty());
-    }
-    {
-        constexpr StringView view = "10086";
-        ASSERT_EQ(5, view.size());
-    }
-    {
-        constexpr StringView view("10086");
-        ASSERT_EQ(5, view.size());
-    }
-    {
-        constexpr StringView view("10086", 4);
-        ASSERT_EQ(4, view.length());
-    }
-    {
-        constexpr StringView view("10086", 4);
-        constexpr StringView same_view(view);
-        ASSERT_EQ(4, same_view.length());
-    }
-    /*
+  {
+    constexpr StringView view {};
+    ASSERT_TRUE(view.empty());
+  }
+  {
+    constexpr StringView view = "10086";
+    ASSERT_EQ(5, view.size());
+  }
+  {
+    constexpr StringView view("10086");
+    ASSERT_EQ(5, view.size());
+  }
+  {
+    constexpr StringView view("10086", 4);
+    ASSERT_EQ(4, view.length());
+  }
+  {
+    constexpr StringView view("10086", 4);
+    constexpr StringView same_view(view);
+    ASSERT_EQ(4, same_view.length());
+  }
+  /*
 #if __cplusplus >= 201402L
-    {
-        constexpr StringView view("10086", 4);
-        constexpr StringView same_view = use_assing_operator_in_constexpr(view);
-        ASSERT_EQ(4, same_view.length());
-    }
+  {
+      constexpr StringView view("10086", 4);
+      constexpr StringView same_view = use_assing_operator_in_constexpr(view);
+      ASSERT_EQ(4, same_view.length());
+  }
 #endif // __cplusplus
-    */
+  */
 }
 
 /*

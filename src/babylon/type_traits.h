@@ -2,8 +2,11 @@
 
 #include "babylon/absl_base_internal_invoke.h" // ::absl::base_internal::is_invocable_r
 #include "babylon/environment.h"
-#include "babylon/protect.h"
 #include "babylon/string_view.h" // StringView
+
+// clang-format off
+#include "babylon/protect.h"
+// clang-format on
 
 #include <type_traits> // std::invoke_result
 
@@ -239,5 +242,8 @@ struct InvokeResult : public ::std::result_of<F(Args...)> {};
 
 BABYLON_NAMESPACE_END
 
-#include "babylon/type_traits.hpp"
+// clang-format off
 #include "babylon/unprotect.h"
+// clang-format on
+
+#include "babylon/type_traits.hpp"

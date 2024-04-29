@@ -1,7 +1,10 @@
 #pragma once
 
-#include "babylon/protect.h"
 #include "babylon/type_traits.h"
+
+// clang-format off
+#include "babylon/protect.h"
+// clang-format on
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -94,4 +97,6 @@ constexpr Id TypeId<T>::ID;
 
 BABYLON_NAMESPACE_END
 
+// clang-format off
 #include "babylon/unprotect.h"
+// clang-format on

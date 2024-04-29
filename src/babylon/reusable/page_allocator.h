@@ -3,7 +3,10 @@
 #include "babylon/concurrent/bounded_queue.h" // ConcurrentBoundedQueue
 #include "babylon/concurrent/counter.h"       // ConcurrentAdder
 #include "babylon/environment.h"
+
+// clang-format off
 #include "babylon/protect.h"
+// clang-format on
 
 #include <vector>
 
@@ -210,4 +213,6 @@ class PageHeap : public PageAllocator {
 
 BABYLON_NAMESPACE_END
 
+// clang-format off
 #include "babylon/unprotect.h"
+// clang-format on

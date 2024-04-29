@@ -1,7 +1,10 @@
 #pragma once
 
 #include "babylon/concurrent/vector.h"
+
+// clang-format off
 #include "babylon/protect.h"
+// clang-format on
 
 #include <time.h>
 
@@ -684,4 +687,6 @@ constexpr typename ConcurrentVector<T, BLOCK_SIZE>::BlockTable
 
 BABYLON_NAMESPACE_END
 
+// clang-format off
 #include "babylon/unprotect.h"
+// clang-format on

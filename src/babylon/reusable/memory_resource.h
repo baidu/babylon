@@ -12,7 +12,9 @@
 #include "google/protobuf/arena.h"
 #endif // GOOGLE_PROTOBUF_VERSION >= 3000000
 
+// clang-format off
 #include "babylon/protect.h"
+// clang-format on
 
 #if __cpp_lib_memory_resource >= 201603L
 #include <memory_resource>
@@ -503,4 +505,6 @@ SharedMonotonicBufferResource::page_allocator() noexcept {
 
 BABYLON_NAMESPACE_END
 
+// clang-format off
 #include "babylon/unprotect.h"
+// clang-format on
