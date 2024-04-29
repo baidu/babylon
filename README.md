@@ -1,5 +1,8 @@
 # Babylon
 
+[![CI](https://github.com/baidu/babylon/actions/workflows/ci.yml/badge.svg)](https://github.com/baidu/babylon/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/baidu/babylon/badge.svg)](https://coveralls.io/github/baidu/babylon)
+
 Babylon是一个用于支持C++高性能服务端开发的基础库，从内存和并行管理角度提供了大量的基础组件。广泛应用在对性能有严苛要求的场景，典型例如搜索推荐引擎，自动驾驶车载计算等场景
 
 ## 核心功能
