@@ -1,29 +1,27 @@
 #pragma once
 
-#include "babylon/type_traits.h"
-
 #include "babylon/protect.h"
+#include "babylon/type_traits.h"
 
 BABYLON_NAMESPACE_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 // Id begin
-inline constexpr Id::Id(StringView name) noexcept :
-    name {name} {}
+inline constexpr Id::Id(StringView name) noexcept : name {name} {}
 
 inline constexpr bool Id::operator==(const Id& other) const noexcept {
-    return this == &other;
+  return this == &other;
 }
 
 inline constexpr bool Id::operator!=(const Id& other) const noexcept {
-    return this != &other;
+  return this != &other;
 }
 
 template <typename C, typename T>
 inline ::std::basic_ostream<C, T>& operator<<(::std::basic_ostream<C, T>& os,
-        const Id& id) noexcept {
-    os << id.name;
-    return os;
+                                              const Id& id) noexcept {
+  os << id.name;
+  return os;
 }
 // Id end
 ///////////////////////////////////////////////////////////////////////////////
@@ -35,25 +33,48 @@ inline ::std::basic_ostream<C, T>& operator<<(::std::basic_ostream<C, T>& os,
 #if __clang__
 template <typename T>
 inline constexpr StringView TypeId<T>::get_type_name() noexcept {
-    // static babylon::StringView babylon::TypeId<${type_name}>::get_type_name() [T = ${typename}]
-    return StringView(__PRETTY_FUNCTION__ + __builtin_strlen("static babylon::StringView babylon::TypeId<"),
-        (__builtin_strlen(__PRETTY_FUNCTION__) - __builtin_strlen("static babylon::StringView babylon::TypeId<>::get_type_name() [T = ]")) / 2);
+  // static babylon::StringView babylon::TypeId<${type_name}>::get_type_name()
+  // [T = ${typename}]
+  return StringView(
+      __PRETTY_FUNCTION__ +
+          __builtin_strlen("static babylon::StringView babylon::TypeId<"),
+      (__builtin_strlen(__PRETTY_FUNCTION__) -
+       __builtin_strlen("static babylon::StringView "
+                        "babylon::TypeId<>::get_type_name() [T = ]")) /
+          2);
 }
 #elif GLIBCXX_VERSION >= 920200312 // !__clang__ && GLIBCXX_VERSION >= 920200312
 template <typename T>
 inline constexpr StringView TypeId<T>::get_type_name() noexcept {
-    // static constexpr babylon::StringView babylon::TypeId<T>::get_type_name() [with T = ${type_name}; babylon::StringView = babylon::BasicStringView<char>]
-    return StringView(__PRETTY_FUNCTION__ + __builtin_strlen("static constexpr babylon::StringView babylon::TypeId<T>::get_type_name() [with T = "),
-        __builtin_strlen(__PRETTY_FUNCTION__) - __builtin_strlen("static constexpr babylon::StringView babylon::TypeId<T>::get_type_name() [with T = ; babylon::StringView = babylon::BasicStringView<char>]"));
+  // static constexpr babylon::StringView babylon::TypeId<T>::get_type_name()
+  // [with T = ${type_name}; babylon::StringView =
+  // babylon::BasicStringView<char>]
+  return StringView(
+      __PRETTY_FUNCTION__ +
+          __builtin_strlen("static constexpr babylon::StringView "
+                           "babylon::TypeId<T>::get_type_name() [with T = "),
+      __builtin_strlen(__PRETTY_FUNCTION__) -
+          __builtin_strlen(
+              "static constexpr babylon::StringView "
+              "babylon::TypeId<T>::get_type_name() [with T = ; "
+              "babylon::StringView = babylon::BasicStringView<char>]"));
 }
-#else // !__clang__ && GLIBCXX_VERSION < 920200312
+#else                              // !__clang__ && GLIBCXX_VERSION < 920200312
 template <typename T>
 inline const StringView TypeId<T>::get_type_name() noexcept {
-    // static const StringView babylon::TypeId<T>::get_type_name() [with T = int; babylon::StringView = babylon::BasicStringView<char>]
-    return StringView(__PRETTY_FUNCTION__ + __builtin_strlen("static const StringView babylon::TypeId<T>::get_type_name() [with T = "),
-        __builtin_strlen(__PRETTY_FUNCTION__) - __builtin_strlen("static const StringView babylon::TypeId<T>::get_type_name() [with T = ; babylon::StringView = babylon::BasicStringView<char>]"));
+  // static const StringView babylon::TypeId<T>::get_type_name() [with T = int;
+  // babylon::StringView = babylon::BasicStringView<char>]
+  return StringView(
+      __PRETTY_FUNCTION__ +
+          __builtin_strlen("static const StringView "
+                           "babylon::TypeId<T>::get_type_name() [with T = "),
+      __builtin_strlen(__PRETTY_FUNCTION__) -
+          __builtin_strlen(
+              "static const StringView babylon::TypeId<T>::get_type_name() "
+              "[with T = ; babylon::StringView = "
+              "babylon::BasicStringView<char>]"));
 }
-#endif // !__clang__ && GLIBCXX_VERSION < 920200312
+#endif                             // !__clang__ && GLIBCXX_VERSION < 920200312
 
 #if !__clang__ && BABYLON_GCC_VERSION < 50000
 template <typename T>

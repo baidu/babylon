@@ -1,0 +1,21 @@
+---
+Language:                         Cpp
+BasedOnStyle:                     Google
+SpacesBeforeTrailingComments:     1
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortLambdasOnASingleLine:   Empty
+SpaceBeforeCpp11BracedList:       true
+IncludeCategories:
+  - Regex:           '^(<|")babylon/'
+    Priority:        1
+  - Regex:           '^"'
+    Priority:        2
+  - Regex:           '^<.*\.h>'
+    Priority:        3
+  - Regex:           '^<ext/.*\.h>'
+    Priority:        4
+  - Regex:           '^<.*'
+    Priority:        4
+  - Regex:           '.*'
+    Priority:        5
+...

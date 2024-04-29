@@ -27,15 +27,15 @@ BABYLON_NAMESPACE_BEGIN
 // absl::strings_internal::STLStringResizeUninitialized
 template <typename T>
 inline typename T::pointer resize_uninitialized(
-        T& string, typename T::size_type size) noexcept;
+    T& string, typename T::size_type size) noexcept;
 
 // 执行类似于std::string::reserve的操作，主要用于支持『保留容量重建』场景
 // 大多情况下直接使用std::string::reserve，但对于有些实现，持续进行
 // capacity -> reserve -> capacity -> ...
 // 循环，会因为容量预测导致容量持续膨胀，专门包装一个版本确保循环安全
 template <typename T>
-inline void stable_reserve(
-        T& string, typename T::size_type min_capacity) noexcept;
+inline void stable_reserve(T& string,
+                           typename T::size_type min_capacity) noexcept;
 
 BABYLON_NAMESPACE_END
 

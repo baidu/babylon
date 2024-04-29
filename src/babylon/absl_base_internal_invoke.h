@@ -2,9 +2,11 @@
 
 #include "babylon/environment.h"
 
+// clang-format off
 #include BABYLON_EXTERNAL(absl/base/config.h)
 #include BABYLON_EXTERNAL(absl/base/internal/invoke.h)
 #include BABYLON_EXTERNAL(absl/meta/type_traits.h)
+// clang-format on
 
 #include <functional>
 

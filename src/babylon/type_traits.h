@@ -1,20 +1,18 @@
 #pragma once
 
+#include "babylon/absl_base_internal_invoke.h" // ::absl::base_internal::is_invocable_r
 #include "babylon/environment.h"
-#include "babylon/string_view.h"    // StringView
-
 #include "babylon/protect.h"
+#include "babylon/string_view.h" // StringView
 
-#include "babylon/absl_base_internal_invoke.h"  // ::absl::base_internal::is_invocable_r
-
-#include <type_traits>                          // std::invoke_result
+#include <type_traits> // std::invoke_result
 
 #if __cpp_lib_is_invocable < 201703L
 namespace std {
-    template <typename F, typename... Args>
-    using is_invocable = ::absl::base_internal::is_invocable_r<void, F, Args...>;
-    using ::absl::base_internal::is_invocable_r;
-};
+template <typename F, typename... Args>
+using is_invocable = ::absl::base_internal::is_invocable_r<void, F, Args...>;
+using ::absl::base_internal::is_invocable_r;
+};     // namespace std
 #endif // __cpp_lib_is_invocable < 201703L
 
 BABYLON_NAMESPACE_BEGIN
@@ -23,26 +21,26 @@ template <typename T>
 struct TypeId;
 // 表示一种唯一ID
 struct Id {
-    // 唯一ID不支持拷贝和移动
-    Id() = delete;
-    Id(Id&& other) = delete;
-    Id(const Id& other) = delete;
-    Id& operator=(Id&& other) = delete;
-    Id& operator=(const Id& other) = delete;
-    ~Id() noexcept = default;
+  // 唯一ID不支持拷贝和移动
+  Id() = delete;
+  Id(Id&& other) = delete;
+  Id(const Id& other) = delete;
+  Id& operator=(Id&& other) = delete;
+  Id& operator=(const Id& other) = delete;
+  ~Id() noexcept = default;
 
-    // 仅能通过一个名称构造
-    inline constexpr Id(StringView name) noexcept;
+  // 仅能通过一个名称构造
+  inline constexpr Id(StringView name) noexcept;
 
-    // 相等唯一取决于是同一个对象
-    inline constexpr bool operator==(const Id& other) const noexcept;
-    inline constexpr bool operator!=(const Id& other) const noexcept;
+  // 相等唯一取决于是同一个对象
+  inline constexpr bool operator==(const Id& other) const noexcept;
+  inline constexpr bool operator!=(const Id& other) const noexcept;
 
-    // ID的人可读明文表达，用于打印日志，不能用于同一性判定
-    const StringView name;
-    
-    template <typename T>
-    friend struct TypeId;
+  // ID的人可读明文表达，用于打印日志，不能用于同一性判定
+  const StringView name;
+
+  template <typename T>
+  friend struct TypeId;
 };
 
 // 静态的typeid，不依赖rtti，但是只能判断相等，以及提供人可读的类型名
@@ -50,21 +48,21 @@ struct Id {
 template <typename T>
 struct TypeId {
 #if !__clang__ && BABYLON_GCC_VERSION < 90300
-    // gcc 9.3之前无法正确处理unused __PRETTY_FUNCTION__
-    // 无法实现constexpr初始化
-    inline static const StringView get_type_name() noexcept;
-    static const Id ID;
-#else // __clang__ || GLIBCXX_VERSION >= 920200312
-    inline static constexpr StringView get_type_name() noexcept;
-    static constexpr Id ID {TypeId<T>::get_type_name()};
+  // gcc 9.3之前无法正确处理unused __PRETTY_FUNCTION__
+  // 无法实现constexpr初始化
+  inline static const StringView get_type_name() noexcept;
+  static const Id ID;
+#else  // __clang__ || GLIBCXX_VERSION >= 920200312
+  inline static constexpr StringView get_type_name() noexcept;
+  static constexpr Id ID {TypeId<T>::get_type_name()};
 #endif // __clang__ || GLIBCXX_VERSION >= 920200312
 };
 
 // 预期不被使用的类型，用来辅助类型探测
 struct NeverUsed final {
-    NeverUsed() = delete;
-    NeverUsed(const NeverUsed&) = delete;
-    NeverUsed(NeverUsed&&) = delete;
+  NeverUsed() = delete;
+  NeverUsed(const NeverUsed&) = delete;
+  NeverUsed(NeverUsed&&) = delete;
 };
 
 // 不占用空间的占位符类型，主要用于支持一些类型特化技巧
@@ -75,46 +73,47 @@ struct ZeroSized final {
 // 有些版本GCC的array-bounds检测会对这里产生越界误报
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
-    template <typename... Args>
-    inline constexpr ZeroSized(Args&&...) noexcept {}
+  template <typename... Args>
+  inline constexpr ZeroSized(Args&&...) noexcept {}
 #pragma GCC diagnostic pop
 
-    template <typename T>
-    inline ZeroSized& operator=(T&&) noexcept {
-        return *this;
-    }
+  template <typename T>
+  inline ZeroSized& operator=(T&&) noexcept {
+    return *this;
+  }
 
-    template <typename T>
-    inline operator T() const noexcept {
-        return T();
-    }
+  template <typename T>
+  inline operator T() const noexcept {
+    return T();
+  }
 
-    char data[0];
+  char data[0];
 };
 static_assert(sizeof(ZeroSized) == 0, "sizeof(ZeroSized) not zero as expected");
 
-#define BABYLON_HAS_STATIC_MEMBER_CHECKER(M, C) \
-template <typename __BABYLON_TPL_T> \
-struct C { \
-    template <typename __BABYLON_TPL_U> \
-    static auto checker(int) -> decltype(__BABYLON_TPL_U::M); \
-    template <typename __BABYLON_TPL_U> \
-    static ::babylon::NeverUsed checker(...); \
-    static constexpr bool value = \
+#define BABYLON_HAS_STATIC_MEMBER_CHECKER(M, C)                \
+  template <typename __BABYLON_TPL_T>                          \
+  struct C {                                                   \
+    template <typename __BABYLON_TPL_U>                        \
+    static auto checker(int) -> decltype(__BABYLON_TPL_U::M);  \
+    template <typename __BABYLON_TPL_U>                        \
+    static ::babylon::NeverUsed checker(...);                  \
+    static constexpr bool value =                              \
         !::std::is_same<decltype(checker<__BABYLON_TPL_T>(0)), \
-                        ::babylon::NeverUsed>::value; \
-};
+                        ::babylon::NeverUsed>::value;          \
+  };
 
 // 检测是否F(args)是否可调用
 template <typename F, typename... Args>
 struct IsInvocable {
-    template <typename FF>
-    static auto checker(int) -> decltype(
-        ::std::declval<FF>()(::std::declval<Args>()...));
-    template <typename FF>
-    static NeverUsed checker(...);
+  template <typename FF>
+  static auto checker(int)
+      -> decltype(::std::declval<FF>()(::std::declval<Args>()...));
+  template <typename FF>
+  static NeverUsed checker(...);
 
-    static constexpr bool value = !::std::is_same<decltype(checker<F>(0)), NeverUsed>::value;
+  static constexpr bool value =
+      !::std::is_same<decltype(checker<F>(0)), NeverUsed>::value;
 };
 
 // 定义一个用于检测是否T::F(args)可调用的检测器
@@ -130,18 +129,18 @@ struct IsInvocable {
 // };
 // Checker<SomeClass, Arg1, Arg2>::value == true
 // Checker<int, Arg1, Arg2>::value == false
-#define BABYLON_DECLARE_STATIC_INVOCABLE(F, C) \
-template <typename __BABYLON_TPL_T, typename... __BABYLON_TPL_Args> \
-struct C { \
-    template <typename __BABYLON_TPL_U> \
-    static auto checker(int) -> decltype( \
+#define BABYLON_DECLARE_STATIC_INVOCABLE(F, C)                        \
+  template <typename __BABYLON_TPL_T, typename... __BABYLON_TPL_Args> \
+  struct C {                                                          \
+    template <typename __BABYLON_TPL_U>                               \
+    static auto checker(int) -> decltype(                             \
         __BABYLON_TPL_U::F(::std::declval<__BABYLON_TPL_Args>()...)); \
-    template <typename __BABYLON_TPL_U> \
-    static ::babylon::NeverUsed checker(...); \
-    static constexpr bool value = \
-        !::std::is_same<decltype(checker<__BABYLON_TPL_T>(0)), \
-                        ::babylon::NeverUsed>::value; \
-};
+    template <typename __BABYLON_TPL_U>                               \
+    static ::babylon::NeverUsed checker(...);                         \
+    static constexpr bool value =                                     \
+        !::std::is_same<decltype(checker<__BABYLON_TPL_T>(0)),        \
+                        ::babylon::NeverUsed>::value;                 \
+  };
 
 // 定义一个用于检测是否T().F(args)可调用的检测器
 // F: 希望检测的成员函数名
@@ -156,21 +155,21 @@ struct C { \
 // };
 // Checker<SomeClass, Arg1, Arg2>::value == true
 // Checker<int, Arg1, Arg2>::value == false
-#define BABYLON_DECLARE_MEMBER_INVOCABLE(F, C) \
-template <typename __BABYLON_TPL_T, typename... __BABYLON_TPL_Args> \
-struct C { \
-    template <typename __BABYLON_TPL_U> \
-    static auto checker(int) -> decltype( \
-        ::std::declval<__BABYLON_TPL_U>().F( \
-            ::std::declval<__BABYLON_TPL_Args>()...)); \
-    template <typename __BABYLON_TPL_U> \
-    static ::babylon::NeverUsed checker(...); \
-    static constexpr bool value = !::std::is_same< \
-        decltype(checker<__BABYLON_TPL_T>(0)), \
-        ::babylon::NeverUsed>::value; \
-};
+#define BABYLON_DECLARE_MEMBER_INVOCABLE(F, C)                                \
+  template <typename __BABYLON_TPL_T, typename... __BABYLON_TPL_Args>         \
+  struct C {                                                                  \
+    template <typename __BABYLON_TPL_U>                                       \
+    static auto checker(int) -> decltype(::std::declval<__BABYLON_TPL_U>().F( \
+        ::std::declval<__BABYLON_TPL_Args>()...));                            \
+    template <typename __BABYLON_TPL_U>                                       \
+    static ::babylon::NeverUsed checker(...);                                 \
+    static constexpr bool value =                                             \
+        !::std::is_same<decltype(checker<__BABYLON_TPL_T>(0)),                \
+                        ::babylon::NeverUsed>::value;                         \
+  };
 
-#define BABYLON_MEMBER_INVOCABLE_CHECKER(F, C) BABYLON_DECLARE_MEMBER_INVOCABLE(F, C)
+#define BABYLON_MEMBER_INVOCABLE_CHECKER(F, C) \
+  BABYLON_DECLARE_MEMBER_INVOCABLE(F, C)
 
 // 检测是否可以进行hash计算
 // 例如，如下检测可以通过
@@ -181,30 +180,30 @@ BABYLON_DECLARE_MEMBER_INVOCABLE(operator(), IsHashable);
 // 检测是否可以进行==和!=运算
 template <typename A, typename B>
 struct IsEqualityComparable {
-    template <typename AA, typename BB>
-    static auto checker(int) -> decltype(
-        ::std::declval<AA>() == ::std::declval<BB>());
-    template <typename AA, typename BB>
-    static NeverUsed checker(...);
-    static constexpr bool value = ::std::is_same<
-        decltype(checker<A, B>(0)), bool>::value;
+  template <typename AA, typename BB>
+  static auto checker(int)
+      -> decltype(::std::declval<AA>() == ::std::declval<BB>());
+  template <typename AA, typename BB>
+  static NeverUsed checker(...);
+  static constexpr bool value =
+      ::std::is_same<decltype(checker<A, B>(0)), bool>::value;
 };
 
-#define BABYLON_TYPE_DEFINED_CHECKER(D, C) \
-struct C { \
-    template <typename __BABYLON_TPL_T> \
-    static typename __BABYLON_TPL_T::D* checker(int); \
-    template <typename __BABYLON_TPL_T> \
-    static void checker(...); \
-    template <typename __BABYLON_TPL_T> \
-    static constexpr bool value() { \
-        return !::std::is_same<void, \
-            decltype(checker<__BABYLON_TPL_T>(0))>::value; \
-    } \
-    template <typename __BABYLON_TPL_T> \
-    using type = typename ::std::remove_pointer< \
-        decltype(checker<__BABYLON_TPL_T>(0))>::type; \
-};
+#define BABYLON_TYPE_DEFINED_CHECKER(D, C)                                  \
+  struct C {                                                                \
+    template <typename __BABYLON_TPL_T>                                     \
+    static typename __BABYLON_TPL_T::D* checker(int);                       \
+    template <typename __BABYLON_TPL_T>                                     \
+    static void checker(...);                                               \
+    template <typename __BABYLON_TPL_T>                                     \
+    static constexpr bool value() {                                         \
+      return !::std::is_same<void,                                          \
+                             decltype(checker<__BABYLON_TPL_T>(0))>::value; \
+    }                                                                       \
+    template <typename __BABYLON_TPL_T>                                     \
+    using type = typename ::std::remove_pointer<decltype(                   \
+        checker<__BABYLON_TPL_T>(0))>::type;                                \
+  };
 
 ////////////////////////////////////////////////////////////////////////////////
 // ParameterPack begin
@@ -217,29 +216,28 @@ class ParameterPack;
 
 template <typename T, typename... Args>
 class ParameterPack<T, Args...> {
-public:
-    using First = T;
-    using Last = typename ParameterPack<Args...>::Last;
+ public:
+  using First = T;
+  using Last = typename ParameterPack<Args...>::Last;
 };
 
 template <typename T>
 class ParameterPack<T> {
-public:
-    using Last = T;
+ public:
+  using Last = T;
 };
 // ParameterPack end
 ////////////////////////////////////////////////////////////////////////////////
 
 #if __cpp_lib_is_invocable >= 201703L
-template<typename F, typename... Args>
+template <typename F, typename... Args>
 struct InvokeResult : public ::std::invoke_result<F, Args...> {};
-#else // !__cpp_lib_is_invocable
-template<typename F, typename... Args>
+#else  // !__cpp_lib_is_invocable
+template <typename F, typename... Args>
 struct InvokeResult : public ::std::result_of<F(Args...)> {};
 #endif // !__cpp_lib_is_invocable
 
 BABYLON_NAMESPACE_END
 
-#include "babylon/unprotect.h"
-
 #include "babylon/type_traits.hpp"
+#include "babylon/unprotect.h"

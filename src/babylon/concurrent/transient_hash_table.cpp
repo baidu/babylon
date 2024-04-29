@@ -7,8 +7,8 @@ namespace concurrent_transient_hash_table {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Group begin
-alignas(BABYLON_CACHELINE_SIZE)
-::std::atomic<int8_t> Group::s_dummy_controls[] = {
+alignas(
+    BABYLON_CACHELINE_SIZE)::std::atomic<int8_t> Group::s_dummy_controls[] = {
     {DUMMY_CONTROL}, {DUMMY_CONTROL}, {DUMMY_CONTROL}, {DUMMY_CONTROL},
     {DUMMY_CONTROL}, {DUMMY_CONTROL}, {DUMMY_CONTROL}, {DUMMY_CONTROL},
     {DUMMY_CONTROL}, {DUMMY_CONTROL}, {DUMMY_CONTROL}, {DUMMY_CONTROL},
@@ -36,17 +36,17 @@ ABSL_ATTRIBUTE_WEAK constexpr int8_t Group::EMPTY_CONTROL;
 #endif // __cplusplus < 201703L
 
 ABSL_ATTRIBUTE_WEAK uintptr_t constexpr_symbol_generator() {
-    return reinterpret_cast<uintptr_t>(&Group::SIZE)
-        + reinterpret_cast<uintptr_t>(&Group::GROUP_MASK)
-        + reinterpret_cast<uintptr_t>(&Group::GROUP_MASK_BITS)
-        + reinterpret_cast<uintptr_t>(&Group::CHECKER_MASK)
-        + reinterpret_cast<uintptr_t>(&Group::CHECKER_MASK_BITS)
-        + reinterpret_cast<uintptr_t>(&Group::DUMMY_CONTROL)
-        + reinterpret_cast<uintptr_t>(&Group::BUSY_CONTROL)
-        + reinterpret_cast<uintptr_t>(&Group::EMPTY_CONTROL);
+  return reinterpret_cast<uintptr_t>(&Group::SIZE) +
+         reinterpret_cast<uintptr_t>(&Group::GROUP_MASK) +
+         reinterpret_cast<uintptr_t>(&Group::GROUP_MASK_BITS) +
+         reinterpret_cast<uintptr_t>(&Group::CHECKER_MASK) +
+         reinterpret_cast<uintptr_t>(&Group::CHECKER_MASK_BITS) +
+         reinterpret_cast<uintptr_t>(&Group::DUMMY_CONTROL) +
+         reinterpret_cast<uintptr_t>(&Group::BUSY_CONTROL) +
+         reinterpret_cast<uintptr_t>(&Group::EMPTY_CONTROL);
 }
 
-} // concurrent_transient_hash_table
-} // internal
+} // namespace concurrent_transient_hash_table
+} // namespace internal
 
 BABYLON_NAMESPACE_END

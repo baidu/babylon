@@ -10,30 +10,29 @@
 #if _LIBCPP_VERSION < 8000L && GLIBCXX_VERSION < 700000000L
 ABSL_ATTRIBUTE_WEAK
 void* operator new(size_t count, ::std::align_val_t alignment) {
-    size_t alignment_size = static_cast<size_t>(alignment);
-    size_t size = (count + alignment_size - 1) & -alignment_size;
-    return ::aligned_alloc(alignment_size, size);
+  size_t alignment_size = static_cast<size_t>(alignment);
+  size_t size = (count + alignment_size - 1) & -alignment_size;
+  return ::aligned_alloc(alignment_size, size);
 }
 
 ABSL_ATTRIBUTE_WEAK
 void operator delete(void* ptr) noexcept {
-    ::free(ptr);
+  ::free(ptr);
 }
 
 ABSL_ATTRIBUTE_WEAK
 void operator delete(void* ptr, ::std::align_val_t) noexcept {
-    ::free(ptr);
+  ::free(ptr);
 }
 
 ABSL_ATTRIBUTE_WEAK
-void operator delete(void* ptr, size_t,
-                     ::std::align_val_t) noexcept {
-    ::free(ptr);
+void operator delete(void* ptr, size_t, ::std::align_val_t) noexcept {
+  ::free(ptr);
 }
 
 ABSL_ATTRIBUTE_WEAK
 void operator delete(void* ptr, size_t) noexcept {
-    ::free(ptr);
+  ::free(ptr);
 }
 #endif // _LIBCPP_VERSION < 10000L && GLIBCXX_VERSION < 700000000L
 ////////////////////////////////////////////////////////////////////////////////

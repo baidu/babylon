@@ -7,11 +7,11 @@ namespace anyflow {
 namespace builtin {
 
 template <typename T>
-void ConstProcessor::apply(GraphBuilder& builder,
-        const ::std::string& data, T&& value) noexcept {
-    apply_without_value(builder, data).option(::std::forward<T>(value));
+void ConstProcessor::apply(GraphBuilder& builder, const ::std::string& data,
+                           T&& value) noexcept {
+  apply_without_value(builder, data).option(::std::forward<T>(value));
 }
 
-} // builtin
-} // anyflow
+} // namespace builtin
+} // namespace anyflow
 BABYLON_NAMESPACE_END
