@@ -1,6 +1,9 @@
 #include "babylon/time.h"
 
-#include BABYLON_EXTERNAL(absl / time / clock.h)
+// clang-format off
+#include BABYLON_EXTERNAL(absl/time/clock.h)
+// clang-format on
+
 #include "gtest/gtest.h"
 
 #include <random>
