@@ -198,9 +198,9 @@
       ::babylon::SerializeTraits<BOOST_PP_TUPLE_ELEM(0, base)>::SERIALIZABLE, \
       "base must be serializable");
 
-#define __BABYLON_SERIALIZABLE_ASSERT_FIELD(r, data, field)        \
-  static_assert(::babylon::SerializeTraits<decltype(               \
-                    BOOST_PP_TUPLE_ELEM(0, field))>::SERIALIZABLE, \
+#define __BABYLON_SERIALIZABLE_ASSERT_FIELD(r, data, field)              \
+  static_assert(::babylon::SerializeTraits<decltype(BOOST_PP_TUPLE_ELEM( \
+                    0, field))>::SERIALIZABLE,                           \
                 "member must be serializable");
 
 #define __BABYLON_SERIALIZABLE_TRIVIAL_BASE(r, data, base) \
@@ -208,18 +208,18 @@
          0, base)>::SERIALIZED_SIZE_COMPLEXITY ==          \
      ::babylon::SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_TRIVIAL)
 
-#define __BABYLON_SERIALIZABLE_TRIVIAL_FIELD(r, data, field)            \
-  &&(::babylon::SerializeTraits<decltype(                               \
-         BOOST_PP_TUPLE_ELEM(0, field))>::SERIALIZED_SIZE_COMPLEXITY == \
+#define __BABYLON_SERIALIZABLE_TRIVIAL_FIELD(r, data, field)  \
+  &&(::babylon::SerializeTraits<decltype(BOOST_PP_TUPLE_ELEM( \
+         0, field))>::SERIALIZED_SIZE_COMPLEXITY ==           \
      ::babylon::SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_TRIVIAL)
 
 #define __BABYLON_SERIALIZABLE_CACHED_BASE(r, data, base) \
   || ::babylon::SerializeTraits<BOOST_PP_TUPLE_ELEM(      \
          0, base)>::SERIALIZED_SIZE_CACHED
 
-#define __BABYLON_SERIALIZABLE_CACHED_FIELD(r, data, field) \
-  || ::babylon::SerializeTraits<decltype(                   \
-         BOOST_PP_TUPLE_ELEM(0, field))>::SERIALIZED_SIZE_CACHED
+#define __BABYLON_SERIALIZABLE_CACHED_FIELD(r, data, field)   \
+  || ::babylon::SerializeTraits<decltype(BOOST_PP_TUPLE_ELEM( \
+         0, field))>::SERIALIZED_SIZE_CACHED
 
 #define __BABYLON_SERIALIZABLE_SER_BASE(r, data, base)                        \
   ::babylon::SerializationHelper::serialize_field(                            \
@@ -228,12 +228,12 @@
       *static_cast<const BOOST_PP_TUPLE_ELEM(0, base)*>(this), os,            \
       __babylon_cached_size_base);
 
-#define __BABYLON_SERIALIZABLE_SER_FIELD(r, data, field)                  \
-  ::babylon::SerializationHelper::serialize_field(                        \
-      ::babylon::SerializationHelper::make_tag<decltype(                  \
-          BOOST_PP_TUPLE_ELEM(0, field))>(BOOST_PP_TUPLE_ELEM(1, field)), \
-      BOOST_PP_TUPLE_ELEM(0, field), os,                                  \
-      BOOST_PP_CAT(__babylon_cached_size_field,                           \
+#define __BABYLON_SERIALIZABLE_SER_FIELD(r, data, field)                     \
+  ::babylon::SerializationHelper::serialize_field(                           \
+      ::babylon::SerializationHelper::make_tag<decltype(BOOST_PP_TUPLE_ELEM( \
+          0, field))>(BOOST_PP_TUPLE_ELEM(1, field)),                        \
+      BOOST_PP_TUPLE_ELEM(0, field), os,                                     \
+      BOOST_PP_CAT(__babylon_cached_size_field,                              \
                    BOOST_PP_TUPLE_ELEM(0, field)));
 
 #define __BABYLON_SERIALIZABLE_DER_BASE(r, data, base)                         \
@@ -260,12 +260,13 @@
       *static_cast<const BOOST_PP_TUPLE_ELEM(0, base)*>(this),           \
       __babylon_cached_size_base)
 
-#define __BABYLON_SERIALIZABLE_CAL_SIZE_FIELD(r, data, field)             \
-  +::babylon::SerializationHelper::calculate_serialized_size_field(       \
-      ::babylon::SerializationHelper::make_tag_size<decltype(             \
-          BOOST_PP_TUPLE_ELEM(0, field))>(BOOST_PP_TUPLE_ELEM(1, field)), \
-      BOOST_PP_TUPLE_ELEM(0, field),                                      \
-      BOOST_PP_CAT(__babylon_cached_size_field,                           \
+#define __BABYLON_SERIALIZABLE_CAL_SIZE_FIELD(r, data, field)       \
+  +::babylon::SerializationHelper::calculate_serialized_size_field( \
+      ::babylon::SerializationHelper::make_tag_size<                \
+          decltype(BOOST_PP_TUPLE_ELEM(0, field))>(                 \
+          BOOST_PP_TUPLE_ELEM(1, field)),                           \
+      BOOST_PP_TUPLE_ELEM(0, field),                                \
+      BOOST_PP_CAT(__babylon_cached_size_field,                     \
                    BOOST_PP_TUPLE_ELEM(0, field)))
 
 #define __BABYLON_SERIALIZABLE_CH_SIZE_BASE(r, data, base)               \
@@ -275,12 +276,13 @@
       *static_cast<const BOOST_PP_TUPLE_ELEM(0, base)*>(this),           \
       __babylon_cached_size_base)
 
-#define __BABYLON_SERIALIZABLE_CH_SIZE_FIELD(r, data, field)              \
-  +::babylon::SerializationHelper::serialized_size_cached_field(          \
-      ::babylon::SerializationHelper::make_tag_size<decltype(             \
-          BOOST_PP_TUPLE_ELEM(0, field))>(BOOST_PP_TUPLE_ELEM(1, field)), \
-      BOOST_PP_TUPLE_ELEM(0, field),                                      \
-      BOOST_PP_CAT(__babylon_cached_size_field,                           \
+#define __BABYLON_SERIALIZABLE_CH_SIZE_FIELD(r, data, field)     \
+  +::babylon::SerializationHelper::serialized_size_cached_field( \
+      ::babylon::SerializationHelper::make_tag_size<             \
+          decltype(BOOST_PP_TUPLE_ELEM(0, field))>(              \
+          BOOST_PP_TUPLE_ELEM(1, field)),                        \
+      BOOST_PP_TUPLE_ELEM(0, field),                             \
+      BOOST_PP_CAT(__babylon_cached_size_field,                  \
                    BOOST_PP_TUPLE_ELEM(0, field)))
 
 #define __BABYLON_SERIALIZABLE_CACHED_SIZE_BASE(r, data, base)                \
@@ -292,8 +294,8 @@
 
 #define __BABYLON_SERIALIZABLE_CACHED_SIZE_FIELD(r, data, field)              \
   mutable ::std::conditional<                                                 \
-      ::babylon::SerializeTraits<decltype(                                    \
-          BOOST_PP_TUPLE_ELEM(0, field))>::SERIALIZED_SIZE_COMPLEXITY ==      \
+      ::babylon::SerializeTraits<decltype(BOOST_PP_TUPLE_ELEM(                \
+          0, field))>::SERIALIZED_SIZE_COMPLEXITY ==                          \
           ::babylon::SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_COMPLEX, \
       uint32_t, ::babylon::ZeroSized>::type                                   \
       BOOST_PP_CAT(__babylon_cached_size_field,                               \
@@ -304,13 +306,11 @@
       "__base__", *static_cast<const BOOST_PP_TUPLE_ELEM(0, base)*>(this), ps)
 
 #define __BABYLON_SERIALIZABLE_PRINT_FIELD(r, data, field) \
-  &&::babylon::SerializationHelper::print_field(           \
-      BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(0, field)),   \
-      BOOST_PP_TUPLE_ELEM(0, field), ps)
+  &&::babylon::SerializationHelper::print_field(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(0, field)), BOOST_PP_TUPLE_ELEM(0, field), ps)
 
 #define __BABYLON_SERIALIZABLE_COUNT_FIELD(r, data, field)                     \
-  +(::babylon::SerializeTraits<decltype(                                       \
-                BOOST_PP_TUPLE_ELEM(0, field))>::SERIALIZED_SIZE_COMPLEXITY == \
+  +(::babylon::SerializeTraits<decltype(BOOST_PP_TUPLE_ELEM(                   \
+                0, field))>::SERIALIZED_SIZE_COMPLEXITY ==                     \
             ::babylon::SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_COMPLEX \
         ? 10                                                                   \
         : (::babylon::SerializeTraits<decltype(BOOST_PP_TUPLE_ELEM(            \

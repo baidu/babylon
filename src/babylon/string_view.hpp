@@ -18,8 +18,7 @@ class InitializerList {
  public:
   inline constexpr InitializerList(const T* data, size_t size) noexcept
       : _data(data), _size(size) {}
-  inline constexpr operator const ::std::initializer_list<T> &()
-      const noexcept {
+  inline constexpr operator const ::std::initializer_list<T>&() const noexcept {
     return reinterpret_cast<const ::std::initializer_list<T>&>(*this);
   }
   inline ~InitializerList() noexcept = default;
@@ -222,14 +221,12 @@ inline constexpr BasicStringView<C, T> BasicStringView<C, T>::substr(
 template <typename C, typename T>
 inline BABYLON_CONSTEXPR int32_t
 BasicStringView<C, T>::compare(const BasicStringView& other) const noexcept {
-  return _size == other._size
-             ? traits_type::compare(_data, other._data, _size)
-             : _size > other._size
-                   ? (traits_type::compare(_data, other._data, other._size) < 0
-                          ? -1
-                          : 1)
-                   : traits_type::compare(_data, other._data, _size) > 0 ? 1
-                                                                         : -1;
+  return _size == other._size ? traits_type::compare(_data, other._data, _size)
+         : _size > other._size
+             ? (traits_type::compare(_data, other._data, other._size) < 0 ? -1
+                                                                          : 1)
+         : traits_type::compare(_data, other._data, _size) > 0 ? 1
+                                                               : -1;
 }
 
 template <>
@@ -237,12 +234,11 @@ inline BABYLON_CONSTEXPR int32_t
 BasicStringView<char, ::std::char_traits<char>>::compare(
     const BasicStringView<char, ::std::char_traits<char>>& other)
     const noexcept {
-  return _size == other._size
-             ? __builtin_memcmp(_data, other._data, _size)
-             : _size > other._size
-                   ? (__builtin_memcmp(_data, other._data, other._size) < 0 ? -1
-                                                                            : 1)
-                   : __builtin_memcmp(_data, other._data, _size) > 0 ? 1 : -1;
+  return _size == other._size ? __builtin_memcmp(_data, other._data, _size)
+         : _size > other._size
+             ? (__builtin_memcmp(_data, other._data, other._size) < 0 ? -1 : 1)
+         : __builtin_memcmp(_data, other._data, _size) > 0 ? 1
+                                                           : -1;
 }
 
 template <typename C, typename T>

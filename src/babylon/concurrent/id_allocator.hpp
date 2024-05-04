@@ -109,19 +109,19 @@ inline void IdAllocator<T>::for_each(C&& callback) const {
 }
 
 template <typename T>
-inline __attribute__((always_inline))::std::atomic<T>&
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE ::std::atomic<T>&
 IdAllocator<T>::next_value() noexcept {
   return reinterpret_cast<::std::atomic<T>&>(_next_value);
 }
 
 template <typename T>
-inline __attribute__((always_inline)) const ::std::atomic<T>&
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE const ::std::atomic<T>&
 IdAllocator<T>::next_value() const noexcept {
   return reinterpret_cast<const ::std::atomic<T>&>(_next_value);
 }
 
 template <typename T>
-inline __attribute__((always_inline))::std::atomic<VersionedValue<T>>&
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE ::std::atomic<VersionedValue<T>>&
 IdAllocator<T>::free_head() noexcept {
   return reinterpret_cast<::std::atomic<VersionedValue<T>>&>(_free_head);
 }

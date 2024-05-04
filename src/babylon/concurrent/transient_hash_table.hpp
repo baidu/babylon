@@ -152,21 +152,7 @@ class Group {
                 "atomic int need same to int");
 
   inline ABSL_ATTRIBUTE_ALWAYS_INLINE Group(
-      ::std::atomic<int8_t>* controls) noexcept
-#if BABYLON_TMP_GROUP_USE_SSE
-      : _controls(_mm_loadu_si128(reinterpret_cast<__m128i*>(controls))) {
-  }
-#elif BABYLON_TMP_GROUP_USE_NEON
-      : _controls(vld1q_s8(reinterpret_cast<int8_t*>(controls))) {
-  }
-#else  // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
-  {
-    for (size_t i = 0; i < SIZE; ++i) {
-      _controls[i] = controls[i];
-    }
-    //__builtin_memcpy(_controls, controls, SIZE);
-  }
-#endif // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+      ::std::atomic<int8_t>* controls) noexcept;
 
   // 检测16个byte各自是否和check完全一致
   // check为hash结果后7bit，用于快速粗筛
@@ -257,6 +243,19 @@ class Group {
 #endif // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
 };
 static_assert(sizeof(Group) == Group::SIZE, "group struct size invalid");
+
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE Group::Group(
+    ::std::atomic<int8_t>* controls) noexcept
+#if BABYLON_TMP_GROUP_USE_SSE
+    : _controls(_mm_loadu_si128(reinterpret_cast<__m128i*>(controls))) {}
+#elif BABYLON_TMP_GROUP_USE_NEON
+    : _controls(vld1q_s8(reinterpret_cast<int8_t*>(controls))) {}
+#else  // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+{
+  __builtin_memcpy(_controls, controls, SIZE);
+}
+#endif // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+
 #undef BABYLON_TMP_GROUP_USE_SSE
 #undef BABYLON_TMP_GROUP_USE_NEON
 } // namespace concurrent_transient_hash_table

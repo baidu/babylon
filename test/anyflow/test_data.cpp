@@ -13,64 +13,62 @@ using ::babylon::Any;
 using ::babylon::TypeId;
 
 class MockProcessor : public GraphProcessor {
-public:
-    virtual int process() noexcept override {
-        ::std::lock_guard<::std::mutex> lock(**option<::std::mutex*>());
-        *x.emit() = *a;
-        return 0;
-    }
+ public:
+  virtual int process() noexcept override {
+    ::std::lock_guard<::std::mutex> lock(**option<::std::mutex*>());
+    *x.emit() = *a;
+    return 0;
+  }
 
-    ANYFLOW_INTERFACE(
-        ANYFLOW_DEPEND_DATA(::std::string, a)
-        ANYFLOW_EMIT_DATA(::std::string, x)
-    )
+  ANYFLOW_INTERFACE(ANYFLOW_DEPEND_DATA(::std::string, a)
+                        ANYFLOW_EMIT_DATA(::std::string, x))
 };
 
 struct DataTest : public ::testing::Test {
-    virtual void SetUp() override {
-        auto creator = [] {
-            return ::std::unique_ptr<GraphProcessor>(new MockProcessor);
-        };
-        {
-            auto& vertex = builder.add_vertex(creator);
-            vertex.option(&mx);
-            vertex.named_depend("a").to("A");
-            vertex.named_emit("x").to("B");
-        }
-        {
-            auto& vertex = builder.add_vertex(creator);
-            vertex.option(&my);
-            vertex.named_depend("a").to("B");
-            vertex.named_emit("x").to("C");
-        }
-        {
-            auto& vertex = builder.add_vertex([] {
-                return ::std::unique_ptr<GraphProcessor>(new GraphProcessor);
-            });
-            vertex.anonymous_emit().to("D");
-        }
-        executor.initialize(4, 128);
-        builder.set_executor(executor);
-        ASSERT_EQ(0, builder.finish());
-        graph = builder.build();
-        ASSERT_TRUE(graph);
-
-        a = graph->find_data("A");
-        b = graph->find_data("B");
-        c = graph->find_data("C");
-        d = graph->find_data("D");
+  virtual void SetUp() override {
+    auto creator = [] {
+      return ::std::unique_ptr<GraphProcessor>(new MockProcessor);
+    };
+    {
+      auto& vertex = builder.add_vertex(creator);
+      vertex.option(&mx);
+      vertex.named_depend("a").to("A");
+      vertex.named_emit("x").to("B");
     }
+    {
+      auto& vertex = builder.add_vertex(creator);
+      vertex.option(&my);
+      vertex.named_depend("a").to("B");
+      vertex.named_emit("x").to("C");
+    }
+    {
+      auto& vertex = builder.add_vertex([] {
+        return ::std::unique_ptr<GraphProcessor>(new GraphProcessor);
+      });
+      vertex.anonymous_emit().to("D");
+    }
+    executor.initialize(4, 128);
+    builder.set_executor(executor);
+    ASSERT_EQ(0, builder.finish());
+    graph = builder.build();
+    ASSERT_TRUE(graph);
 
-    ThreadPoolGraphExecutor executor;
-    GraphBuilder builder;
-    ::std::unique_ptr<Graph> graph;
+    a = graph->find_data("A");
+    b = graph->find_data("B");
+    c = graph->find_data("C");
+    d = graph->find_data("D");
+  }
 
-    GraphData* a;
-    GraphData* b;
-    GraphData* c;
-    GraphData* d;
-    ::std::mutex mx;
-    ::std::mutex my;
+  ThreadPoolGraphExecutor executor;
+  GraphBuilder builder;
+  ::std::unique_ptr<Graph> graph;
+
+  GraphData* a;
+  GraphData* b;
+  GraphData* c;
+  GraphData* d;
+  ::std::mutex mx;
+  ::std::mutex my;
 };
 
 /*
@@ -238,13 +236,13 @@ TEST_F(DataTest, immediate_finish_when_data_already_released) {
 */
 
 TEST_F(DataTest, closure_finish_when_data_ready) {
-    *a->emit<::std::string>() = "10086";
-    //mx.lock();
-    auto closure = graph->run(b);
-    ::usleep(100000);
-    //ASSERT_FALSE(closure.finished());
-    //mx.unlock();
-    ASSERT_EQ(0, closure.get());
+  *a->emit<::std::string>() = "10086";
+  // mx.lock();
+  auto closure = graph->run(b);
+  ::usleep(100000);
+  // ASSERT_FALSE(closure.finished());
+  // mx.unlock();
+  ASSERT_EQ(0, closure.get());
 }
 
 /*

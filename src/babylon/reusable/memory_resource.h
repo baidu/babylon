@@ -312,7 +312,7 @@ class SwissMemoryResource : public SharedMonotonicBufferResource {
   virtual void release() noexcept override;
 
 #if GOOGLE_PROTOBUF_VERSION >= 3000000
-  inline operator ::google::protobuf::Arena &() noexcept {
+  inline operator ::google::protobuf::Arena&() noexcept {
     return *_arena;
   }
 #endif // GOOGLE_PROTOBUF_VERSION >= 3000000

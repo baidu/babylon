@@ -136,8 +136,8 @@ struct IsInvocable {
   template <typename __BABYLON_TPL_T, typename... __BABYLON_TPL_Args> \
   struct C {                                                          \
     template <typename __BABYLON_TPL_U>                               \
-    static auto checker(int) -> decltype(                             \
-        __BABYLON_TPL_U::F(::std::declval<__BABYLON_TPL_Args>()...)); \
+    static auto checker(int) -> decltype(__BABYLON_TPL_U::F(          \
+        ::std::declval<__BABYLON_TPL_Args>()...));                    \
     template <typename __BABYLON_TPL_U>                               \
     static ::babylon::NeverUsed checker(...);                         \
     static constexpr bool value =                                     \
@@ -204,8 +204,9 @@ struct IsEqualityComparable {
                              decltype(checker<__BABYLON_TPL_T>(0))>::value; \
     }                                                                       \
     template <typename __BABYLON_TPL_T>                                     \
-    using type = typename ::std::remove_pointer<decltype(                   \
-        checker<__BABYLON_TPL_T>(0))>::type;                                \
+    using type =                                                            \
+        typename ::std::remove_pointer<decltype(checker<__BABYLON_TPL_T>(   \
+            0))>::type;                                                     \
   };
 
 ////////////////////////////////////////////////////////////////////////////////
