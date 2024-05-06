@@ -12,6 +12,10 @@
 #include <arm_neon.h>
 #endif // __ARM_NEON
 
+#if ABSL_HAVE_THREAD_SANITIZER
+#include <sanitizer/tsan_interface.h> // ::__tsan_acquire
+#endif                                // ABSL_HAVE_THREAD_SANITIZER
+
 #pragma GCC diagnostic push
 // Thread Sanitizer目前无法支持std::atomic_thread_fence
 // gcc-12之后增加了相应的报错，显示标记忽视并特殊处理相关段落
@@ -250,7 +254,7 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE Group::Group(
 // 但因为这并不是ISO规范中能够跨平台支持的特性
 // Thread Sanitizer实现上限定了acquire/release操作需要atomic配对
 // 针对性增加了一次atomic转存让Thread Sanitizer可识别
-// 采用relaxed等级确保fence效果不会被忽略
+// 采用relaxed等级确保fence正确性依然能够得到验证
 #if ABSL_HAVE_THREAD_SANITIZER
   int8_t vec[SIZE];
   for (size_t i = 0; i < SIZE; ++i) {
@@ -630,6 +634,9 @@ ConcurrentFixedSwissTable<T, H, E>::find(const K& key) noexcept {
       auto offset = *iter++;
       auto index = (base_index + offset) & _bucket_mask;
       ::std::atomic_thread_fence(::std::memory_order_acquire);
+#if ABSL_HAVE_THREAD_SANITIZER
+      __tsan_acquire(_controls + base_index + offset);
+#endif // ABSL_HAVE_THREAD_SANITIZER
       // 通过粗筛后使用key比较进行核对
       if (E::extract(at(index)) == key) {
         return {*this, index};
@@ -766,6 +773,9 @@ ConcurrentFixedSwissTable<T, H, E>::do_emplace(K&& key_or_value,
       auto offset = *iter++;
       auto index = (base_index + offset) & _bucket_mask;
       ::std::atomic_thread_fence(::std::memory_order_acquire);
+#if ABSL_HAVE_THREAD_SANITIZER
+      __tsan_acquire(_controls + base_index + offset);
+#endif // ABSL_HAVE_THREAD_SANITIZER
       // 通过粗筛后使用key比较进行核对
       if (E::extract(at(index)) == key) {
         return {{*this, index}, false};
