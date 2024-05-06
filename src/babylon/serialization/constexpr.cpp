@@ -23,44 +23,45 @@ BABYLON_NAMESPACE_BEGIN
 // 为了支持混用，这里采用桩函数通过取地址方式强制产出符号
 namespace internal {
 ABSL_ATTRIBUTE_WEAK uintptr_t constexpr_symbol_generator() {
-    return static_cast<uintptr_t>(0)
-        + reinterpret_cast<uintptr_t>(&SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_COMPLEX)
-        + reinterpret_cast<uintptr_t>(&SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_SIMPLE)
-        + reinterpret_cast<uintptr_t>(&SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_TRIVIAL)
-#define BABYLON_TMP_GEN(type) \
-        + reinterpret_cast<uintptr_t>(&SerializeTraits<type>::SERIALIZABLE) \
-        + reinterpret_cast<uintptr_t>(&SerializeTraits<type>::WIRE_TYPE) \
-        + reinterpret_cast<uintptr_t>(&SerializeTraits<type>::SERIALIZED_SIZE_COMPLEXITY)
-        BABYLON_TMP_GEN(bool)
-        BABYLON_TMP_GEN(int8_t)
-        BABYLON_TMP_GEN(int16_t)
-        BABYLON_TMP_GEN(int32_t)
-        BABYLON_TMP_GEN(int64_t)
-        BABYLON_TMP_GEN(uint8_t)
-        BABYLON_TMP_GEN(uint16_t)
-        BABYLON_TMP_GEN(uint32_t)
-        BABYLON_TMP_GEN(uint64_t)
-        BABYLON_TMP_GEN(float)
-        BABYLON_TMP_GEN(double)
+  return static_cast<uintptr_t>(0) +
+         reinterpret_cast<uintptr_t>(
+             &SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_COMPLEX) +
+         reinterpret_cast<uintptr_t>(
+             &SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_SIMPLE) +
+         reinterpret_cast<uintptr_t>(
+             &SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_TRIVIAL)
+#define BABYLON_TMP_GEN(type)                                          \
+  +reinterpret_cast<uintptr_t>(&SerializeTraits<type>::SERIALIZABLE) + \
+      reinterpret_cast<uintptr_t>(&SerializeTraits<type>::WIRE_TYPE) + \
+      reinterpret_cast<uintptr_t>(                                     \
+          &SerializeTraits<type>::SERIALIZED_SIZE_COMPLEXITY)
+             BABYLON_TMP_GEN(bool) BABYLON_TMP_GEN(int8_t)
+                 BABYLON_TMP_GEN(int16_t) BABYLON_TMP_GEN(int32_t)
+                     BABYLON_TMP_GEN(int64_t) BABYLON_TMP_GEN(uint8_t)
+                         BABYLON_TMP_GEN(uint16_t) BABYLON_TMP_GEN(uint32_t)
+                             BABYLON_TMP_GEN(uint64_t) BABYLON_TMP_GEN(float)
+                                 BABYLON_TMP_GEN(double)
 #undef BABYLON_TMP_GEN
-        ;
+      ;
 }
-} // internal
+} // namespace internal
 
 // 当库本身用-std=c++14编译时，强制产出的符号为常量符号
 // 会和使用者采用-std=c++17编译时产生的唯一符号发生重定义冲突
 // 这里对-std=c++14的情况改写为弱符号
 #if __cplusplus < 201703L
 ABSL_ATTRIBUTE_WEAK constexpr int
-SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_COMPLEX;
+    SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_COMPLEX;
 ABSL_ATTRIBUTE_WEAK constexpr int
-SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_SIMPLE;
+    SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_SIMPLE;
 ABSL_ATTRIBUTE_WEAK constexpr int
-SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_TRIVIAL;
-#define BABYLON_TMP_GEN(type) \
-ABSL_ATTRIBUTE_WEAK constexpr bool SerializeTraits<type>::SERIALIZABLE; \
-ABSL_ATTRIBUTE_WEAK constexpr ::google::protobuf::internal::WireFormatLite::WireType SerializeTraits<type>::WIRE_TYPE; \
-ABSL_ATTRIBUTE_WEAK constexpr int SerializeTraits<type>::SERIALIZED_SIZE_COMPLEXITY;
+    SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_TRIVIAL;
+#define BABYLON_TMP_GEN(type)                                                  \
+  ABSL_ATTRIBUTE_WEAK constexpr bool SerializeTraits<type>::SERIALIZABLE;      \
+  ABSL_ATTRIBUTE_WEAK constexpr ::google::protobuf::internal::WireFormatLite:: \
+      WireType SerializeTraits<type>::WIRE_TYPE;                               \
+  ABSL_ATTRIBUTE_WEAK constexpr int                                            \
+      SerializeTraits<type>::SERIALIZED_SIZE_COMPLEXITY;
 BABYLON_TMP_GEN(bool)
 BABYLON_TMP_GEN(int8_t)
 BABYLON_TMP_GEN(int16_t)

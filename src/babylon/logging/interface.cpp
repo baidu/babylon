@@ -1,7 +1,7 @@
 #include "babylon/logging/interface.h"
 
-#include <iostream>     // std::cerr
-#include <mutex>        // std::mutex
+#include <iostream> // std::cerr
+#include <mutex>    // std::mutex
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -14,41 +14,44 @@ LogStreamProvider::~LogStreamProvider() noexcept {}
 ////////////////////////////////////////////////////////////////////////////////
 // DefaultLogStreamProvider begin
 class DefaultLogStreamProvider : public LogStreamProvider {
-private:
-    static constexpr StringView SEVERITY_NAME[] = {
-        "DEBUG ", "INFO ", "WARNING ", "FATAL ",
-    };
+ private:
+  static constexpr StringView SEVERITY_NAME[] = {
+      "DEBUG ",
+      "INFO ",
+      "WARNING ",
+      "FATAL ",
+  };
 
-public:
-    virtual LogStream& stream(int severity, StringView file,
-                              int line) noexcept override {
-        struct S : public LogStream {
+ public:
+  virtual LogStream& stream(int severity, StringView file,
+                            int line) noexcept override {
+    struct S : public LogStream {
 #if __clang__ || BABYLON_GCC_VERSION >= 50000
-            inline S() noexcept : LogStream {*::std::cerr.rdbuf()} {}
-#else // !__clang__ && BABYLON_GCC_VERSION < 50000
-            inline S() noexcept : LogStream(*::std::cerr.rdbuf()) {}
-#endif  // !__clang__ && BABYLON_GCC_VERSION < 50000
-            virtual void do_begin() noexcept override {
-                mutex.lock();
-                operator<<(SEVERITY_NAME[severity])
-                    << '[' << file << ':' << line << "] ";
-            }
-            virtual void do_end() noexcept override {
-                operator<<('\n');
-                mutex.unlock();
-            }
+      inline S() noexcept : LogStream {*::std::cerr.rdbuf()} {}
+#else  // !__clang__ && BABYLON_GCC_VERSION < 50000
+      inline S() noexcept : LogStream(*::std::cerr.rdbuf()) {}
+#endif // !__clang__ && BABYLON_GCC_VERSION < 50000
+      virtual void do_begin() noexcept override {
+        mutex.lock();
+        operator<<(SEVERITY_NAME[severity])
+            << '[' << file << ':' << line << "] ";
+      }
+      virtual void do_end() noexcept override {
+        operator<<('\n');
+        mutex.unlock();
+      }
 
-            ::std::mutex mutex;
-            int severity;
-            StringView file;
-            int line;
-        };
-        static thread_local S s_stream;
-        s_stream.severity = severity;
-        s_stream.file = file;
-        s_stream.line = line;
-        return s_stream;
-    }
+      ::std::mutex mutex;
+      int severity;
+      StringView file;
+      int line;
+    };
+    static thread_local S s_stream;
+    s_stream.severity = severity;
+    s_stream.file = file;
+    s_stream.line = line;
+    return s_stream;
+  }
 };
 #if __cplusplus < 201703L
 constexpr StringView DefaultLogStreamProvider::SEVERITY_NAME[];
@@ -60,18 +63,18 @@ static DefaultLogStreamProvider s_default_provider;
 ////////////////////////////////////////////////////////////////////////////////
 // LogInterface begin
 void LogInterface::set_min_severity(int severity) noexcept {
-    _s_min_severity = severity;
+  _s_min_severity = severity;
 }
 
 void LogInterface::set_provider(
-        ::std::unique_ptr<LogStreamProvider>&& provider) noexcept {
-    static ::std::unique_ptr<LogStreamProvider> s_provider;
-    s_provider = ::std::move(provider);
-    if (s_provider) {
-        _s_provider = s_provider.get();
-    } else {
-        _s_provider = &s_default_provider;
-    }
+    ::std::unique_ptr<LogStreamProvider>&& provider) noexcept {
+  static ::std::unique_ptr<LogStreamProvider> s_provider;
+  s_provider = ::std::move(provider);
+  if (s_provider) {
+    _s_provider = s_provider.get();
+  } else {
+    _s_provider = &s_default_provider;
+  }
 }
 
 // TODO(lijiang01): 理论上应该写成
@@ -84,8 +87,8 @@ int LogInterface::_s_min_severity {1};
 // 尽管一般而言通过LogInterface::set_provider已经可以实现自定义功能
 // 但对于一些希望在静态初始化就打印日志的场景，其自定义动作希望更早发生
 // 此时通过链接时符号替换可以提供更早的时机
-ABSL_ATTRIBUTE_WEAK LogStreamProvider*
-LogInterface::_s_provider {&s_default_provider};
+ABSL_ATTRIBUTE_WEAK LogStreamProvider* LogInterface::_s_provider {
+    &s_default_provider};
 // LogInterface end
 ////////////////////////////////////////////////////////////////////////////////
 

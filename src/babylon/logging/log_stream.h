@@ -1,10 +1,12 @@
 #pragma once
 
-#include "babylon/type_traits.h"    // BABYLON_DECLARE_MEMBER_INVOCABLE
+#include "babylon/type_traits.h" // BABYLON_DECLARE_MEMBER_INVOCABLE
 
-#include BABYLON_EXTERNAL(absl/strings/str_format.h)                    // absl::Format
+// clang-format off
+#include BABYLON_EXTERNAL(absl/strings/str_format.h) // absl::Format
+// clang-format on
 
-#include <inttypes.h>                                   // ::*int*_t
+#include <inttypes.h> // ::*int*_t
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -27,94 +29,98 @@ BABYLON_NAMESPACE_BEGIN
 // ls.format("...", ...).format("...", ...);
 // ls.end();
 class LogStream : protected ::std::ostream {
-private:
-    using Base = ::std::ostream;
+ private:
+  using Base = ::std::ostream;
 
-    BABYLON_DECLARE_MEMBER_INVOCABLE(write_object, IsDirectWritable)
+  BABYLON_DECLARE_MEMBER_INVOCABLE(write_object, IsDirectWritable)
 
-public:
-    using Base::rdbuf;
+ public:
+  using Base::rdbuf;
 
-    inline LogStream(::std::streambuf& streambuf) noexcept;
+  inline LogStream(::std::streambuf& streambuf) noexcept;
 
-    template <typename... Args>
-    inline LogStream& begin(const Args&... args) noexcept;
-    inline LogStream& noflush() noexcept;
-    inline LogStream& end() noexcept;
+  template <typename... Args>
+  inline LogStream& begin(const Args&... args) noexcept;
+  inline LogStream& noflush() noexcept;
+  inline LogStream& end() noexcept;
 
-    // 写入一段无格式数据
-    inline LogStream& write(const char* data, size_t size) noexcept;
-    inline LogStream& write(char c) noexcept;
+  // 写入一段无格式数据
+  inline LogStream& write(const char* data, size_t size) noexcept;
+  inline LogStream& write(char c) noexcept;
 
-    // 使用类printf语法格式化输出，例如
-    // format("%s %s", "hello", "world");
-    template <typename... Args>
-    inline LogStream& format(const ::absl::FormatSpec<Args...>& format,
-                             const Args&... args) noexcept;
+  // 使用类printf语法格式化输出，例如
+  // format("%s %s", "hello", "world");
+  template <typename... Args>
+  inline LogStream& format(const ::absl::FormatSpec<Args...>& format,
+                           const Args&... args) noexcept;
 
-    // 内置类型绕过std::ostream层直接输出
-    template <typename T, typename ::std::enable_if<
-        IsDirectWritable<LogStream, T>::value, int>::type = 0>
-    inline LogStream& operator<<(const T& object) noexcept;
+  // 内置类型绕过std::ostream层直接输出
+  template <typename T,
+            typename ::std::enable_if<IsDirectWritable<LogStream, T>::value,
+                                      int>::type = 0>
+  inline LogStream& operator<<(const T& object) noexcept;
 
-    // 支持基于std::ostream的自定义类型扩展
-    template <typename T, typename ::std::enable_if<
-        !IsDirectWritable<LogStream, T>::value, int>::type = 0>
-    inline LogStream& operator<<(const T& object) noexcept;
+  // 支持基于std::ostream的自定义类型扩展
+  template <typename T,
+            typename ::std::enable_if<!IsDirectWritable<LogStream, T>::value,
+                                      int>::type = 0>
+  inline LogStream& operator<<(const T& object) noexcept;
 
-    // 支持基于std::ostream的流操作符
-    inline LogStream& operator<<(
-            ::std::ostream& (*function)(::std::ostream&)) noexcept;
+  // 支持基于std::ostream的流操作符
+  inline LogStream& operator<<(
+      ::std::ostream& (*function)(::std::ostream&)) noexcept;
 
-private:
-    // 支持absl::Format
-    friend inline void AbslFormatFlush(LogStream* ls,
-                                       ::absl::string_view sv) noexcept {
-        ls->write(sv.data(), sv.size());
-    }
+ private:
+  // 支持absl::Format
+  friend inline void AbslFormatFlush(LogStream* ls,
+                                     ::absl::string_view sv) noexcept {
+    ls->write(sv.data(), sv.size());
+  }
 
-    // 早期abseil不支持ADL函数查找约定，降级到std::ostream
-    template <typename T, typename... Args, typename ::std::enable_if<
-        ::std::is_convertible<
-            T*, ::absl::FormatRawSink>::value, int>::type = 0>
-    inline static LogStream& do_absl_format(
-            T* ls, const ::absl::FormatSpec<Args...>& format,
-            const Args&... args) noexcept;
-    template <typename T, typename... Args, typename ::std::enable_if<
-        !::std::is_convertible<
-            T*, ::absl::FormatRawSink>::value, int>::type = 0>
-    inline static LogStream& do_absl_format(
-            T* ls, const ::absl::FormatSpec<Args...>& format,
-            const Args&... args) noexcept;
+  // 早期abseil不支持ADL函数查找约定，降级到std::ostream
+  template <typename T, typename... Args,
+            typename ::std::enable_if<
+                ::std::is_convertible<T*, ::absl::FormatRawSink>::value,
+                int>::type = 0>
+  inline static LogStream& do_absl_format(
+      T* ls, const ::absl::FormatSpec<Args...>& format,
+      const Args&... args) noexcept;
+  template <typename T, typename... Args,
+            typename ::std::enable_if<
+                !::std::is_convertible<T*, ::absl::FormatRawSink>::value,
+                int>::type = 0>
+  inline static LogStream& do_absl_format(
+      T* ls, const ::absl::FormatSpec<Args...>& format,
+      const Args&... args) noexcept;
 
-    template <typename T, typename... Args>
-    inline void write_objects(const T& object, const Args&... args) noexcept;
-    inline void write_objects() noexcept;
+  template <typename T, typename... Args>
+  inline void write_objects(const T& object, const Args&... args) noexcept;
+  inline void write_objects() noexcept;
 
-    inline LogStream& write_object(StringView sv) noexcept;
-    inline LogStream& write_object(char c) noexcept;
+  inline LogStream& write_object(StringView sv) noexcept;
+  inline LogStream& write_object(char c) noexcept;
 
-#define BABYLON_TMP_GEN_WRITE(ctype, fmt) \
-    inline LogStream& write_object(ctype v) noexcept { \
-        return format("%" fmt, v); \
-    }
-    BABYLON_TMP_GEN_WRITE(int16_t, PRId16)
-    BABYLON_TMP_GEN_WRITE(int32_t, PRId32)
-    BABYLON_TMP_GEN_WRITE(int64_t, PRId64)
-    BABYLON_TMP_GEN_WRITE(uint8_t, PRIu8)
-    BABYLON_TMP_GEN_WRITE(uint16_t, PRIu16)
-    BABYLON_TMP_GEN_WRITE(uint32_t, PRIu32)
-    BABYLON_TMP_GEN_WRITE(uint64_t, PRIu64)
-    BABYLON_TMP_GEN_WRITE(float, "g")
-    BABYLON_TMP_GEN_WRITE(double, "g")
-    BABYLON_TMP_GEN_WRITE(long double, "Lg")
+#define BABYLON_TMP_GEN_WRITE(ctype, fmt)            \
+  inline LogStream& write_object(ctype v) noexcept { \
+    return format("%" fmt, v);                       \
+  }
+  BABYLON_TMP_GEN_WRITE(int16_t, PRId16)
+  BABYLON_TMP_GEN_WRITE(int32_t, PRId32)
+  BABYLON_TMP_GEN_WRITE(int64_t, PRId64)
+  BABYLON_TMP_GEN_WRITE(uint8_t, PRIu8)
+  BABYLON_TMP_GEN_WRITE(uint16_t, PRIu16)
+  BABYLON_TMP_GEN_WRITE(uint32_t, PRIu32)
+  BABYLON_TMP_GEN_WRITE(uint64_t, PRIu64)
+  BABYLON_TMP_GEN_WRITE(float, "g")
+  BABYLON_TMP_GEN_WRITE(double, "g")
+  BABYLON_TMP_GEN_WRITE(long double, "Lg")
 #undef BABYLON_TMP_GEN_WRITE
 
-    virtual void do_begin() noexcept;
-    virtual void do_end() noexcept;
+  virtual void do_begin() noexcept;
+  virtual void do_end() noexcept;
 
-    size_t _depth {0};
-    bool _noflush {false};
+  size_t _depth {0};
+  bool _noflush {false};
 };
 
 BABYLON_NAMESPACE_END

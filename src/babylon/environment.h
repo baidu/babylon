@@ -27,8 +27,9 @@
 // - 较新的gcc中实现了这一特性，但是并未考虑Spatial Prefetcher的特殊影响
 // - 主流服务端cpu的缓存行大小相对固定，暂时按体系结构枚举基本足够
 //
-// Spatial Prefetcher相关特性记载在intel 64-ia-32-architectures-optimization-manual.pdf
-// 中的E.2.5.4 Data Prefetching部分
+// Spatial Prefetcher相关特性记载在intel
+// 64-ia-32-architectures-optimization-manual.pdf 中的E.2.5.4 Data
+// Prefetching部分
 //
 // 综上，目前应用中还是采用单独的宏来提供
 #ifdef __x86_64__
@@ -42,7 +43,7 @@
 // 注意，由于GNU C兼容的编译器都会定义此版本信息
 // 因此并不能标识使用的编译器就是gcc的某个版本
 // 例如，即使高版本clang，也只一般会将自己的版本定义为gcc-4.2.1
-// 
+//
 // 因此根据某些编译器特性进行兼容编码时往往需要按照
 // #if BABYLON_GCC_VERSION > X || CLANG_VERSION > Y
 // 的方式来指定，而且尤其需要注意避免使用
@@ -54,9 +55,8 @@
 // 如果希望针对libstdc++/libc++等标准库版本进行兼容适配
 // 需要采用GLIBCXX_VERSION/LIBCPP_VERSION来完成
 #ifdef __GNUC__
-#define BABYLON_GCC_VERSION (__GNUC__ * 10000 + \
-                             __GNUC_MINOR__ * 100 + \
-                             __GNUC_PATCHLEVEL__)
+#define BABYLON_GCC_VERSION \
+  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif // __GNUC__
 #ifndef GCC_VERSION
 #define GCC_VERSION BABYLON_GCC_VERSION
@@ -65,9 +65,8 @@
 // clang编译器声明的GNU C兼容版本基本是固定不变的gcc-4.2.1
 // 因此其编译器特性一般需要结合自己独立的版本号体系来判定
 #ifdef __clang__
-#define CLANG_VERSION (__clang_major__ * 10000 + \
-                       __clang_minor__ * 100 + \
-                       __clang_patchlevel__)
+#define CLANG_VERSION \
+  (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__)
 #endif // __clang__
 
 // 头文件的存在性是用来判断是否具备某些特性的典型手段
@@ -111,7 +110,8 @@
 #include <cstddef>
 
 // 用于确定是否使用libstdc++，以及对应的版本
-// GLIBCXX_VERSION采用大版本号 + 发布日期来做版本确定，参考https://gcc.gnu.org/develop.html#timeline
+// GLIBCXX_VERSION采用大版本号 +
+// 发布日期来做版本确定，参考https://gcc.gnu.org/develop.html#timeline
 // >=420140522L == >=gcc4.8.3
 // >=720191114L == >=gcc7.5.0
 // >=820180726L == >=gcc8.2.0
@@ -139,7 +139,8 @@
 // 不支持c++17，禁用依赖protobuf的功能
 #if BABYLON_HAS_INCLUDE("google/protobuf/patch_std_string_for_arena.h")
 #include "google/protobuf/patch_std_string_for_arena.h"
-#if __cplusplus >= 201703L && (!defined(PROTOBUF_PATCH_STD_STRING) || PROTOBUF_PATCH_STD_STRING)
+#if __cplusplus >= 201703L && \
+    (!defined(PROTOBUF_PATCH_STD_STRING) || PROTOBUF_PATCH_STD_STRING)
 #define BABYLON_USE_PROTOBUF 0
 #endif
 #endif
@@ -151,6 +152,7 @@
 #include <version>
 #endif // BABYLON_HAS_INCLUDE(<version>)
 
+// clang-format off
 // 在bazel环境启用treat_warnings_as_errors
 // bazel的external_include_paths模式会对依赖库
 #if BABYLON_HAS_INCLUDE(<absl/base/config.h>)
@@ -158,3 +160,4 @@
 #else // !BABYLON_HAS_INCLUDE(<absl/base/config.h>)
 #define BABYLON_EXTERNAL(file) #file
 #endif // !BABYLON_HAS_INCLUDE(<absl/base/config.h>)
+// clang-format on
