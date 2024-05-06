@@ -12,11 +12,14 @@
 #include <arm_neon.h>
 #endif // __ARM_NEON
 
-BABYLON_NAMESPACE_BEGIN
 #pragma GCC diagnostic push
+// Thread Sanitizer目前无法支持std::atomic_thread_fence
+// gcc-12之后增加了相应的报错，显示标记忽视并特殊处理相关段落
 #if GCC_VERSION >= 120000
 #pragma GCC diagnostic ignored "-Wtsan"
 #endif // GCC_VERSION >= 120000
+
+BABYLON_NAMESPACE_BEGIN
 
 namespace internal {
 namespace concurrent_transient_hash_table {
@@ -62,12 +65,6 @@ struct PairKeyExtractor {
 };
 ////////////////////////////////////////////////////////////////////////////////
 
-#if ABSL_HAVE_THREAD_SANITIZER
-#elif defined(__SSE2__)
-#define BABYLON_TMP_GROUP_USE_SSE 1
-#elif defined(__ARM_NEON)
-#define BABYLON_TMP_GROUP_USE_NEON 1
-#endif
 // 基于64位bitmask的迭代器，用于解读SIMD匹配的结果
 // 在x86上SIMD指令产出的mask每个bit表示一个匹配结果
 // for (int i : GroupIterator(0b101)) -> yields 0, 2
@@ -106,23 +103,23 @@ class GroupIterator {
   }
 
   inline size_t operator*() noexcept {
-#if BABYLON_TMP_GROUP_USE_NEON
+#if defined(__ARM_NEON)
     return __builtin_ctzll(_mask) >> 2;
-#else  // !BABYLON_TMP_GROUP_USE_NEON
+#else  // !defined(__ARM_NEON)
     return __builtin_ctzll(_mask);
-#endif // !BABYLON_TMP_GROUP_USE_NEON
+#endif // !defined(__ARM_NEON)
   }
 
   inline ABSL_ATTRIBUTE_ALWAYS_INLINE GroupIndex operator++(int) noexcept {
-#if BABYLON_TMP_GROUP_USE_NEON
+#if defined(__ARM_NEON)
     size_t offset = __builtin_ctzll(_mask);
     _mask = _mask - (static_cast<uint64_t>(0xF) << offset);
     return offset >> 2;
-#else  // !BABYLON_TMP_GROUP_USE_NEON
+#else  // !defined(__ARM_NEON)
     size_t offset = __builtin_ctzll(_mask);
     _mask = _mask - (0x1 << offset);
     return offset;
-#endif // !BABYLON_TMP_GROUP_USE_NEON
+#endif // !defined(__ARM_NEON)
   }
 
  private:
@@ -158,22 +155,22 @@ class Group {
   // check为hash结果后7bit，用于快速粗筛
   inline ABSL_ATTRIBUTE_ALWAYS_INLINE GroupIterator
   match(int8_t check) noexcept {
-#if BABYLON_TMP_GROUP_USE_SSE
+#if defined(__SSE2__)
     uint16_t mask =
         _mm_movemask_epi8(_mm_cmpeq_epi8(_controls, _mm_set1_epi8(check)));
-#elif BABYLON_TMP_GROUP_USE_NEON
+#elif defined(__ARM_NEON)
     uint16x8_t mask128 =
         vreinterpretq_u16_u8(vceqq_s8(_controls, vdupq_n_s8(check)));
     uint8x8_t mask64 = vshrn_n_u16(mask128, 4);
     uint64_t mask = vget_lane_u64(vreinterpret_u64_u8(mask64), 0);
-#else  // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+#else  // !defined(__SSE2__) && !defined(__ARM_NEON)
     uint16_t mask = 0;
     for (size_t i = 0; i < SIZE; ++i) {
       if (check == _controls[i]) {
         mask |= 1 << i;
       }
     }
-#endif // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+#endif // !defined(__SSE2__) && !defined(__ARM_NEON)
     return GroupIterator {mask};
   }
 
@@ -182,82 +179,95 @@ class Group {
   // 符号位为1的特殊值，在查找时都视为『空』
   // 尽管emplace操作并不认为可以发起写入
   inline ABSL_ATTRIBUTE_ALWAYS_INLINE GroupIterator match_empty() noexcept {
-#if BABYLON_TMP_GROUP_USE_SSE
+#if defined(__SSE2__)
     uint16_t mask = _mm_movemask_epi8(_controls);
-#elif BABYLON_TMP_GROUP_USE_NEON
+#elif defined(__ARM_NEON)
     uint16x8_t mask128 = vreinterpretq_u16_u8(
         vceqq_s8(vandq_s8(_controls, vdupq_n_s8(0x80)), vdupq_n_s8(0x80)));
     uint8x8_t mask64 = vshrn_n_u16(mask128, 4);
     uint64_t mask = vget_lane_u64(vreinterpret_u64_u8(mask64), 0);
-#else  // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+#else  // !defined(__SSE2__) && !defined(__ARM_NEON)
     uint16_t mask = 0;
     for (size_t i = 0; i < SIZE; ++i) {
       if (_controls[i] < 0) {
         mask |= 1 << i;
       }
     }
-#endif // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+#endif // !defined(__SSE2__) && !defined(__ARM_NEON)
     return GroupIterator {mask};
   }
 
   // match_empty的取反结果，用于遍历有内容的位置
   inline ABSL_ATTRIBUTE_ALWAYS_INLINE GroupIterator match_non_empty() noexcept {
-#if BABYLON_TMP_GROUP_USE_SSE
+#if defined(__SSE2__)
     uint16_t mask = ~_mm_movemask_epi8(_controls);
-#elif BABYLON_TMP_GROUP_USE_NEON
+#elif defined(__ARM_NEON)
     uint16x8_t mask128 = vreinterpretq_u16_u8(
         vceqq_s8(vandq_s8(_controls, vdupq_n_s8(0x80)), vdupq_n_s8(0x00)));
     uint8x8_t mask64 = vshrn_n_u16(mask128, 4);
     uint64_t mask = vget_lane_u64(vreinterpret_u64_u8(mask64), 0);
-#else  // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+#else  // !defined(__SSE2__) && !defined(__ARM_NEON)
     uint16_t mask = 0;
     for (size_t i = 0; i < SIZE; ++i) {
       if (_controls[i] >= 0) {
         mask |= 1 << i;
       }
     }
-#endif // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+#endif // !defined(__SSE2__) && !defined(__ARM_NEON)
     return GroupIterator {mask};
   }
 
   static void clear(::std::atomic<int8_t>* controls) noexcept {
-#if BABYLON_TMP_GROUP_USE_SSE
+#if defined(__SSE2__)
     _mm_store_si128(reinterpret_cast<__m128i*>(controls),
                     _mm_set1_epi8(EMPTY_CONTROL));
-#elif BABYLON_TMP_GROUP_USE_NEON
+#elif defined(__ARM_NEON)
     vst1q_s8(reinterpret_cast<int8_t*>(controls), vdupq_n_s8(EMPTY_CONTROL));
-#else  // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+#else  // !defined(__SSE2__) && !defined(__ARM_NEON)
     __builtin_memset(reinterpret_cast<void*>(controls), EMPTY_CONTROL, SIZE);
-#endif // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+#endif // !defined(__SSE2__) && !defined(__ARM_NEON)
   }
 
   static ::std::atomic<int8_t> s_dummy_controls[];
 
  private:
-#if BABYLON_TMP_GROUP_USE_SSE
+#if defined(__SSE2__)
   __m128i _controls;
-#elif BABYLON_TMP_GROUP_USE_NEON
+#elif defined(__ARM_NEON)
   int8x16_t _controls;
-#else  // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+#else  // !defined(__SSE2__) && !defined(__ARM_NEON)
   int8_t _controls[16];
-#endif // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
+#endif // !defined(__SSE2__) && !defined(__ARM_NEON)
 };
 static_assert(sizeof(Group) == Group::SIZE, "group struct size invalid");
 
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE Group::Group(
-    ::std::atomic<int8_t>* controls) noexcept
-#if BABYLON_TMP_GROUP_USE_SSE
-    : _controls(_mm_loadu_si128(reinterpret_cast<__m128i*>(controls))) {}
-#elif BABYLON_TMP_GROUP_USE_NEON
-    : _controls(vld1q_s8(reinterpret_cast<int8_t*>(controls))) {}
-#else  // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
-{
-  __builtin_memcpy(_controls, controls, SIZE);
+    ::std::atomic<int8_t>* controls) noexcept {
+// 对x86和aarch64体系架构而言
+// relaxed atomic操作和non atomic操作使用相同指令完成
+// 使用atomic_thread_fence可以实现SIMD load和atomic release配对
+//
+// 但因为这并不是ISO规范中能够跨平台支持的特性
+// Thread Sanitizer实现上限定了acquire/release操作需要atomic配对
+// 针对性增加了一次atomic转存让Thread Sanitizer可识别
+// 采用relaxed等级确保fence效果不会被忽略
+#if ABSL_HAVE_THREAD_SANITIZER
+  int8_t vec[SIZE];
+  for (size_t i = 0; i < SIZE; ++i) {
+    vec[i] = controls[i].load(::std::memory_order_relaxed);
+  }
+#else  // ABSL_HAVE_THREAD_SANITIZER
+  auto& vec = controls;
+#endif // ABSL_HAVE_THREAD_SANITIZER
+#if defined(__SSE2__)
+  _controls = _mm_loadu_si128(reinterpret_cast<__m128i*>(vec));
+#elif defined(__ARM_NEON)
+  _controls = _vld1q_s8(reinterpret_cast<int8_t*>(vec));
+#else  // !defined(__SSE2__) && !defined(__ARM_NEON)
+  __builtin_memcpy(_controls, vec, SIZE);
+#endif // !defined(__SSE2__) && !defined(__ARM_NEON)
 }
-#endif // !BABYLON_TMP_GROUP_USE_SSE && !BABYLON_TMP_GROUP_USE_NEON
 
-#undef BABYLON_TMP_GROUP_USE_SSE
-#undef BABYLON_TMP_GROUP_USE_NEON
 } // namespace concurrent_transient_hash_table
 } // namespace internal
 
@@ -1196,5 +1206,6 @@ inline V& ConcurrentTransientHashMap<K, V, H>::operator[](KK&& key) noexcept {
 // ConcurrentTransientHashMap end
 ////////////////////////////////////////////////////////////////////////////////
 
-#pragma GCC diagnostic pop
 BABYLON_NAMESPACE_END
+
+#pragma GCC diagnostic pop

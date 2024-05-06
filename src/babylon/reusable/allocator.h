@@ -334,11 +334,13 @@ class MonotonicAllocator
   using Base = BasicMonotonicAllocator<T, MonotonicAllocator<T, M>>;
 
  public:
-  // libstdc++中的std::string旧ABI实现依赖allocator能够默认构造
+  // libstdc++实现的std::string在一些特殊情况下对allocator的默认构造能力有依赖
+  // - 使用旧ABI时，即-D_GLIBCXX_USE_CXX11_ABI=0
+  // - 使用clang编译时
   // 特化支持一下，其他版本默认不提供避免误用
-#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI && !_GLIBCXX_FULLY_DYNAMIC_STRING
+#if __GLIBCXX__ && (__clang__ || !_GLIBCXX_USE_CXX11_ABI)
   inline MonotonicAllocator() noexcept = default;
-#endif // !_GLIBCXX_FULLY_DYNAMIC_STRING
+#endif // __GLIBCXX__ && (__clang__ || !_GLIBCXX_USE_CXX11_ABI)
   inline MonotonicAllocator(MonotonicAllocator&&) noexcept = default;
   inline MonotonicAllocator(const MonotonicAllocator&) noexcept = default;
   inline MonotonicAllocator& operator=(MonotonicAllocator&&) noexcept = default;
@@ -410,11 +412,13 @@ class MonotonicAllocator<T, SwissMemoryResource>
   using Base = BasicMonotonicAllocator<T, SwissAllocator<T>>;
 
  public:
-  // libstdc++中的std::string旧ABI实现依赖allocator能够默认构造
+  // libstdc++实现的std::string在一些特殊情况下对allocator的默认构造能力有依赖
+  // - 使用旧ABI时，即-D_GLIBCXX_USE_CXX11_ABI=0
+  // - 使用clang编译时
   // 特化支持一下，其他版本默认不提供避免误用
-#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI && !_GLIBCXX_FULLY_DYNAMIC_STRING
+#if __GLIBCXX__ && (__clang__ || !_GLIBCXX_USE_CXX11_ABI)
   inline MonotonicAllocator() noexcept = default;
-#endif // !_GLIBCXX_FULLY_DYNAMIC_STRING
+#endif // __GLIBCXX__ && (__clang__ || !_GLIBCXX_USE_CXX11_ABI)
   inline MonotonicAllocator(MonotonicAllocator&&) noexcept = default;
   inline MonotonicAllocator(const MonotonicAllocator&) noexcept = default;
   inline MonotonicAllocator& operator=(MonotonicAllocator&&) noexcept = default;

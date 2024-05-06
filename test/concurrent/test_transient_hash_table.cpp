@@ -358,13 +358,14 @@ TEST(hash_set, iterable) {
   ASSERT_EQ(expected, sum);
 }
 
-TEST(fixed_swiss_table, concurrent_emplace_correct) {
+TEST(fixed_swiss_table, concurrent_emplace_and_find_correct) {
   ConcurrentFixedSwissTable<::std::string> set {128 * 129};
   ::std::vector<::std::thread> threads;
   threads.reserve(128);
   for (size_t i = 0; i < 128; ++i) {
     threads.emplace_back([&, i] {
       for (size_t j = 0; j < 256; ++j) {
+        set.find(::std::to_string((i - 1) * 128 + j));
         set.emplace(::std::to_string(i * 128 + j));
       }
     });
@@ -388,13 +389,14 @@ TEST(fixed_swiss_table, concurrent_emplace_correct) {
   ASSERT_EQ(expected, sum);
 }
 
-TEST(hash_set, concurrent_emplace_correct) {
+TEST(hash_set, concurrent_emplace_and_find_correct) {
   ConcurrentTransientHashSet<::std::string> set {128};
   ::std::vector<::std::thread> threads;
   threads.reserve(128);
   for (size_t i = 0; i < 128; ++i) {
     threads.emplace_back([&, i] {
       for (size_t j = 0; j < 256; ++j) {
+        set.find(::std::to_string((i - 1) * 128 + j));
         set.emplace(::std::to_string(i * 128 + j));
       }
     });

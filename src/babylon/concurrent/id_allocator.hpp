@@ -6,10 +6,6 @@
 #include BABYLON_EXTERNAL(absl/base/optimization.h) // ABSL_PREDICT_FALSE
 // clang-format on
 
-#if ABSL_HAVE_THREAD_SANITIZER
-#include <sanitizer/tsan_interface.h> // ::__tsan_acquire/::__tsan_release
-#endif                                // ABSL_HAVE_THREAD_SANITIZER
-
 BABYLON_NAMESPACE_BEGIN
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -14,11 +14,14 @@
 
 #include <errno.h> // ::errno
 
-BABYLON_NAMESPACE_BEGIN
 #pragma GCC diagnostic push
+// Thread Sanitizer目前无法支持std::atomic_thread_fence
+// gcc-12之后增加了相应的报错，显示标记忽视并特殊处理相关段落
 #if GCC_VERSION >= 120000
 #pragma GCC diagnostic ignored "-Wtsan"
 #endif // GCC_VERSION >= 120000
+
+BABYLON_NAMESPACE_BEGIN
 
 ////////////////////////////////////////////////////////////////////////////////
 // ConcurrentBoundedQueue::SlotFutex begin
