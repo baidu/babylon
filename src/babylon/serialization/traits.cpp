@@ -2,104 +2,7 @@
 
 #if BABYLON_USE_PROTOBUF
 
-#if GOOGLE_PROTOBUF_VERSION >= 3000000 && \
-    BABYLON_HAS_INCLUDE(<google / protobuf / stubs / strutil.h>)
-#include "google/protobuf/stubs/strutil.h"
-#else  // GOOGLE_PROTOBUF_VERSION < 3000000 ||
-       // !BABYLON_HAS_INCLUDE(<google/protobuf/stubs/strutil.h>)
-// 老版本protobuf，或者未输出strutil.h头文件，拷贝几个必要的函数出来
-namespace google {
-namespace protobuf {
-// Calculates the length of the C-style escaped version of 'src'.
-// Assumes that non-printable characters are escaped using octal sequences, and
-// that UTF-8 bytes are not handled specially.
-static inline size_t CEscapedLength(::babylon::StringView src) {
-  static char c_escaped_len[256] = {
-      4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 2, 4, 4, 2, 4, 4, // \t, \n, \r
-      4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 2, 1, 1, 1,
-      1, 2, 1, 1, 1, 1, 1, 1, 1, 1,                   // ", '
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // '0'..'9'
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 'A'..'O'
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, // 'P'..'Z', '\'
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 'a'..'o'
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, // 'p'..'z', DEL
-      4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-      4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-      4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-      4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-      4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-      4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-  };
-
-  size_t escaped_len = 0;
-  for (decltype(src.size()) i = 0; i < src.size(); ++i) {
-    unsigned char c = static_cast<unsigned char>(src[i]);
-    escaped_len += c_escaped_len[c];
-  }
-  return escaped_len;
-}
-
-// ----------------------------------------------------------------------
-// Escapes 'src' using C-style escape sequences, and appends the escaped string
-// to 'dest'. This version is faster than calling CEscapeInternal as it computes
-// the required space using a lookup table, and also does not do any special
-// handling for Hex or UTF-8 characters.
-// ----------------------------------------------------------------------
-static void CEscapeAndAppend(::babylon::StringView src, std::string* dest) {
-  decltype(src.size()) escaped_len = CEscapedLength(src);
-  if (escaped_len == src.size()) {
-    dest->append(src.data(), src.size());
-    return;
-  }
-
-  size_t cur_dest_len = dest->size();
-  dest->resize(cur_dest_len + escaped_len);
-  char* append_ptr = &(*dest)[cur_dest_len];
-
-  for (decltype(src.size()) i = 0; i < src.size(); ++i) {
-    unsigned char c = static_cast<unsigned char>(src[i]);
-    switch (c) {
-      case '\n':
-        *append_ptr++ = '\\';
-        *append_ptr++ = 'n';
-        break;
-      case '\r':
-        *append_ptr++ = '\\';
-        *append_ptr++ = 'r';
-        break;
-      case '\t':
-        *append_ptr++ = '\\';
-        *append_ptr++ = 't';
-        break;
-      case '\"':
-        *append_ptr++ = '\\';
-        *append_ptr++ = '\"';
-        break;
-      case '\'':
-        *append_ptr++ = '\\';
-        *append_ptr++ = '\'';
-        break;
-      case '\\':
-        *append_ptr++ = '\\';
-        *append_ptr++ = '\\';
-        break;
-      default:
-        if (!isprint(c)) {
-          *append_ptr++ = '\\';
-          *append_ptr++ = '0' + c / 64;
-          *append_ptr++ = '0' + (c % 64) / 8;
-          *append_ptr++ = '0' + c % 8;
-        } else {
-          *append_ptr++ = c;
-        }
-        break;
-    }
-  }
-}
-} // namespace protobuf
-} // namespace google
-#endif // GOOGLE_PROTOBUF_VERSION < 3000000 ||
-       // !BABYLON_HAS_INCLUDE(<google/protobuf/stubs/strutil.h>)
+#include "absl/strings/escaping.h"  // absl::CEscape
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -198,8 +101,7 @@ bool Serialization::PrintStream::print_raw(StringView sv) noexcept {
 }
 
 bool Serialization::PrintStream::print_string(StringView sv) noexcept {
-  ::std::string s;
-  ::google::protobuf::CEscapeAndAppend({sv.data(), sv.size()}, &s);
+  ::std::string s = ::absl::CEscape({sv.data(), sv.size()});
   return print_raw("\"") && print_raw(s) && print_raw("\"");
 }
 

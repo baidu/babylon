@@ -9,9 +9,9 @@ cc_test(
   srcs = ['test_bounded_queue.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:concurrent_bounded_queue',
     '//:logging_interface',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -20,9 +20,9 @@ cc_test(
   srcs = ['test_bounded_queue_press_mpmc.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:concurrent_bounded_queue',
     '//:logging_interface',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -31,8 +31,8 @@ cc_test(
   srcs = ['test_counter.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:concurrent_counter',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -41,8 +41,8 @@ cc_test(
   srcs = ['test_id_allocator.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:concurrent_id_allocator',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -51,8 +51,8 @@ cc_test(
   srcs = ['test_object_pool.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:concurrent_object_pool',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -61,8 +61,8 @@ cc_test(
   srcs = ['test_sched_interface.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:concurrent_sched_interface',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -71,8 +71,8 @@ cc_test(
   srcs = ['test_thread_local.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:concurrent_thread_local',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -81,8 +81,8 @@ cc_test(
   srcs = ['test_transient_hash_table.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:concurrent_transient_hash_table',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -91,8 +91,8 @@ cc_test(
   srcs = ['test_transient_topic.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:concurrent_transient_topic',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -101,7 +101,7 @@ cc_test(
   srcs = ['test_vector.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:concurrent_vector',
+    '@com_google_googletest//:gtest_main',
   ]
 )

@@ -5,23 +5,13 @@ package(
 load('@rules_cuda//cuda:defs.bzl', 'cuda_library', 'requires_cuda')
 load('//:copts.bzl', 'BABYLON_COPTS')
 
-cc_library(
-  name = 'main',
-  srcs = ['main.cpp'],
-  testonly = True,
-  copts = BABYLON_COPTS,
-  deps = [
-    '@com_google_googletest//:gtest',
-  ],
-)
-
 cc_test(
   name = 'test_any',
   srcs = ['test_any.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    ':main',
     '//:any',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -30,8 +20,8 @@ cc_test(
   srcs = ['test_executor.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    ':main',
     '//:executor',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -40,8 +30,8 @@ cc_test(
   srcs = ['test_future.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    ':main',
     '//:future',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -50,8 +40,8 @@ cc_test(
   srcs = ['test_mlock.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    ':main',
     '//:mlock',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -60,8 +50,8 @@ cc_test(
   srcs = ['test_move_only_function.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    ':main',
     '//:move_only_function',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -70,8 +60,8 @@ cc_test(
   srcs = ['test_string.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    ':main',
     '//:string',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -90,8 +80,8 @@ cc_test(
   srcs = ['test_string_view.cpp', 'test_string_view.h', 'test_string_view_in_lib.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    ':main',
     '//:string_view',
+    '@com_google_googletest//:gtest_main',
   ] + select({
     '@rules_cuda//cuda:is_enabled': [':test_string_view_cuda'],
     '//conditions:default': [],
@@ -103,8 +93,8 @@ cc_test(
   srcs = ['test_time.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    ':main',
     '//:time',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -113,7 +103,7 @@ cc_test(
   srcs = ['test_type_traits.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    ':main',
     '//:type_traits',
+    '@com_google_googletest//:gtest_main',
   ]
 )

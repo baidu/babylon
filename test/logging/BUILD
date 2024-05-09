@@ -9,8 +9,8 @@ cc_test(
   srcs = ['test_async_file_appender.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:logging_async_file_appender',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -19,8 +19,8 @@ cc_test(
   srcs = ['test_custom_default_provider.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:logging_interface',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -29,8 +29,8 @@ cc_test(
   srcs = ['test_interface.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:logging_interface',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -39,7 +39,7 @@ cc_test(
   srcs = ['test_log_stream.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:logging_log_stream',
+    '@com_google_googletest//:gtest_main',
   ]
 )

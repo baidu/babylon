@@ -33,7 +33,9 @@ TEST(type_traits, id_is_readable) {
   ss << TypeId<S<TypeId<::std::string>>>::ID;
   type_name = ss.str();
 #ifdef _GLIBCXX_RELEASE
-#if !defined(__clang__) && _GLIBCXX_USE_CXX11_ABI
+#ifdef __clang__
+  ASSERT_EQ(type_name, "S<babylon::TypeId<std::basic_string<char>>>");
+#elif _GLIBCXX_USE_CXX11_ABI
   ASSERT_EQ(type_name,
             "S<babylon::TypeId<std::__cxx11::basic_string<char> > >");
 #else
