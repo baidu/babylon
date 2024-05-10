@@ -1,0 +1,16 @@
+if(NOT TARGET protobuf::libprotobuf)
+  find_package(protobuf QUIET)
+  if(NOT protobuf_FOUND)
+    find_package(Protobuf REQUIRED)
+  endif()
+endif()
+
+if(NOT TARGET absl::base)
+  find_package(absl REQUIRED)
+endif()
+
+if(TARGET Boost::boost)
+elseif(TARGET Boost::preprocessor AND TARGET Boost::spirit)
+else()
+  find_package(Boost REQUIRED)
+endif()
