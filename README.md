@@ -39,7 +39,7 @@ Babylon也支持[CMake](https://cmake.org)进行构建，以及通过[FetchConte
   - 使用预编译依赖`cmake -Bbuild`
   - 使用自动依赖下载`cmake -Bbuild -DBUILD_DEPS=ON`
 - 编译`cmake --build build`
-- 单测`--test-dir build`
+- 单测`ctest --test-dir build`
 
 ## 功能文档
 
