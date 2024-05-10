@@ -14,7 +14,7 @@ cc_library(
     '//src/babylon:any',
     '//src/babylon/logging:interface',
     '//:protobuf',
-    '@boost//:preprocessor',
+    '@boost.preprocessor',
     '@com_google_absl//absl/container:flat_hash_map',
   ],
 )

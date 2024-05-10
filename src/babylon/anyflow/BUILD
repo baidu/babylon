@@ -30,7 +30,7 @@ cc_library(
     '//src/babylon/logging:interface',
     '//src/babylon:move_only_function',
     '//src/babylon/reusable:manager',
-    '@boost//:preprocessor',
+    '@boost.preprocessor',
     '@com_google_absl//absl/container:flat_hash_map',
     '@com_google_absl//absl/container:inlined_vector',
   ],

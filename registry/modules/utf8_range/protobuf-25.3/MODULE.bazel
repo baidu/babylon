@@ -1,0 +1,7 @@
+module(
+  name = "utf8_range",
+  version = "protobuf-25.3",
+  compatibility_level = 1,
+)
+
+bazel_dep(name = "abseil-cpp", version = "20230802.1", repo_name = "com_google_absl")
