@@ -34,6 +34,13 @@ Babylon使用[Bazel](https://bazel.build)进行构建和依赖管理
 - All in One依赖目标`:babylon`
 - 分子模块依赖目标`:any`，`:concurrent`等，详见[BUILD](BUILD)文件
 
+Babylon也支持[CMake](https://cmake.org)进行构建，以及通过[FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)进行自动依赖下载
+- 环境准备
+  - 使用预编译依赖`cmake -Bbuild`
+  - 使用自动依赖下载`cmake -Bbuild -DBUILD_DEPS=ON`
+- 编译`cmake --build build`
+- 单测`ctest --test-dir build`
+
 ## 功能文档
 
 - [any](docs/any.md)

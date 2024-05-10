@@ -182,3 +182,11 @@ jobs:
         github-token: ${{github.token}}
         file: bazel-out/_coverage/_coverage_report.dat
         format: lcov
+
+  cmake:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: cmake -Bbuild -DBUILD_DEPS=ON
+    - run: cmake --build build --parallel 8
+    - run: ctest --test-dir build

@@ -9,9 +9,9 @@ cc_test(
   srcs = ['test_aggregate.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
     '//proto',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -20,8 +20,8 @@ cc_test(
   srcs = ['test_array.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -30,9 +30,9 @@ cc_test(
   srcs = ['test_compatible.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
     '//proto',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -41,8 +41,8 @@ cc_test(
   srcs = ['test_list.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -51,8 +51,8 @@ cc_test(
   srcs = ['test_map.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -61,9 +61,9 @@ cc_test(
   srcs = ['test_message.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
     '//proto',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -72,8 +72,8 @@ cc_test(
   srcs = ['test_scalar.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -82,8 +82,8 @@ cc_test(
   srcs = ['test_serializer.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -92,8 +92,8 @@ cc_test(
   srcs = ['test_set.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -102,8 +102,8 @@ cc_test(
   srcs = ['test_shared_ptr.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -112,8 +112,8 @@ cc_test(
   srcs = ['test_string.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -122,8 +122,8 @@ cc_test(
   srcs = ['test_traits.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -132,8 +132,8 @@ cc_test(
   srcs = ['test_unique_ptr.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -142,7 +142,7 @@ cc_test(
   srcs = ['test_vector.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:serialization',
+    '@com_google_googletest//:gtest_main',
   ]
 )

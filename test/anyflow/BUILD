@@ -9,8 +9,8 @@ cc_test(
   srcs = ['test_builder.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:anyflow',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -19,8 +19,8 @@ cc_test(
   srcs = ['test_channel.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:anyflow',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -29,8 +29,8 @@ cc_test(
   srcs = ['test_closure.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:anyflow',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -39,8 +39,8 @@ cc_test(
   srcs = ['test_data.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:anyflow',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -49,8 +49,8 @@ cc_test(
   srcs = ['test_dependency.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:anyflow',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -59,9 +59,9 @@ cc_test(
   srcs = ['test_processor.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:anyflow',
     '//:reusable_string',
     '//:reusable_vector',
+    '@com_google_googletest//:gtest_main',
   ]
 )

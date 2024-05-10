@@ -9,8 +9,8 @@ cc_test(
   srcs = ['test_const.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:anyflow',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -19,8 +19,8 @@ cc_test(
   srcs = ['test_expression.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:anyflow',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -29,7 +29,7 @@ cc_test(
   srcs = ['test_select.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:anyflow',
+    '@com_google_googletest//:gtest_main',
   ]
 )
