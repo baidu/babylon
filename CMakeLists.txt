@@ -43,7 +43,9 @@ endif()
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/babylon-deps.cmake)
 
 if(BUILD_TESTING AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-  #find_package(GTest REQUIRED)
+  if(NOT TARGET GTest::gtest_main)
+    find_package(GTest REQUIRED)
+  endif()
 endif()
 
 file(GLOB_RECURSE BABYLON_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/babylon/*.cpp")

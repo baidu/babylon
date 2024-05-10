@@ -187,6 +187,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - run: cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$PWD/output -DBUILD_DEPS=ON
-    - run: cmake --build build -j8
+    - run: cmake -Bbuild -DBUILD_DEPS=ON
+    - run: cmake --build build --parallel
     - run: ctest --test-dir build
