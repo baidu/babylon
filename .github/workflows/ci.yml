@@ -188,5 +188,5 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: cmake -Bbuild -DBUILD_DEPS=ON
-    - run: cmake --build build --parallel
+    - run: cmake --build build --parallel 8
     - run: ctest --test-dir build
