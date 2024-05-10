@@ -9,9 +9,9 @@ cc_test(
   srcs = ['test_allocator.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:reusable_allocator',
     '//proto',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -20,9 +20,9 @@ cc_test(
   srcs = ['test_manager.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:reusable_manager',
     '//:reusable_string',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -31,9 +31,9 @@ cc_test(
   srcs = ['test_memory_resource.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:reusable_memory_resource',
     '//proto',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -42,10 +42,10 @@ cc_test(
   srcs = ['test_message.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:reusable_manager',
     '//:reusable_string',
     '//proto',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -54,8 +54,8 @@ cc_test(
   srcs = ['test_page_allocator.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:reusable_page_allocator',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -64,8 +64,8 @@ cc_test(
   srcs = ['test_string.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:reusable_string',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -74,9 +74,9 @@ cc_test(
   srcs = ['test_traits.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:reusable_traits',
     '//proto',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -85,8 +85,8 @@ cc_test(
   srcs = ['test_vector.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//test:main',
     '//:reusable_vector',
     '//:reusable_string',
+    '@com_google_googletest//:gtest_main',
   ]
 )
