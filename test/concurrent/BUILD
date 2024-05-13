@@ -11,7 +11,7 @@ cc_test(
   deps = [
     '//:concurrent_bounded_queue',
     '//:logging_interface',
-    '@com_google_googletest//:gtest_main',
+    '@googletest//:gtest_main',
   ]
 )
 
@@ -22,7 +22,7 @@ cc_test(
   deps = [
     '//:concurrent_bounded_queue',
     '//:logging_interface',
-    '@com_google_googletest//:gtest_main',
+    '@googletest//:gtest_main',
   ]
 )
 
@@ -32,7 +32,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:concurrent_counter',
-    '@com_google_googletest//:gtest_main',
+    '@googletest//:gtest_main',
   ]
 )
 
@@ -42,7 +42,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:concurrent_id_allocator',
-    '@com_google_googletest//:gtest_main',
+    '@googletest//:gtest_main',
   ]
 )
 
@@ -52,7 +52,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:concurrent_object_pool',
-    '@com_google_googletest//:gtest_main',
+    '@googletest//:gtest_main',
   ]
 )
 
@@ -62,7 +62,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:concurrent_sched_interface',
-    '@com_google_googletest//:gtest_main',
+    '@googletest//:gtest_main',
   ]
 )
 
@@ -72,7 +72,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:concurrent_thread_local',
-    '@com_google_googletest//:gtest_main',
+    '@googletest//:gtest_main',
   ]
 )
 
@@ -82,7 +82,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:concurrent_transient_hash_table',
-    '@com_google_googletest//:gtest_main',
+    '@googletest//:gtest_main',
   ]
 )
 
@@ -92,7 +92,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:concurrent_transient_topic',
-    '@com_google_googletest//:gtest_main',
+    '@googletest//:gtest_main',
   ]
 )
 
@@ -102,6 +102,6 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:concurrent_vector',
-    '@com_google_googletest//:gtest_main',
+    '@googletest//:gtest_main',
   ]
 )

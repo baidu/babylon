@@ -51,7 +51,7 @@ cc_library(
     ':page_allocator',
     '//src/babylon:sanitizer_helper',
     '@protobuf//:protobuf',
-    '@com_google_absl//absl/utility',
+    '@abseil-cpp//absl/utility',
   ],
 )
 

@@ -25,7 +25,7 @@ cc_library(
     '//src/babylon:absl_numeric_bits',
     '//src/babylon:new',
     '//src/babylon:type_traits',
-    '@com_google_absl//absl/time',
+    '@abseil-cpp//absl/time',
   ],
 )
 

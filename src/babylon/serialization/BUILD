@@ -15,6 +15,6 @@ cc_library(
     '//src/babylon/logging:interface',
     '@protobuf//:protobuf',
     '@boost.preprocessor',
-    '@com_google_absl//absl/container:flat_hash_map',
+    '@abseil-cpp//absl/container:flat_hash_map',
   ],
 )
