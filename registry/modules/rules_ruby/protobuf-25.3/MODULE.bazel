@@ -1,0 +1,9 @@
+module(
+  name = "rules_ruby",
+  version = "protobuf-25.3",
+  compatibility_level = 1,
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.3.0")
+bazel_dep(name = "platforms", version = "0.0.5")
+bazel_dep(name = "rules_pkg", version = "0.7.0")

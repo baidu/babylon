@@ -23,7 +23,7 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     ':environment',
-    '@com_google_absl//absl/base',
+    '@abseil-cpp//absl/base',
   ],
 )
 
@@ -34,7 +34,7 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     ':environment',
-    '@com_google_absl//absl/numeric:bits',
+    '@abseil-cpp//absl/numeric:bits',
   ],
 )
 
@@ -45,7 +45,7 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     ':environment',
-    '@com_google_absl//absl/strings',
+    '@abseil-cpp//absl/strings',
   ],
 )
 
@@ -66,7 +66,7 @@ cc_library(
   strip_include_prefix = '//src',
   copts = BABYLON_COPTS,
   deps = [
-    '@com_google_absl//absl/base:core_headers',
+    '@abseil-cpp//absl/base:core_headers',
   ],
 )
 
@@ -102,7 +102,7 @@ cc_library(
   deps = [
     ':string_view',
     '//src/babylon/logging:interface',
-    '@com_google_absl//absl/strings',
+    '@abseil-cpp//absl/strings',
   ],
 )
 
@@ -176,7 +176,7 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     ':environment',
-    '@com_google_absl//absl/time',
+    '@abseil-cpp//absl/time',
   ],
 )
 

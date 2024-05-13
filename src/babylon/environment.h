@@ -155,7 +155,7 @@
 // clang-format off
 // 在bazel环境启用treat_warnings_as_errors
 // bazel的external_include_paths模式会对依赖库
-#if BABYLON_HAS_INCLUDE(<absl/base/config.h>)
+#if BABYLON_INCLUDE_EXTERNAL_AS_SYSTEM
 #define BABYLON_EXTERNAL(file) <file>
 #else // !BABYLON_HAS_INCLUDE(<absl/base/config.h>)
 #define BABYLON_EXTERNAL(file) #file

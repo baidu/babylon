@@ -20,6 +20,14 @@ Google的Protocol Buffer序列化库在3.x之后增加了Arena分配功能，通
 
 ## 应用方法
 
-补丁分版本维护在patch目录当中，在bazel中可以采用config进行启用
-- 应用补丁: `bazel build --config arenastring`
-- 应用补丁并开启`-DPROTOBUF_MUTABLE_DONATED_STRING`开关: `bazel build --config mutable-donated-string`
+补丁分版本维护在内置注册仓库中，可以直接采用[bzlmod](https://bazel.build/external/module)机制依赖
+- 增加仓库注册表
+```
+# in .bazelrc
+common --registry=file://%workspace%/registry
+```
+- 应用补丁依赖项
+```
+# in MODULE.bazel
+bazel_dep(name = 'protobuf', version = '25.3.arenastring')
+```

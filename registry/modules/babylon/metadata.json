@@ -1,0 +1,12 @@
+{
+  "homepage": "https://github.com/baidu/babylon",
+  "maintainers": [
+    {
+      "email": "oathdruid@live.cn",
+      "name": "Kevin Li"
+    }
+  ],
+  "versions": [
+    "1.1.3"
+  ]
+}

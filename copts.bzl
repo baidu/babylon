@@ -31,6 +31,6 @@ BABYLON_COPTS = select({
     '//:compiler_clang': BABYLON_CLANG_COPTS,
     '//conditions:default': BABYLON_GCC_COPTS,
 }) + select({
-    '//:enable_werror': ['-Werror'],
+    '//:enable_werror': ['-Werror', '-DBABYLON_INCLUDE_EXTERNAL_AS_SYSTEM=1'],
     '//conditions:default': [],
 })

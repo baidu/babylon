@@ -31,8 +31,21 @@ Babylon使用[Bazel](https://bazel.build)进行构建和依赖管理
 - 单测`bazel test ...`
 - Asan单测`bazel test --config asan ...`
 - Tsan单测`bazel test --config tsan ...`
-- All in One依赖目标`:babylon`
-- 分子模块依赖目标`:any`，`:concurrent`等，详见[BUILD](BUILD)文件
+
+通过[bzlmod](https://bazel.build/external/module)机制依赖
+- 增加仓库注册表
+```
+# in .bazelrc
+common --registry=file://%workspace%/registry
+common --registry=https://raw.githubusercontent.com/bazelboost/registry/main
+```
+- 增加依赖项
+```
+# in MODULE.bazel
+bazel_dep(name = 'babylon', version = '1.1.4')
+```
+- 精细化使用子模块依赖目标`@babylon//:any`，`@babylon/:concurrent`等，详见[BUILD](BUILD)文件
+- 或者使用All in One依赖目标`@babylon//:babylon`
 
 Babylon也支持[CMake](https://cmake.org)进行构建，以及通过[FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)进行自动依赖下载
 - 环境准备
@@ -40,19 +53,20 @@ Babylon也支持[CMake](https://cmake.org)进行构建，以及通过[FetchConte
   - 使用自动依赖下载`cmake -Bbuild -DBUILD_DEPS=ON`
 - 编译`cmake --build build`
 - 单测`ctest --test-dir build`
+- CMake编译目前只提供All in One依赖目标`babylon::babylon`
 
-## 功能文档
+## 模块功能文档
 
-- [any](docs/any.md)
-- [anyflow](docs/anyflow/index.md)
-- [arenastring](docs/arenastring.md)
-- [concurrent](docs/concurrent/index.md)
-- [executor](docs/executor.md)
-- [future](docs/future.md)
-- [logging](docs/logging.md)
-- [reusable](docs/reusable/index.md)
-- [serialization](docs/serialization.md)
-- [time](docs/time.md)
+- [:any](docs/any.md)
+- [:anyflow](docs/anyflow/index.md)
+- [:concurrent](docs/concurrent/index.md)
+- [:executor](docs/executor.md)
+- [:future](docs/future.md)
+- [:logging](docs/logging.md)
+- [:reusable](docs/reusable/index.md)
+- [:serialization](docs/serialization.md)
+- [:time](docs/time.md)
+- Protobuf [arenastring](docs/arenastring.md) patch
 
 ## 整体设计思路
 

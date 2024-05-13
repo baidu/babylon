@@ -14,7 +14,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: bazel-repo
-        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
         restore-keys: |
           bazel-repo-
     - uses: actions/cache@v4
@@ -33,7 +33,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: bazel-repo
-        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
         restore-keys: |
           bazel-repo-
     - uses: actions/cache@v4
@@ -52,7 +52,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: bazel-repo
-        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
         restore-keys: |
           bazel-repo-
     - uses: actions/cache@v4
@@ -62,6 +62,7 @@ jobs:
         restore-keys: |
           bazel-disk-gcc12-arenastring-
           bazel-disk-
+    - run: sed -i '/single_version_override.*protobuf/s/25.3/25.3.arenastring/' MODULE.bazel
     - run: bazel test --config ci --action_env=CC=gcc-12 --config arenastring --config asan ...
 
   gcc12-mutable-donated-string-asan:
@@ -71,7 +72,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: bazel-repo
-        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
         restore-keys: |
           bazel-repo-
     - uses: actions/cache@v4
@@ -81,6 +82,7 @@ jobs:
         restore-keys: |
           bazel-disk-gcc12-mutable-donated-string-
           bazel-disk-
+    - run: sed -i '/single_version_override.*protobuf/s/25.3/25.3.arenastring/' MODULE.bazel
     - run: bazel test --config ci --action_env=CC=gcc-12 --config mutable-donated-string --config asan ...
 
   clang14-basic-asan:
@@ -90,7 +92,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: bazel-repo
-        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
         restore-keys: |
           bazel-repo-
     - uses: actions/cache@v4
@@ -109,7 +111,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: bazel-repo
-        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
         restore-keys: |
           bazel-repo-
     - uses: actions/cache@v4
@@ -128,7 +130,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: bazel-repo
-        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
         restore-keys: |
           bazel-repo-
     - uses: actions/cache@v4
@@ -138,6 +140,7 @@ jobs:
         restore-keys: |
           bazel-disk-clang14-arenastring-
           bazel-disk-
+    - run: sed -i '/single_version_override.*protobuf/s/25.3/25.3.arenastring/' MODULE.bazel
     - run: bazel test --config ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config arenastring --config asan ...
 
   clang14-mutable-donated-string-asan:
@@ -147,7 +150,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: bazel-repo
-        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
         restore-keys: |
           bazel-repo-
     - uses: actions/cache@v4
@@ -157,6 +160,7 @@ jobs:
         restore-keys: |
           bazel-disk-clang14-mutable-donated-string-
           bazel-disk-
+    - run: sed -i '/single_version_override.*protobuf/s/25.3/25.3.arenastring/' MODULE.bazel
     - run: bazel test --config ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config mutable-donated-string --config asan ...
 
   coverage:
@@ -166,7 +170,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: bazel-repo
-        key: bazel-repo-${{hashFiles('WORKSPACE')}}
+        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
         restore-keys: |
           bazel-repo-
     - uses: actions/cache@v4
@@ -188,5 +192,5 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: cmake -Bbuild -DBUILD_DEPS=ON
-    - run: cmake --build build --parallel 8
+    - run: cmake --build build --parallel $(nproc)
     - run: ctest --test-dir build
