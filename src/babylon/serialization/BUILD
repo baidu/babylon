@@ -13,7 +13,7 @@ cc_library(
   deps = [
     '//src/babylon:any',
     '//src/babylon/logging:interface',
-    '//:protobuf',
+    '@protobuf//:protobuf',
     '@boost.preprocessor',
     '@com_google_absl//absl/container:flat_hash_map',
   ],

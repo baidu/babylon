@@ -50,7 +50,7 @@ cc_library(
   deps = [
     ':page_allocator',
     '//src/babylon:sanitizer_helper',
-    '//:protobuf',
+    '@protobuf//:protobuf',
     '@com_google_absl//absl/utility',
   ],
 )

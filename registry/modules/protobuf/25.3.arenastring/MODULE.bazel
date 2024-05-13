@@ -1,6 +1,6 @@
 module(
     name = "protobuf",
-    version = "25.3",
+    version = "25.3.arenastring",
     compatibility_level = 1,
 )
 
