@@ -24,7 +24,6 @@ Google的Protocol Buffer序列化库在3.x之后增加了Arena分配功能，通
 - 增加仓库注册表
 ```
 # in .bazelrc
-common --registry=file://%workspace%/registry
 common --registry=https://baidu.github.io/babylon/registry
 ```
 - 应用补丁依赖项
