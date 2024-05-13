@@ -36,7 +36,7 @@ Babylon使用[Bazel](https://bazel.build)进行构建和依赖管理
 - 增加仓库注册表
 ```
 # in .bazelrc
-common --registry=file://%workspace%/registry
+common --registry=https://baidu.github.io/babylon/registry
 common --registry=https://raw.githubusercontent.com/bazelboost/registry/main
 ```
 - 增加依赖项
