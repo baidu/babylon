@@ -89,7 +89,7 @@ target_link_libraries(your_target babylon::babylon)
 
 #### find_package
 
-- 编译并安装`boost``abseil-cpp``protobuf`或者直接使用apt等包管理工具安装对应平台的预编译包
+- 编译并安装`boost` `abseil-cpp` `protobuf`或者直接使用apt等包管理工具安装对应平台的预编译包
 - 编译并安装babylon
   - `cmake -Bbuild -DCMAKE_INSTALL_PREFIX=/your/install/path -DCMAKE_PREFIX_PATH=/your/install/path`
   - `cmake --build build -j$(nproc)`
@@ -111,7 +111,7 @@ target_link_libraries(your_target babylon::babylon)
 
 #### add_subdirectory
 
-- 下载`boost``abseil-cpp``protobuf``babylon`源码
+- 下载`boost` `abseil-cpp` `protobuf``babylon`源码
 - 增加依赖项到目标项目
 ```
 # in CMakeList.txt
