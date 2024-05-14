@@ -26,17 +26,16 @@ Babylon是一个用于支持C++高性能服务端开发的基础库，从内存�
 
 ## 编译并使用
 
-Babylon使用[Bazel](https://bazel.build)进行构建和依赖管理
-- 构建`bazel build ...`
-- 单测`bazel test ...`
-- Asan单测`bazel test --config asan ...`
-- Tsan单测`bazel test --config tsan ...`
+### Bazel
 
-通过[bzlmod](https://bazel.build/external/module)机制依赖
+Babylon使用[Bazel](https://bazel.build)进行构建并使用[bzlmod](https://bazel.build/external/module)进行依赖管理，增加如下几个环节就可以将babylon作为依赖引入到项目
 - 增加仓库注册表
 ```
 # in .bazelrc
+# babylon自身发布在独立注册表
 common --registry=https://baidu.github.io/babylon/registry
+# babylon依赖的boost发布在bazelboost项目的注册表，当然如果有其他源可以提供boost的注册表也可以替换
+# 只要同样能够提供boost.preprocessor和boost.spirit模块寻址即可
 common --registry=https://raw.githubusercontent.com/bazelboost/registry/main
 ```
 - 增加依赖项
@@ -44,16 +43,95 @@ common --registry=https://raw.githubusercontent.com/bazelboost/registry/main
 # in MODULE.bazel
 bazel_dep(name = 'babylon', version = '1.1.4')
 ```
-- 精细化使用子模块依赖目标`@babylon//:any`，`@babylon/:concurrent`等，详见[BUILD](BUILD)文件
-- 或者使用All in One依赖目标`@babylon//:babylon`
+- 添加依赖的子模块到编译目标，全部可用子模块可以参照[模块功能文档](#模块功能文档)，或者[BUILD](BUILD)文件
+```
+# in BUILD
+cc_library(
+  ...
+  deps = [
+    ...
+    '@babylon//:any',
+    '@babylon//:concurrent',
+  ],
+)
+```
+- 也可以直接添加All in One依赖目标`@babylon//:babylon`
+- 在[example/depend-use-bzlmod](example/depend-use-bzlmod)可以找到一个如何通过Bazel依赖的简单样例
 
-Babylon也支持[CMake](https://cmake.org)进行构建，以及通过[FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)进行自动依赖下载
-- 环境准备
-  - 使用预编译依赖`cmake -Bbuild`
-  - 使用自动依赖下载`cmake -Bbuild -DBUILD_DEPS=ON`
-- 编译`cmake --build build`
-- 单测`ctest --test-dir build`
-- CMake编译目前只提供All in One依赖目标`babylon::babylon`
+### CMake
+
+Babylon也支持使用[CMake](https://cmake.org)进行构建，并支持通过[find_package](https://cmake.org/cmake/help/latest/command/find_package.html)、[add_subdirectory](https://cmake.org/cmake/help/latest/command/add_subdirectory.html)或[FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)进行依赖引入
+
+#### FetchContent
+
+- 增加依赖项到目标项目
+```
+# in CMakeList.txt
+set(BUILD_DEPS ON)
+
+include(FetchContent)
+FetchContent_Declare(
+  babylon
+  URL "https://github.com/baidu/babylon/archive/refs/tags/v1.1.4.tar.gz"
+  URL_HASH SHA256=2e7efea3f0a8aeffc03f908ff2875a82eb5a94cd1de3e591b6dc388f7a992411
+)
+FetchContent_MakeAvailable(babylon)
+```
+- 添加依赖到编译目标，CMake编译目前只提供All in One依赖目标`babylon::babylon`
+```
+# in CMakeList.txt
+target_link_libraries(your_target babylon::babylon)
+```
+- 编译目标项目
+  - `cmake -Bbuild`
+  - `cmake --build build -j$(nproc)`
+- 在[example/depend-use-cmake-fetch](example/depend-use-cmake-fetch)可以找到一个如何通过CMake FetchContent依赖的简单样例
+
+#### find_package
+
+- 编译并安装`boost``abseil-cpp``protobuf`或者直接使用apt等包管理工具安装对应平台的预编译包
+- 编译并安装babylon
+  - `cmake -Bbuild -DCMAKE_INSTALL_PREFIX=/your/install/path -DCMAKE_PREFIX_PATH=/your/install/path`
+  - `cmake --build build -j$(nproc)`
+  - `cmake --install build`
+- 增加依赖项到目标项目
+```
+# in CMakeList.txt
+find_package(babylon REQUIRED)
+```
+- 添加依赖到编译目标，CMake编译目前只提供All in One依赖目标`babylon::babylon`
+```
+# in CMakeList.txt
+target_link_libraries(your_target babylon::babylon)
+```
+- 编译目标项目
+  - `cmake -Bbuild -DCMAKE_PREFIX_PATH=/your/install/path`
+  - `cmake --build build -j$(nproc)`
+- 在[example/depend-use-cmake-find](example/depend-use-cmake-find)可以找到一个如何通过CMake find_package依赖的简单样例
+
+#### add_subdirectory
+
+- 下载`boost``abseil-cpp``protobuf``babylon`源码
+- 增加依赖项到目标项目
+```
+# in CMakeList.txt
+set(BOOST_INCLUDE_LIBRARIES preprocessor spirit)
+add_subdirectory(boost EXCLUDE_FROM_ALL)
+set(ABSL_ENABLE_INSTALL ON)
+add_subdirectory(abseil-cpp)
+set(protobuf_BUILD_TESTS OFF)
+add_subdirectory(protobuf)
+add_subdirectory(babylon)
+```
+- 添加依赖到编译目标，CMake编译目前只提供All in One依赖目标`babylon::babylon`
+```
+# in CMakeList.txt
+target_link_libraries(your_target babylon::babylon)
+```
+- 编译目标项目
+  - `cmake -Bbuild`
+  - `cmake --build build -j$(nproc)`
+- 在[example/depend-use-cmake-subdir](example/depend-use-cmake-subdir)可以找到一个如何通过CMake sub_directory依赖的简单样例
 
 ## 模块功能文档
 

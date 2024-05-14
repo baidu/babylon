@@ -66,7 +66,7 @@ set_source_files_properties(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/babylon/reusable/patch/arena.cpp"
   PROPERTIES COMPILE_FLAGS "-fno-access-control")
 
-if(NOT BUILD_DEPS)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   install(TARGETS babylon EXPORT babylon)
   install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/babylon"
     DESTINATION include

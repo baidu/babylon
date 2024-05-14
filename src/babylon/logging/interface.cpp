@@ -32,16 +32,19 @@ class DefaultLogStreamProvider : public LogStreamProvider {
       inline S() noexcept : LogStream(*::std::cerr.rdbuf()) {}
 #endif // !__clang__ && BABYLON_GCC_VERSION < 50000
       virtual void do_begin() noexcept override {
-        mutex.lock();
+        mutex().lock();
         operator<<(SEVERITY_NAME[severity])
             << '[' << file << ':' << line << "] ";
       }
       virtual void do_end() noexcept override {
         operator<<('\n');
-        mutex.unlock();
+        mutex().unlock();
+      }
+      static ::std::mutex& mutex() noexcept {
+          static ::std::mutex instance;
+          return instance;
       }
 
-      ::std::mutex mutex;
       int severity;
       StringView file;
       int line;

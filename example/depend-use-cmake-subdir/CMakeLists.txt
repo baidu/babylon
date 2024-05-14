@@ -1,0 +1,10 @@
+set(BOOST_INCLUDE_LIBRARIES preprocessor spirit)
+add_subdirectory(boost EXCLUDE_FROM_ALL)
+set(ABSL_ENABLE_INSTALL ON)
+add_subdirectory(abseil-cpp)
+set(protobuf_BUILD_TESTS OFF)
+add_subdirectory(protobuf)
+add_subdirectory(babylon)
+
+add_executable(example example.cpp)
+target_link_libraries(example babylon::babylon)
