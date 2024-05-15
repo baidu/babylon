@@ -182,6 +182,8 @@ jobs:
           bazel-disk-
     - run: sudo apt install g++-12-aarch64-linux-gnu
     - run: bazel build --config=ci --action_env=CC=aarch64-linux-gnu-gcc-12 --features=-default_link_flags --linkopt=-fuse-ld=gold --features=asan ... --verbose_failures
+    - run: cat bazel-out/k8-opt-exec-ST-*/bin/external/protobuf~/protoc-2.params
+      if: ${{ failure() }}
 
   coverage:
     runs-on: ubuntu-latest
