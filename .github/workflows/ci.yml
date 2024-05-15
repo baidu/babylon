@@ -180,6 +180,7 @@ jobs:
         restore-keys: |
           bazel-disk-gcc12-aarch64-asan-
           bazel-disk-
+    - run: sudo apt install g++-12-aarch64-linux-gnu
     - run: bazel build --config=ci --action_env=CC=aarch64-linux-gnu-gcc-12 --features=-default_link_flags --features=asan ...
 
   coverage:
