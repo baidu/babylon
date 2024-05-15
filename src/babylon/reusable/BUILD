@@ -58,10 +58,12 @@ cc_library(
 cc_library(
   name = 'message_trick',
   srcs = ['message.trick.cpp'],
+  hdrs = ['traits.h', 'message.h'],
   copts = BABYLON_COPTS + ['-fno-access-control'],
   strip_include_prefix = '//src',
   deps = [
-    ':traits_without_trick',
+    ':allocator',
+    '//src/babylon:string',
   ],
 )
 
