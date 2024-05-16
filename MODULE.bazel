@@ -35,4 +35,11 @@ bazel_dep(name = 'rules_cuda', version = '0.2.2-dev', dev_dependency = True)
 
 cuda = use_extension('@rules_cuda//cuda:extensions.bzl', 'toolchain', dev_dependency = True)
 cuda.local_toolchain()
+
+# cross compile toolchain
+bazel_dep(name = 'rules_cc', version = '0.0.9', dev_dependency = True)
+bazel_dep(name = 'platforms', version = '0.0.10', dev_dependency = True)
+cross_config = use_extension('//:bazel/cross_toolchain.bzl', 'cross_config', dev_dependency = True)
+use_repo(cross_config, 'cross_config_toolchain')
+register_toolchains('@cross_config_toolchain//:cross-toolchain', dev_dependency = True)
 ################################################################################
