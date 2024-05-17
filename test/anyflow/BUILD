@@ -55,6 +55,18 @@ cc_test(
 )
 
 cc_test(
+  name = 'test_multi_processors',
+  srcs = ['test_multi_processors.cpp'],
+  copts = BABYLON_COPTS,
+  deps = [
+    '//:anyflow',
+    '//:reusable_string',
+    '//:reusable_vector',
+    '@googletest//:gtest_main',
+  ]
+)
+
+cc_test(
   name = 'test_processor',
   srcs = ['test_processor.cpp'],
   copts = BABYLON_COPTS,
