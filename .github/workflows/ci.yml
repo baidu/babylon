@@ -182,8 +182,8 @@ jobs:
           bazel-disk-
     - run: sudo apt install g++-12-aarch64-linux-gnu
     - run: sudo apt install qemu-user
-    - run: bazel build --config=ci --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --features=asan --linkopt=-fuse-ld=gold test/...
-    - run: bash test/run_tests.sh
+    - run: sudo ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/
+    - run: bazel test --config=ci --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --features=asan --linkopt=-fuse-ld=gold --test_env=LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib --test_env=ASAN_OPTIONS=detect_odr_violation=1:detect_leaks=0 test/...
 
   coverage:
     runs-on: ubuntu-latest
