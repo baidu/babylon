@@ -37,7 +37,7 @@ TEST_F(StringTest, empty_serialize_to_nothing) {
 struct SimpleStringSerializable {
   ::std::string s;
 
-  BABYLON_SERIALIZABLE((s, 1));
+  BABYLON_SERIALIZABLE((s, 1))
 };
 TEST_F(StringTest, support_cascading) {
   using S = SimpleStringSerializable;
