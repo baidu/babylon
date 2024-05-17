@@ -60,9 +60,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:anyflow',
-    '//:reusable_string',
-    '//:reusable_vector',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
