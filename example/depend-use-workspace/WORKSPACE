@@ -3,14 +3,17 @@ workspace(name = 'example')
 load('@bazel_tools//tools/build_defs/repo:http.bzl', 'http_archive')
 
 ################################################################################
+# babylon
 http_archive(
   name = 'com_baidu_babylon',
-  urls = ['https://github.com/baidu/babylon/archive/refs/tags/v1.1.3.tar.gz'],
-  strip_prefix = 'babylon-1.1.3',
-  sha256 = '626c30f7df34dee8b735d8cabd8779ceb1a9274fd73285ec850f522ad36aa7eb',
+  urls = ['https://github.com/baidu/babylon/archive/refs/tags/v1.1.5.tar.gz'],
+  strip_prefix = 'babylon-1.1.5',
+  sha256 = 'a8d37251972a522b4c6f4d28ac6bf536444ff0e0c0e47eebff37aa75ca2a65a6',
 )
 ################################################################################
 
+################################################################################
+# copy from WORKSPACE of babylon
 http_archive(
   name = 'com_google_absl',
   urls = ['https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.1.tar.gz'],
@@ -23,8 +26,7 @@ http_archive(
   urls = ['https://github.com/protocolbuffers/protobuf/archive/refs/tags/v25.3.tar.gz'],
   strip_prefix = 'protobuf-25.3',
   sha256 = 'd19643d265b978383352b3143f04c0641eea75a75235c111cc01a1350173180e',
-  #patches = ['@com_baidu_babylon//:registry/modules/protobuf/25.3.arenastring/patches/arenastring.patch'],
-  patches = ['@com_baidu_babylon//:patches/protobuf-25.3.patch'],
+  patches = ['@com_baidu_babylon//:registry/modules/protobuf/25.3.arenastring/patches/arenastring.patch'],
   patch_args = ['-p1'],
 )
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
@@ -38,3 +40,4 @@ http_archive(
 )
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
 boost_deps()
+################################################################################
