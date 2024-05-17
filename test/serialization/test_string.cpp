@@ -1,6 +1,6 @@
 #include "babylon/serialization.h"
 
-#if BABYLON_USE_PROTOUF
+#if BABYLON_USE_PROTOBUF
 
 #include "gtest/gtest.h"
 
@@ -50,4 +50,4 @@ TEST_F(StringTest, support_cascading) {
   ASSERT_EQ(s.s, ss.s);
 }
 
-#endif // BABYLON_USE_PROTOUF
+#endif // BABYLON_USE_PROTOBUF

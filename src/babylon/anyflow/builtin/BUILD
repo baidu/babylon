@@ -12,6 +12,6 @@ cc_library(
   copts = BABYLON_COPTS,
   deps = [
     '//src/babylon/anyflow:engine',
-    '@boost.spirit',
+    '//:boost.spirit',
   ],
 )

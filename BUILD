@@ -210,3 +210,18 @@ alias(
   actual = '//src/babylon:type_traits',
 )
 ################################################################################
+
+################################################################################
+# bzlmod and workspace use different boost bazel support repo
+load('bazel/module_name.bzl', 'module_name')
+
+alias(
+  name = 'boost.preprocessor',
+  actual = '@boost.preprocessor' if module_name() else '@boost//:preprocessor',
+)
+
+alias(
+  name = 'boost.spirit',
+  actual = '@boost.spirit' if module_name() else '@boost//:spirit',
+)
+################################################################################

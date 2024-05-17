@@ -181,7 +181,7 @@ jobs:
           bazel-disk-gcc12-aarch64-asan-
           bazel-disk-
     - run: sudo apt install g++-12-aarch64-linux-gnu
-    - run: bazel build --config=ci --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --features=asan ...
+    - run: bazel build --config=ci --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --features=asan --linkopt=-fuse-ld=gold ...
 
   coverage:
     runs-on: ubuntu-latest
