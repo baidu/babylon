@@ -10,7 +10,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:anyflow',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -20,7 +20,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:anyflow',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -30,7 +30,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:anyflow',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -40,7 +40,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:anyflow',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -50,7 +50,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:anyflow',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -74,6 +74,6 @@ cc_test(
     '//:anyflow',
     '//:reusable_string',
     '//:reusable_vector',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )

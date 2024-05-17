@@ -2,7 +2,7 @@ package(
   default_visibility = ['//visibility:public'],
 )
 
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load('@bazel_skylib//rules:common_settings.bzl', 'bool_flag')
 
 ################################################################################
 bool_flag(
@@ -208,5 +208,20 @@ alias(
 alias(
   name = 'type_traits',
   actual = '//src/babylon:type_traits',
+)
+################################################################################
+
+################################################################################
+# bzlmod and workspace use different boost bazel support repo
+load('bazel/module_name.bzl', 'module_name')
+
+alias(
+  name = 'boost.preprocessor',
+  actual = '@boost.preprocessor' if module_name() else '@boost//:preprocessor',
+)
+
+alias(
+  name = 'boost.spirit',
+  actual = '@boost.spirit' if module_name() else '@boost//:spirit',
 )
 ################################################################################

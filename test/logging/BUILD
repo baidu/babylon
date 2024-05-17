@@ -10,7 +10,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:logging_async_file_appender',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -20,7 +20,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:logging_interface',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -30,7 +30,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:logging_interface',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -40,6 +40,6 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:logging_log_stream',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )

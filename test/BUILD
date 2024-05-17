@@ -11,7 +11,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:any',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -21,7 +21,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:executor',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -31,7 +31,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:future',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -41,7 +41,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:mlock',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -51,7 +51,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:move_only_function',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -61,7 +61,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:string',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -81,7 +81,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:string_view',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ] + select({
     '@rules_cuda//cuda:is_enabled': [':test_string_view_cuda'],
     '//conditions:default': [],
@@ -94,7 +94,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:time',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )
 
@@ -104,6 +104,6 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:type_traits',
-    '@googletest//:gtest_main',
+    '@com_google_googletest//:gtest_main',
   ]
 )

@@ -50,18 +50,20 @@ cc_library(
   deps = [
     ':page_allocator',
     '//src/babylon:sanitizer_helper',
-    '@protobuf//:protobuf',
-    '@abseil-cpp//absl/utility',
+    '@com_google_protobuf//:protobuf',
+    '@com_google_absl//absl/utility',
   ],
 )
 
 cc_library(
   name = 'message_trick',
   srcs = ['message.trick.cpp'],
+  hdrs = ['traits.h', 'message.h'],
   copts = BABYLON_COPTS + ['-fno-access-control'],
   strip_include_prefix = '//src',
   deps = [
-    ':traits_without_trick',
+    ':allocator',
+    '//src/babylon:string',
   ],
 )
 

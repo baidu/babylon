@@ -43,6 +43,6 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     '//src/babylon:type_traits',
-    '@abseil-cpp//absl/strings:str_format',
+    '@com_google_absl//absl/strings:str_format',
   ],
 )

@@ -28,7 +28,10 @@ Babylon是一个用于支持C++高性能服务端开发的基础库，从内存�
 
 ### Bazel
 
-Babylon使用[Bazel](https://bazel.build)进行构建并使用[bzlmod](https://bazel.build/external/module)进行依赖管理，增加如下几个环节就可以将babylon作为依赖引入到项目
+Babylon使用[Bazel](https://bazel.build)进行构建并使用[bzlmod](https://bazel.build/external/module)进行依赖管理，考虑到目前Bazel生态整体处于bzlmod的转换周期，Babylon也依然兼容[workspace](https://bazel.build/rules/lib/globals/workspace)依赖管理模式
+
+#### bzlmod
+
 - 增加仓库注册表
 ```
 # in .bazelrc
@@ -41,7 +44,7 @@ common --registry=https://raw.githubusercontent.com/bazelboost/registry/main
 - 增加依赖项
 ```
 # in MODULE.bazel
-bazel_dep(name = 'babylon', version = '1.1.4')
+bazel_dep(name = 'babylon', version = '1.1.5')
 ```
 - 添加依赖的子模块到编译目标，全部可用子模块可以参照[模块功能文档](#模块功能文档)，或者[BUILD](BUILD)文件
 ```
@@ -56,7 +59,39 @@ cc_library(
 )
 ```
 - 也可以直接添加All in One依赖目标`@babylon//:babylon`
-- 在[example/depend-use-bzlmod](example/depend-use-bzlmod)可以找到一个如何通过Bazel依赖的简单样例
+- 在[example/depend-use-bzlmod](example/depend-use-bzlmod)可以找到一个如何通过bzlmod依赖的简单样例
+
+#### workspace
+
+- 增加babylon依赖项
+```
+# in WORKSPACE
+http_archive(
+  name = 'com_baidu_babylon',
+  urls = ['https://github.com/baidu/babylon/archive/refs/tags/v1.1.5.tar.gz'],
+  strip_prefix = 'babylon-1.1.5',
+  sha256 = 'a8d37251972a522b4c6f4d28ac6bf536444ff0e0c0e47eebff37aa75ca2a65a6',
+)
+```
+- 增加传递依赖项，内容拷贝自babylon代码库的WORKSPACE，并和项目自身依赖项合并
+```
+# in WORKSPACE
+... // 增加babylon的WORKSPACE内的依赖项，注意和项目已有依赖去重合并
+```
+- 添加依赖的子模块到编译目标，全部可用子模块可以参照[模块功能文档](#模块功能文档)，或者[BUILD](BUILD)文件
+```
+# in BUILD
+cc_library(
+  ...
+  deps = [
+    ...
+    '@com_baidu_babylon//:any',
+    '@com_baidu_babylon//:concurrent',
+  ],
+)
+```
+- 也可以直接添加All in One依赖目标`@com_baidu_babylon//:babylon`
+- 在[example/depend-use-workspace](example/depend-use-workspace)可以找到一个如何通过workspace依赖的简单样例
 
 ### CMake
 
@@ -72,8 +107,8 @@ set(BUILD_DEPS ON)
 include(FetchContent)
 FetchContent_Declare(
   babylon
-  URL "https://github.com/baidu/babylon/archive/refs/tags/v1.1.4.tar.gz"
-  URL_HASH SHA256=2e7efea3f0a8aeffc03f908ff2875a82eb5a94cd1de3e591b6dc388f7a992411
+  URL "https://github.com/baidu/babylon/archive/refs/tags/v1.1.5.tar.gz"
+  URL_HASH SHA256=a8d37251972a522b4c6f4d28ac6bf536444ff0e0c0e47eebff37aa75ca2a65a6
 )
 FetchContent_MakeAvailable(babylon)
 ```

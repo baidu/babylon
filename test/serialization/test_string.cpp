@@ -1,6 +1,6 @@
 #include "babylon/serialization.h"
 
-#if BABYLON_USE_PROTOUF
+#if BABYLON_USE_PROTOBUF
 
 #include "gtest/gtest.h"
 
@@ -37,7 +37,7 @@ TEST_F(StringTest, empty_serialize_to_nothing) {
 struct SimpleStringSerializable {
   ::std::string s;
 
-  BABYLON_SERIALIZABLE((s, 1));
+  BABYLON_SERIALIZABLE((s, 1))
 };
 TEST_F(StringTest, support_cascading) {
   using S = SimpleStringSerializable;
@@ -50,4 +50,4 @@ TEST_F(StringTest, support_cascading) {
   ASSERT_EQ(s.s, ss.s);
 }
 
-#endif // BABYLON_USE_PROTOUF
+#endif // BABYLON_USE_PROTOBUF

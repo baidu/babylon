@@ -266,7 +266,7 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE Group::Group(
 #if defined(__SSE2__)
   _controls = _mm_loadu_si128(reinterpret_cast<__m128i*>(vec));
 #elif defined(__ARM_NEON)
-  _controls = _vld1q_s8(reinterpret_cast<int8_t*>(vec));
+  _controls = vld1q_s8(reinterpret_cast<int8_t*>(vec));
 #else  // !defined(__SSE2__) && !defined(__ARM_NEON)
   __builtin_memcpy(_controls, vec, SIZE);
 #endif // !defined(__SSE2__) && !defined(__ARM_NEON)
