@@ -181,6 +181,7 @@ jobs:
           bazel-disk-gcc12-aarch64-asan-
           bazel-disk-
     - run: sudo apt install g++-12-aarch64-linux-gnu
+    - run: sudo apt install qemu-user
     - run: bazel build --config=ci --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --features=asan --linkopt=-fuse-ld=gold test/...
     - run: bash test/run_tests.sh
 
