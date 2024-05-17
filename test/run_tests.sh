@@ -8,5 +8,3 @@ find bazel-out/k8-fastbuild/bin/test/ -name test_* | fgrep -v . | fgrep -v _objs
     $file
   fi
 done
-
-                #-E LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib \

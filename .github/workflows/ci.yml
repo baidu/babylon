@@ -24,7 +24,7 @@ jobs:
         restore-keys: |
           bazel-disk-gcc12-basic-asan-
           bazel-disk-
-    - run: bazel test --config=ci --action_env=CC=gcc-12 --features=asan ...
+    - run: bazel test --config=ci --action_env=CC=gcc-12 --features=asan test/...
 
   gcc12-basic-tsan:
     runs-on: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
         restore-keys: |
           bazel-disk-gcc12-basic-tsan-
           bazel-disk-
-    - run: bazel test --config=ci --action_env=CC=gcc-12 --features=tsan ...
+    - run: bazel test --config=ci --action_env=CC=gcc-12 --features=tsan test/...
 
   gcc12-arenastring-asan:
     runs-on: ubuntu-latest
@@ -63,7 +63,7 @@ jobs:
           bazel-disk-gcc12-arenastring-
           bazel-disk-
     - run: sed -i '/single_version_override.*protobuf/s/25.3/25.3.arenastring/' MODULE.bazel
-    - run: bazel test --config=ci --action_env=CC=gcc-12 --config=arenastring --features=asan ...
+    - run: bazel test --config=ci --action_env=CC=gcc-12 --config=arenastring --features=asan test/...
 
   gcc12-mutable-donated-string-asan:
     runs-on: ubuntu-latest
@@ -83,7 +83,7 @@ jobs:
           bazel-disk-gcc12-mutable-donated-string-
           bazel-disk-
     - run: sed -i '/single_version_override.*protobuf/s/25.3/25.3.arenastring/' MODULE.bazel
-    - run: bazel test --config=ci --action_env=CC=gcc-12 --config=mutable-donated-string --features=asan ...
+    - run: bazel test --config=ci --action_env=CC=gcc-12 --config=mutable-donated-string --features=asan test/...
 
   clang14-basic-asan:
     runs-on: ubuntu-latest
@@ -102,7 +102,7 @@ jobs:
         restore-keys: |
           bazel-disk-clang14-basic-asan-
           bazel-disk-
-    - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --features=asan ...
+    - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --features=asan test/...
 
   clang14-basic-tsan:
     runs-on: ubuntu-latest
@@ -121,7 +121,7 @@ jobs:
         restore-keys: |
           bazel-disk-clang14-basic-tsan-
           bazel-disk-
-    - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --features=tsan ...
+    - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --features=tsan test/...
 
   clang14-arenastring-asan:
     runs-on: ubuntu-latest
@@ -141,7 +141,7 @@ jobs:
           bazel-disk-clang14-arenastring-
           bazel-disk-
     - run: sed -i '/single_version_override.*protobuf/s/25.3/25.3.arenastring/' MODULE.bazel
-    - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=arenastring --features=asan ...
+    - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=arenastring --features=asan test/...
 
   clang14-mutable-donated-string-asan:
     runs-on: ubuntu-latest
@@ -161,7 +161,7 @@ jobs:
           bazel-disk-clang14-mutable-donated-string-
           bazel-disk-
     - run: sed -i '/single_version_override.*protobuf/s/25.3/25.3.arenastring/' MODULE.bazel
-    - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=mutable-donated-string --features=asan ...
+    - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=mutable-donated-string --features=asan test/...
 
   gcc12-aarch64-asan:
     runs-on: ubuntu-latest
@@ -181,7 +181,8 @@ jobs:
           bazel-disk-gcc12-aarch64-asan-
           bazel-disk-
     - run: sudo apt install g++-12-aarch64-linux-gnu
-    - run: bazel build --config=ci --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --features=asan --linkopt=-fuse-ld=gold ...
+    - run: bazel build --config=ci --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --features=asan --linkopt=-fuse-ld=gold test/...
+    - run: bash test/run_tests.sh
 
   coverage:
     runs-on: ubuntu-latest

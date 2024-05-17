@@ -11,9 +11,9 @@ module(
 # Thus the highest version in their module graph is resolved.
 
 # --registry=https://bcr.bazel.build
-bazel_dep(name = 'abseil-cpp', version = '20211102.0')
+bazel_dep(name = 'abseil-cpp', version = '20211102.0', repo_name = 'com_google_absl')
 bazel_dep(name = 'bazel_skylib', version = '1.4.1')
-bazel_dep(name = 'protobuf', version = '3.19.6')
+bazel_dep(name = 'protobuf', version = '3.19.6', repo_name = 'com_google_protobuf')
 
 # --registry=https://raw.githubusercontent.com/bazelboost/registry/main
 bazel_dep(name = 'boost.preprocessor', version = '1.83.0.bzl.1')
@@ -25,7 +25,7 @@ bazel_dep(name = 'boost.spirit', version = '1.83.0.bzl.1')
 
 # --registry=https://bcr.bazel.build
 single_version_override(module_name = 'abseil-cpp', version = '20230802.1')
-bazel_dep(name = 'googletest', version = '1.14.0', dev_dependency = True)
+bazel_dep(name = 'googletest', version = '1.14.0', repo_name = 'com_google_googletest', dev_dependency = True)
 
 # --registry=file://%workspace%/registry
 # protobuf 25.3 is not officially support in BCR
