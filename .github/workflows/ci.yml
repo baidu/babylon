@@ -207,6 +207,7 @@ jobs:
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
+        coverage-reporter-version: v0.6.10
         file: bazel-out/_coverage/_coverage_report.dat
         format: lcov
 
