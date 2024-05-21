@@ -28,8 +28,9 @@ Babylon是一个用于支持C++高性能服务端开发的基础库，从内存�
 
 ### 支持平台和编译器
 
-- CPU：x86-64、aarch64
-- COMPILER：gcc-9/gcc-10/gcc-12/clang-10/clang-14
+- OS: Linux
+- CPU: x86-64/aarch64
+- COMPILER: gcc-9/gcc-10/gcc-12/clang-10/clang-14
 
 ### Bazel
 
