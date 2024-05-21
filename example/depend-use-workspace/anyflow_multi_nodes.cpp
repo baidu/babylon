@@ -1,5 +1,6 @@
 #include "babylon/anyflow/builder.h"
-#include "gtest/gtest.h"
+
+#include <iostream>
 
 using ::babylon::anyflow::GraphBuilder;
 using ::babylon::anyflow::GraphProcessor;
@@ -37,7 +38,7 @@ struct MultiplyProcessor : public GraphProcessor {
                             ANYFLOW_EMIT_DATA(int32_t, c))
 };
 
-TEST(multi_processors, multi_processors) {
+int main() {
   // let A = 10, B = 5
   // try to prove that (A + B) * (A - B) = A * A - B * B
   int input_a = 10;
@@ -60,14 +61,14 @@ TEST(multi_processors, multi_processors) {
     v2.named_depend("a").to("A");
     v2.named_depend("b").to("B");
     v2.named_emit("c").to("SubtractRes");
-   
+
     auto& v3 = builder.add_vertex([] {
       return ::std::unique_ptr<MultiplyProcessor>(new MultiplyProcessor);
     });
     v3.named_depend("a").to("AddRes");
     v3.named_depend("b").to("SubtractRes");
     v3.named_emit("c").to("FinalRes");
- 
+
     builder.finish();
     auto graph = builder.build();
     auto a = graph->find_data("A");
@@ -95,14 +96,14 @@ TEST(multi_processors, multi_processors) {
     v2.named_depend("a").to("B");
     v2.named_depend("b").to("B");
     v2.named_emit("c").to("MultiplyResForB");
-   
+
     auto& v3 = builder.add_vertex([] {
       return ::std::unique_ptr<SubtractProcessor>(new SubtractProcessor);
     });
     v3.named_depend("a").to("MultiplyResForA");
     v3.named_depend("b").to("MultiplyResForB");
     v3.named_emit("c").to("FinalRes");
- 
+
     builder.finish();
     auto graph = builder.build();
     auto a = graph->find_data("A");
@@ -114,7 +115,7 @@ TEST(multi_processors, multi_processors) {
     graph->run(final_res);
     res_right = *final_res->value<int>();
   }
-  ASSERT_EQ(res_left, (input_a + input_b) * (input_a - input_b));
-  ASSERT_EQ(res_left, res_right);
+  ::std::cout << "(A + B) * (A - B) = " << res_left << '\n';
+  ::std::cout << "A * A - B * B = " << res_right << '\n';
+  return 0;
 }
-
