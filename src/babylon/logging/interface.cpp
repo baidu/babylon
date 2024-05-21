@@ -41,8 +41,8 @@ class DefaultLogStreamProvider : public LogStreamProvider {
         mutex().unlock();
       }
       static ::std::mutex& mutex() noexcept {
-          static ::std::mutex instance;
-          return instance;
+        static ::std::mutex instance;
+        return instance;
       }
 
       int severity;

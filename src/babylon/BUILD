@@ -34,18 +34,7 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     ':environment',
-    '@com_google_absl//absl/numeric:bits',
-  ],
-)
-
-cc_library(
-  name = 'absl_strings_internal_resize_uninitialized',
-  hdrs = ['absl_strings_internal_resize_uninitialized.h'],
-  copts = BABYLON_COPTS,
-  strip_include_prefix = '//src',
-  deps = [
-    ':environment',
-    '@com_google_absl//absl/strings',
+    '@com_google_absl//absl/numeric:int128',
   ],
 )
 
@@ -153,8 +142,8 @@ cc_library(
   copts = BABYLON_COPTS,
   strip_include_prefix = '//src',
   deps = [
-    ':absl_strings_internal_resize_uninitialized',
     ':type_traits',
+    '@com_google_absl//absl/strings',
   ],
 )
 

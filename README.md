@@ -26,6 +26,12 @@ Babylon是一个用于支持C++高性能服务端开发的基础库，从内存�
 
 ## 编译并使用
 
+### 支持平台和编译器
+
+- OS: Linux
+- CPU: x86-64/aarch64
+- COMPILER: gcc-9/gcc-10/gcc-12/clang-10/clang-14
+
 ### Bazel
 
 Babylon使用[Bazel](https://bazel.build)进行构建并使用[bzlmod](https://bazel.build/external/module)进行依赖管理，考虑到目前Bazel生态整体处于bzlmod的转换周期，Babylon也依然兼容[workspace](https://bazel.build/rules/lib/globals/workspace)依赖管理模式

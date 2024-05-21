@@ -8,27 +8,33 @@
 #include BABYLON_EXTERNAL(absl/meta/type_traits.h)
 // clang-format on
 
-#include <functional>
+// add some essential features for old LTS abseil-cpp
+#ifdef ABSL_LTS_RELEASE_VERSION
 
-// 2023年之前没有定义absl::is_invocable_r，需要补充一下
-#if ABSL_LTS_RELEASE_VERSION < 20220623L
-
+// very old abseil-cpp dont have these macros
 #ifndef ABSL_NAMESPACE_BEGIN
 #define ABSL_NAMESPACE_BEGIN
 #define ABSL_NAMESPACE_END
 #endif // ABSL_NAMESPACE_BEGIN
 
+// add invoke_result_t before 20200923
+#if ABSL_LTS_RELEASE_VERSION < 20200923L
+namespace absl {
+ABSL_NAMESPACE_BEGIN
+namespace base_internal {
+template <typename F, typename... Args>
+using invoke_result_t = InvokeT<F, Args...>;
+} // namespace base_internal
+ABSL_NAMESPACE_END
+} // namespace absl
+#endif // ABSL_LTS_RELEASE_VERSION < 20200923L
+
+// add invoke_result_r before 20200923
+#if ABSL_LTS_RELEASE_VERSION < 20220623L
 namespace absl {
 ABSL_NAMESPACE_BEGIN
 namespace base_internal {
 
-// 2021年之前没有定义invoke_result_t标准名
-#if !BABYLON_HAS_INCLUDE("absl/flags/commandlineflag.h")
-template <typename F, typename... Args>
-using invoke_result_t = InvokeT<F, Args...>;
-#endif // !BABYLON_HAS_INCLUDE("absl/numeric/bits.h")
-
-////////////////////////////////////////////////////////////////////////////////
 template <typename AlwaysVoid, typename, typename, typename...>
 struct IsInvocableRImpl : std::false_type {};
 
@@ -47,10 +53,10 @@ struct IsInvocableRImpl<
 // C++11-compatible version of `std::is_invocable_r`.
 template <typename R, typename F, typename... Args>
 using is_invocable_r = IsInvocableRImpl<void, R, F, Args...>;
-////////////////////////////////////////////////////////////////////////////////
 
 } // namespace base_internal
 ABSL_NAMESPACE_END
 } // namespace absl
-
 #endif // ABSL_LTS_RELEASE_VERSION < 20220623L
+
+#endif // ABSL_LTS_RELEASE_VERSION
