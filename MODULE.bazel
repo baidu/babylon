@@ -1,6 +1,6 @@
 module(
   name = 'babylon',
-  version = '1.1.5',
+  version = '1.1.6',
   compatibility_level = 1,
 )
 
@@ -11,8 +11,8 @@ module(
 # Thus the highest version in their module graph is resolved.
 
 # --registry=https://bcr.bazel.build
-bazel_dep(name = 'abseil-cpp', version = '20211102.0', repo_name = 'com_google_absl')
-bazel_dep(name = 'bazel_skylib', version = '1.4.1')
+bazel_dep(name = 'abseil-cpp', version = '20210324.2', repo_name = 'com_google_absl')
+bazel_dep(name = 'bazel_skylib', version = '1.0.3')
 bazel_dep(name = 'protobuf', version = '3.19.6', repo_name = 'com_google_protobuf')
 
 # --registry=https://raw.githubusercontent.com/bazelboost/registry/main

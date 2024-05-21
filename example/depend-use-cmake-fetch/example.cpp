@@ -9,7 +9,7 @@ int main() {
   auto future = latch.get_future();
   ::std::vector<::std::thread> threads;
   for (size_t i = 0; i < 10; ++i) {
-    threads.emplace_back([&, i] () {
+    threads.emplace_back([&, i]() {
       BABYLON_LOG(INFO) << "finish " << i;
       latch.count_down();
     });

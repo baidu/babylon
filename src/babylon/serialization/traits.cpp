@@ -2,7 +2,9 @@
 
 #if BABYLON_USE_PROTOBUF
 
-#include "absl/strings/escaping.h"  // absl::CEscape
+// clang-format off
+#include BABYLON_EXTERNAL(absl/strings/escaping.h) // absl::CEscape
+// clang-format on
 
 BABYLON_NAMESPACE_BEGIN
 

@@ -25,7 +25,7 @@ class GraphBuilder {
   using SystemPageAllocator = ::babylon::SystemPageAllocator;
 
  public:
-  GraphBuilder() noexcept = default;
+  GraphBuilder() = default;
   GraphBuilder(GraphBuilder&&) = delete;
   GraphBuilder(const GraphBuilder&) = delete;
   GraphBuilder& operator=(GraphBuilder&&) = delete;
@@ -199,7 +199,7 @@ class GraphDependencyBuilder {
   using StringView = ::babylon::StringView;
 
  public:
-  GraphDependencyBuilder() noexcept = default;
+  GraphDependencyBuilder() = default;
   GraphDependencyBuilder(GraphDependencyBuilder&&) noexcept = default;
   GraphDependencyBuilder(const GraphDependencyBuilder&) = delete;
   GraphDependencyBuilder& operator=(GraphDependencyBuilder&&) noexcept =
@@ -249,7 +249,7 @@ class GraphEmitBuilder {
   using StringView = ::babylon::StringView;
 
  public:
-  GraphEmitBuilder() noexcept = default;
+  GraphEmitBuilder() = default;
   GraphEmitBuilder(GraphEmitBuilder&&) noexcept = default;
   GraphEmitBuilder(const GraphEmitBuilder&) = delete;
   GraphEmitBuilder& operator=(GraphEmitBuilder&&) noexcept = default;

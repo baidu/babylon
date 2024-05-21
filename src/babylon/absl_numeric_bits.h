@@ -3,17 +3,18 @@
 #include "babylon/environment.h"
 
 // clang-format off
-#if BABYLON_HAS_INCLUDE("absl/numeric/bits.h")
+#if BABYLON_HAS_INCLUDE(BABYLON_EXTERNAL(absl/numeric/bits.h))
 #include BABYLON_EXTERNAL(absl/numeric/bits.h)
-#else // !BABYLON_HAS_INCLUDE("absl/numeric/bits.h")
-// TODO(lijiang01): 早期abseil-cpp未提供bits.h头文件和相关函数功能
-//                  等兼容期过后删除这些拷贝来的实现
+#else // BABYLON_HAS_INCLUDE(BABYLON_EXTERNAL(absl/numeric/bits.h))
+// add necessary bit function before 20210324
 #include BABYLON_EXTERNAL(absl/base/optimization.h)
+// clang-format on
+
+// very old abseil-cpp dont have these macros
 #ifndef ABSL_NAMESPACE_BEGIN
 #define ABSL_NAMESPACE_BEGIN
 #define ABSL_NAMESPACE_END
 #endif // ABSL_NAMESPACE_BEGIN
-// clang-format on
 
 namespace absl {
 ABSL_NAMESPACE_BEGIN
@@ -34,4 +35,4 @@ inline CONSTEXPR_SINCE_CXX14 size_t bit_ceil(size_t n) noexcept {
 ABSL_NAMESPACE_END
 } // namespace absl
 
-#endif // !BABYLON_HAS_INCLUDE("absl/numeric/bits.h")
+#endif // BABYLON_HAS_INCLUDE(BABYLON_EXTERNAL(absl/numeric/bits.h))

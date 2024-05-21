@@ -1,8 +1,10 @@
 #pragma once
 
-#include "babylon/absl_strings_internal_resize_uninitialized.h"
 #include "babylon/string.h"
-#include "babylon/type_traits.h" // BABYLON_MEMBER_INVOCABLE_CHECKER
+
+// clang-format off
+#include BABYLON_EXTERNAL(absl/strings/internal/resize_uninitialized.h)
+// clang-format on
 
 #include <string>
 
