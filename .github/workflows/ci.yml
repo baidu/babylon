@@ -203,11 +203,11 @@ jobs:
           bazel-disk-coverage-
           bazel-disk-
     - run: bazel coverage --config=ci --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test/...
+    - run: ln -s _coverage_report.dat bazel-out/_coverage/_coverage_report.lcov
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
-        file: bazel-out/_coverage/_coverage_report.dat
-        format: lcov
+        file: bazel-out/_coverage/_coverage_report.lcov
 
   cmake:
     runs-on: ubuntu-latest
@@ -216,4 +216,4 @@ jobs:
     - uses: hendrikmuhs/ccache-action@v1.2
     - run: cmake -Bbuild -DBUILD_DEPS=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
     - run: cmake --build build --parallel $(nproc)
-    - run: ctest --test-dir build --parallel $(nproc)
+    - run: ctest --test-dir build --output-on-failure --parallel $(nproc)
