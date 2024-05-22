@@ -1,4 +1,5 @@
 #include "babylon/string.h"
+#include "babylon/string_view.h"
 
 #include <gtest/gtest.h>
 
