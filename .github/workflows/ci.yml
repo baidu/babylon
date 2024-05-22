@@ -204,9 +204,10 @@ jobs:
           bazel-disk-
     - run: bazel coverage --config=ci --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test/...
     - run: ls -l bazel-out/_coverage/
-    - uses: coverallsapp/github-action@v2
+    - uses: coverallsapp/github-action@v2.3.0
       with:
         github-token: ${{github.token}}
+        debug: true
         coverage-reporter-version: v0.6.9
         file: bazel-out/_coverage/_coverage_report.dat
         format: lcov
