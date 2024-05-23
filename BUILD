@@ -56,6 +56,11 @@ alias(
 )
 
 alias(
+  name = 'application_context',
+  actual = '//src/babylon:application_context',
+)
+
+alias(
   name = 'concurrent',
   actual = '//src/babylon/concurrent',
 )

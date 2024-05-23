@@ -16,6 +16,16 @@ cc_test(
 )
 
 cc_test(
+  name = 'test_application_context',
+  srcs = ['test_application_context.cpp'],
+  copts = BABYLON_COPTS,
+  deps = [
+    '//:application_context',
+    '@com_google_googletest//:gtest_main',
+  ]
+)
+
+cc_test(
   name = 'test_executor',
   srcs = ['test_executor.cpp'],
   copts = BABYLON_COPTS,

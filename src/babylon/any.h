@@ -193,6 +193,19 @@ class Any {
   template <typename T>
   inline static const Descriptor* descriptor() noexcept;
 
+  // release managed instance inside
+  // a successful release return std::unique_ptr of instance
+  // and reset this Any to an initialize empty state
+  //
+  // when type not match or is reference, release will fail
+  // and state of this Any is not changed
+  template <typename T>
+  inline ::std::unique_ptr<T> release() noexcept;
+  inline ::std::unique_ptr<void, void (*)(void*)> release(
+      const Descriptor* descriptor) noexcept;
+  inline ::std::unique_ptr<void, void (*)(void*)> release(
+      StringView type_name) noexcept;
+
  private:
   union Meta;
 
@@ -218,12 +231,12 @@ class Any {
   struct TypeDescriptor<T, typename ::std::enable_if<
                                ::std::is_copy_constructible<T>::value>::type>
       : public TypeDescriptor<T, int> {
-    inline constexpr TypeDescriptor() noexcept : type_id(TypeId<T>().ID) {}
+    inline constexpr TypeDescriptor() noexcept : type_id(TypeId<T>::ID) {}
     static void copy_constructor(void* ptr, const void* object);
     static void* copy_creater(const void* object);
 
     static constexpr Descriptor descriptor {
-        .type_id = TypeId<T>().ID,
+        .type_id = TypeId<T>::ID,
         .destructor = TypeDescriptor<T, int>::destructor,
         .deleter = TypeDescriptor<T, int>::deleter,
         .copy_constructor = copy_constructor,
@@ -237,12 +250,12 @@ class Any {
   struct TypeDescriptor<T, typename ::std::enable_if<
                                !::std::is_copy_constructible<T>::value>::type>
       : public TypeDescriptor<T, int> {
-    inline constexpr TypeDescriptor() noexcept : type_id(TypeId<T>().ID) {}
+    inline constexpr TypeDescriptor() noexcept : type_id(TypeId<T>::ID) {}
     static void copy_constructor(void* ptr, const void* object);
     static void* copy_creater(const void* object);
 
     static constexpr Descriptor descriptor {
-        .type_id = TypeId<T>().ID,
+        .type_id = TypeId<T>::ID,
         .destructor = TypeDescriptor<T, int>::destructor,
         .deleter = TypeDescriptor<T, int>::deleter,
         .copy_constructor = copy_constructor,
@@ -251,6 +264,9 @@ class Any {
 
     const Id& type_id;
   };
+
+  inline static uint64_t meta_for_instance(
+      const Descriptor* descriptor) noexcept;
 
   inline void destroy() noexcept;
   inline void* raw_pointer() noexcept;
