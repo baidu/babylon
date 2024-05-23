@@ -5,7 +5,8 @@
 #include "babylon/reusable/manager.h" // babylon::SwissManager
 
 // clang-format off
-#include BABYLON_EXTERNAL(absl/container/flat_hash_map.h) // absl::flat_hash_map
+#include BABYLON_EXTERNAL(absl/container/flat_hash_map.h)  // absl::flat_hash_map
+#include BABYLON_EXTERNAL(absl/container/inlined_vector.h) // absl::InlinedVector
 // clang-format on
 
 #include <vector> // std::vector

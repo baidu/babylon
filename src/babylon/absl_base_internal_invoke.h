@@ -9,7 +9,14 @@
 // clang-format on
 
 // add some essential features for old LTS abseil-cpp
-#ifdef ABSL_LTS_RELEASE_VERSION
+// TODO(lijiang01): some inactive repo depend on old abseil-cpp head
+//                  use header check trick to adapt them before they switch to
+//                  some LTS
+// clang-format off
+#if defined(ABSL_LTS_RELEASE_VERSION) || \
+    !BABYLON_HAS_INCLUDE(                \
+        BABYLON_EXTERNAL(absl/base/internal/dynamic_annotations.h))
+// clang-format on
 
 // very old abseil-cpp dont have these macros
 #ifndef ABSL_NAMESPACE_BEGIN
@@ -59,4 +66,5 @@ ABSL_NAMESPACE_END
 } // namespace absl
 #endif // ABSL_LTS_RELEASE_VERSION < 20220623L
 
-#endif // ABSL_LTS_RELEASE_VERSION
+#endif // defined(ABSL_LTS_RELEASE_VERSION) ||
+       // !BABYLON_HAS_INCLUDE(BABYLON_EXTERNAL(absl/base/internal/dynamic_annotations.h))
