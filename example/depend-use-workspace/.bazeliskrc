@@ -1,2 +1,2 @@
 BAZELISK_BASE_URL=https://github.com/bazelbuild/bazel/releases/download
-USE_BAZEL_VERSION=7.1.1
+USE_BAZEL_VERSION=7.1.2
