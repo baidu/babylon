@@ -10,9 +10,6 @@ BABYLON_NAMESPACE_BEGIN
 // 在std::any的基础上，进一步支持不可拷贝，不可移动构造的对象
 // 同时支持引用构造，可以支持同构处理引用和实体对象
 class Any {
- private:
-  struct Descriptor;
-
  public:
   enum class Type : uint8_t {
     EMPTY = 0,
@@ -41,6 +38,14 @@ class Any {
     constexpr static uint8_t INSTANCE = NON_TRIVIAL | NON_INPLACE;
     constexpr static uint8_t CONST_REFERENCE = NON_INPLACE | REFERENCE | CONST;
     constexpr static uint8_t MUTABLE_REFERENCE = NON_INPLACE | REFERENCE;
+  };
+
+  struct Descriptor {
+    const Id& type_id;
+    void (*const destructor)(void*);
+    void (*const deleter)(void*);
+    void (*const copy_constructor)(void*, const void*);
+    void* (*const copy_creater)(const void*);
   };
 
   // 默认构造，后续可用 = 赋值
@@ -158,6 +163,8 @@ class Any {
   template <typename T>
   inline const T* get() const noexcept;
 
+  inline void* get(const Descriptor* descriptor) noexcept;
+
   // 辅助判断是否是常量引用
   inline bool is_const_reference() const noexcept;
 
@@ -193,16 +200,21 @@ class Any {
   template <typename T>
   inline static const Descriptor* descriptor() noexcept;
 
+  // release managed instance inside
+  // a successful release return std::unique_ptr of instance
+  // and reset this Any to an initialize empty state
+  //
+  // when type not match or is reference, release will fail
+  // and state of this Any is not changed
+  template <typename T>
+  inline ::std::unique_ptr<T> release() noexcept;
+  inline ::std::unique_ptr<void, void (*)(void*)> release(
+      const Descriptor* descriptor) noexcept;
+  inline ::std::unique_ptr<void, void (*)(void*)> release(
+      StringView type_name) noexcept;
+
  private:
   union Meta;
-
-  struct Descriptor {
-    const Id& type_id;
-    void (*const destructor)(void*);
-    void (*const deleter)(void*);
-    void (*const copy_constructor)(void*, const void*);
-    void* (*const copy_creater)(const void*);
-  };
 
   template <typename T, typename E = void>
   struct TypeDescriptor {
@@ -218,39 +230,36 @@ class Any {
   struct TypeDescriptor<T, typename ::std::enable_if<
                                ::std::is_copy_constructible<T>::value>::type>
       : public TypeDescriptor<T, int> {
-    inline constexpr TypeDescriptor() noexcept : type_id(TypeId<T>().ID) {}
     static void copy_constructor(void* ptr, const void* object);
     static void* copy_creater(const void* object);
 
     static constexpr Descriptor descriptor {
-        .type_id = TypeId<T>().ID,
+        .type_id = TypeId<T>::ID,
         .destructor = TypeDescriptor<T, int>::destructor,
         .deleter = TypeDescriptor<T, int>::deleter,
         .copy_constructor = copy_constructor,
         .copy_creater = copy_creater,
     };
-
-    const Id& type_id;
   };
 
   template <typename T>
   struct TypeDescriptor<T, typename ::std::enable_if<
                                !::std::is_copy_constructible<T>::value>::type>
       : public TypeDescriptor<T, int> {
-    inline constexpr TypeDescriptor() noexcept : type_id(TypeId<T>().ID) {}
     static void copy_constructor(void* ptr, const void* object);
     static void* copy_creater(const void* object);
 
     static constexpr Descriptor descriptor {
-        .type_id = TypeId<T>().ID,
+        .type_id = TypeId<T>::ID,
         .destructor = TypeDescriptor<T, int>::destructor,
         .deleter = TypeDescriptor<T, int>::deleter,
         .copy_constructor = copy_constructor,
         .copy_creater = copy_creater,
     };
-
-    const Id& type_id;
   };
+
+  inline static uint64_t meta_for_instance(
+      const Descriptor* descriptor) noexcept;
 
   inline void destroy() noexcept;
   inline void* raw_pointer() noexcept;

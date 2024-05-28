@@ -444,10 +444,10 @@ GraphData::declare_type<::babylon::Any>() noexcept {
 template <typename T>
 inline OutputData<T> GraphData::declare_type() noexcept {
   if (_declared_type == &::babylon::TypeId<Any>::ID) {
-    _declared_type = &::babylon::TypeId<T>().ID;
+    _declared_type = &::babylon::TypeId<T>::ID;
     set_default_on_reset<T>();
     return OutputData<T>(*this);
-  } else if (_declared_type == &::babylon::TypeId<T>().ID) {
+  } else if (_declared_type == &::babylon::TypeId<T>::ID) {
     return OutputData<T>(*this);
   } else {
     BABYLON_LOG(WARNING) << *this << " declare type["

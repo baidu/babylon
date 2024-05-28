@@ -2,7 +2,9 @@
 
 #include "babylon/any.h"
 
-#include <cassert>
+// clang-format off
+#include BABYLON_EXTERNAL(absl/base/optimization.h) // ABSL_PREDICT_FALSE
+// clang-format on
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -11,10 +13,8 @@ BABYLON_NAMESPACE_BEGIN
 template <typename T, typename E>
 __attribute__((init_priority(101)))
 Any::Meta Any::TypeDescriptor<T, E>::meta_for_instance {
-    .v = reinterpret_cast<uint64_t>(
-             &TypeDescriptor<typename ::std::decay<T>::type>().descriptor) |
-         static_cast<uint64_t>(HolderType::INSTANCE) << 56 |
-         static_cast<uint64_t>(Type::INSTANCE) << 48};
+    .v = Any::meta_for_instance(
+        &TypeDescriptor<typename ::std::decay<T>::type>().descriptor)};
 
 template <typename T, typename E>
 __attribute__((init_priority(101)))
@@ -85,6 +85,26 @@ void* Any::TypeDescriptor<
 }
 // Any::TypeDescriptor end
 ///////////////////////////////////////////////////////////////////////////////
+
+template <>
+struct Any::TypeDescriptor<void> : public TypeDescriptor<void, int> {
+  static void destructor(void*) noexcept {}
+  static void deleter(void*) noexcept {}
+  static void copy_constructor(void*, const void*) {}
+  static void* copy_creater(const void*) {
+    return nullptr;
+  }
+
+  static constexpr Descriptor descriptor {
+      .type_id = TypeId<void>::ID,
+      .destructor = destructor,
+      .deleter = deleter,
+      .copy_constructor = copy_constructor,
+      .copy_creater = copy_creater,
+  };
+
+  const Id& type_id;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Any begin
@@ -292,6 +312,13 @@ inline const T* Any::get() const noexcept {
   return cget<T>();
 }
 
+inline void* Any::get(const Descriptor* descriptor) noexcept {
+  if (_meta.descriptor() == descriptor) {
+    return raw_pointer();
+  }
+  return nullptr;
+}
+
 inline bool Any::is_const_reference() const noexcept {
   return _meta.v & (static_cast<uint64_t>(HolderType::CONST) << 56);
 }
@@ -353,7 +380,13 @@ inline const Id& Any::instance_type() const noexcept {
 
 template <typename T>
 inline const Any::Descriptor* Any::descriptor() noexcept {
-  return &TypeDescriptor<typename ::std::decay<T>::type>().descriptor;
+  return &TypeDescriptor<typename ::std::decay<T>::type>::descriptor;
+}
+
+inline uint64_t Any::meta_for_instance(const Descriptor* descriptor) noexcept {
+  return reinterpret_cast<uint64_t>(descriptor) |
+         static_cast<uint64_t>(HolderType::INSTANCE) << 56 |
+         static_cast<uint64_t>(Type::INSTANCE) << 48;
 }
 
 inline void Any::destroy() noexcept {
@@ -408,6 +441,44 @@ inline void Any::construct_inplace(T&& value) noexcept {
     _holder.uint64_v = 0;
   }
   new (&_holder) DT(::std::forward<T>(value));
+}
+
+template <typename T>
+inline ::std::unique_ptr<T> Any::release() noexcept {
+  if (ABSL_PREDICT_FALSE(_meta.v != TypeDescriptor<T>::meta_for_instance.v)) {
+    return nullptr;
+  }
+
+  auto pointer_value = _holder.pointer_value;
+  new (this) Any {};
+  return ::std::unique_ptr<T> {static_cast<T*>(pointer_value)};
+}
+
+inline ::std::unique_ptr<void, void (*)(void*)> Any::release(
+    const Descriptor* descriptor) noexcept {
+  if (ABSL_PREDICT_FALSE(_meta.v != meta_for_instance(descriptor))) {
+    return {nullptr, nullptr};
+  }
+
+  auto pointer_value = _holder.pointer_value;
+  new (this) Any {};
+  return {pointer_value, descriptor->deleter};
+}
+
+inline ::std::unique_ptr<void, void (*)(void*)> Any::release(
+    StringView type_name) noexcept {
+  if (ABSL_PREDICT_FALSE(_meta.m.holder_type != HolderType::INSTANCE)) {
+    return {nullptr, nullptr};
+  }
+
+  if (type_name == instance_type().name) {
+    auto pointer_value = _holder.pointer_value;
+    auto deleter = _meta.descriptor()->deleter;
+    new (this) Any {};
+    return {pointer_value, deleter};
+  }
+
+  return {nullptr, nullptr};
 }
 // Any end
 ///////////////////////////////////////////////////////////////////////////////

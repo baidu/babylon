@@ -8,7 +8,7 @@ load('//:copts.bzl', 'BABYLON_COPTS')
 cc_library(
   name = 'babylon',
   deps = [
-    ':any', ':executor', ':future', ':mlock',
+    ':any', ':application_context', ':executor', ':future', ':mlock',
     ':move_only_function', ':serialization',
     ':string_view', ':time', ':type_traits',
     '//src/babylon/anyflow', '//src/babylon/concurrent',
@@ -46,6 +46,21 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     ':type_traits',
+  ],
+)
+
+cc_library(
+  name = 'application_context',
+  srcs = ['application_context.cpp'],
+  hdrs = ['application_context.h'],
+  includes = ['.'],
+  copts = BABYLON_COPTS,
+  strip_include_prefix = '//src',
+  deps = [
+    ':any',
+    '//src/babylon/logging',
+    '//:boost.preprocessor',
+    '@com_google_absl//absl/container:flat_hash_map',
   ],
 )
 
