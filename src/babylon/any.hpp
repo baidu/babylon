@@ -86,6 +86,24 @@ void* Any::TypeDescriptor<
 // Any::TypeDescriptor end
 ///////////////////////////////////////////////////////////////////////////////
 
+template <>
+struct Any::TypeDescriptor<void> : public TypeDescriptor<void, int> {
+  static void destructor(void*) noexcept {}
+  static void deleter(void*) noexcept {}
+  static void copy_constructor(void*, const void*) {}
+  static void* copy_creater(const void*) {return nullptr;}
+
+  static constexpr Descriptor descriptor {
+      .type_id = TypeId<void>::ID,
+      .destructor = destructor,
+      .deleter = deleter,
+      .copy_constructor = copy_constructor,
+      .copy_creater = copy_creater,
+  };
+
+  const Id& type_id;
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // Any begin
 inline Any::Any() noexcept
@@ -292,6 +310,13 @@ inline const T* Any::get() const noexcept {
   return cget<T>();
 }
 
+inline void* Any::get(const Descriptor* descriptor) noexcept {
+  if (_meta.descriptor() == descriptor) {
+    return raw_pointer();
+  }
+  return nullptr;
+}
+
 inline bool Any::is_const_reference() const noexcept {
   return _meta.v & (static_cast<uint64_t>(HolderType::CONST) << 56);
 }
@@ -353,7 +378,7 @@ inline const Id& Any::instance_type() const noexcept {
 
 template <typename T>
 inline const Any::Descriptor* Any::descriptor() noexcept {
-  return &TypeDescriptor<typename ::std::decay<T>::type>().descriptor;
+  return &TypeDescriptor<typename ::std::decay<T>::type>::descriptor;
 }
 
 inline uint64_t Any::meta_for_instance(const Descriptor* descriptor) noexcept {

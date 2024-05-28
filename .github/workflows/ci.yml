@@ -62,7 +62,7 @@ jobs:
         restore-keys: |
           bazel-disk-gcc12-arenastring-
           bazel-disk-
-    - run: sed -i '/single_version_override.*protobuf/s/25.3/25.3.arenastring/' MODULE.bazel
+    - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
     - run: bazel test --config=ci --action_env=CC=gcc-12 --config=arenastring --features=asan test/...
 
   gcc12-mutable-donated-string-asan:
@@ -82,7 +82,7 @@ jobs:
         restore-keys: |
           bazel-disk-gcc12-mutable-donated-string-
           bazel-disk-
-    - run: sed -i '/single_version_override.*protobuf/s/25.3/25.3.arenastring/' MODULE.bazel
+    - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
     - run: bazel test --config=ci --action_env=CC=gcc-12 --config=mutable-donated-string --features=asan test/...
 
   clang14-basic-asan:
@@ -140,7 +140,7 @@ jobs:
         restore-keys: |
           bazel-disk-clang14-arenastring-
           bazel-disk-
-    - run: sed -i '/single_version_override.*protobuf/s/25.3/25.3.arenastring/' MODULE.bazel
+    - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
     - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=arenastring --features=asan test/...
 
   clang14-mutable-donated-string-asan:
@@ -160,7 +160,7 @@ jobs:
         restore-keys: |
           bazel-disk-clang14-mutable-donated-string-
           bazel-disk-
-    - run: sed -i '/single_version_override.*protobuf/s/25.3/25.3.arenastring/' MODULE.bazel
+    - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
     - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=mutable-donated-string --features=asan test/...
 
   gcc12-aarch64-asan:

@@ -127,18 +127,6 @@ inline ApplicationContext::ApplicationContext(ApplicationContext&& other) noexce
     _holder_by_type(::std::move(other._holder_by_type)),
     _holder_by_name(::std::move(other._holder_by_name)) {}
 
-inline void ApplicationContext::register_component(::std::unique_ptr<ComponentHolder>&& holder, StringView name) {
-    holder->set_name(name);
-    holder->set_context(*this);
-    _holders.emplace_back(::std::move(holder));
-}
-
-template <typename H>
-inline void ApplicationContext::register_component(H&& holder, StringView name) {
-    register_component(::std::unique_ptr<ComponentHolder>(
-            new H(::std::move(holder))), name);
-}
-
 inline int32_t ApplicationContext::initialize(bool is_lazy) {
     for (auto& holder : _holders) {
         if (0 != map_component(holder.get())) {
@@ -242,10 +230,6 @@ template <typename T>
 inline void ApplicationContext::build_real_name(::std::string& real_name,
         StringView name) noexcept {
     build_real_name(real_name, name, TypeId<T>().ID);
-}
-
-inline ApplicationContext::~ApplicationContext() {
-    clear();
 }
 
 } // babylon
