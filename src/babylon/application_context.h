@@ -3,9 +3,9 @@
 #include "babylon/any.h"               // babylon::Any
 #include "babylon/logging/interface.h" // BABYLON_LOG
 
-// clang-foramt off
-#include BABYLON_EXTERNAL(absl / container / flat_hash_map.h) // absl::flat_hash_map
-// clang-foramt on
+// clang-format off
+#include BABYLON_EXTERNAL(absl/container/flat_hash_map.h) // absl::flat_hash_map
+// clang-format on
 
 #include "boost/preprocessor/comparison/less.hpp"   // BOOST_PP_LESS
 #include "boost/preprocessor/control/if.hpp"        // BOOST_PP_IF
