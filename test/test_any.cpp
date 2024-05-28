@@ -928,6 +928,8 @@ struct AnyTest : public ::testing::Test {
   static size_t destruct_times;
 
   struct NormalClass {
+    NormalClass() = default;
+    NormalClass(const NormalClass&) = default;
     ~NormalClass() {
       destruct_times++;
     }
@@ -936,6 +938,8 @@ struct AnyTest : public ::testing::Test {
   };
 
   struct InplaceClass {
+    InplaceClass() = default;
+    InplaceClass(const InplaceClass&) = default;
     ~InplaceClass() {
       destruct_times++;
     }

@@ -4,10 +4,12 @@
 
 struct ApplicationContextTest : public ::testing::Test {
   using ApplicationContext = ::babylon::ApplicationContext;
-  template <typename T, typename ... BS>
-  using DefaultComponentHolder = ApplicationContext::DefaultComponentHolder<T, BS...>;
-  template <typename T, typename ... BS>
-  using FactoryComponentHolder = ApplicationContext::FactoryComponentHolder<T, BS...>;
+  template <typename T, typename... BS>
+  using DefaultComponentHolder =
+      ApplicationContext::DefaultComponentHolder<T, BS...>;
+  template <typename T, typename... BS>
+  using FactoryComponentHolder =
+      ApplicationContext::FactoryComponentHolder<T, BS...>;
   using Any = ::babylon::Any;
 
   static size_t construct_times;
@@ -25,40 +27,53 @@ size_t ApplicationContextTest::initialize_times;
 
 TEST_F(ApplicationContextTest, get_component_after_register) {
   ASSERT_FALSE(context.component_accessor<::std::string>());
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::string>::create()));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<::std::string>::create()));
   ASSERT_TRUE(context.component_accessor<::std::string>());
 }
 
-TEST_F(ApplicationContextTest, component_with_same_type_is_ambiguous_to_get_by_type) {
+TEST_F(ApplicationContextTest,
+       component_with_same_type_is_ambiguous_to_get_by_type) {
   ASSERT_FALSE(context.component_accessor<::std::string>());
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::string>::create()));
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::string>::create()));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<::std::string>::create()));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<::std::string>::create()));
   ASSERT_FALSE(context.component_accessor<::std::string>());
 }
 
-TEST_F(ApplicationContextTest, component_with_same_type_can_disambiguate_by_name) {
+TEST_F(ApplicationContextTest,
+       component_with_same_type_can_disambiguate_by_name) {
   ASSERT_FALSE(context.component_accessor<::std::string>("A"));
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::string>::create(), "A"));
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::string>::create(), "B"));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<::std::string>::create(), "A"));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<::std::string>::create(), "B"));
   ASSERT_FALSE(context.component_accessor<::std::string>());
   ASSERT_TRUE(context.component_accessor<::std::string>("A"));
   ASSERT_TRUE(context.component_accessor<::std::string>("B"));
   ASSERT_FALSE(context.component_accessor<::std::string>("C"));
 }
 
-TEST_F(ApplicationContextTest, component_with_same_type_and_name_is_not_usable) {
+TEST_F(ApplicationContextTest,
+       component_with_same_type_and_name_is_not_usable) {
   ASSERT_FALSE(context.component_accessor<::std::string>("A"));
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::string>::create(), "A"));
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::string>::create(), "A"));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<::std::string>::create(), "A"));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<::std::string>::create(), "A"));
   ASSERT_FALSE(context.component_accessor<::std::string>());
   ASSERT_FALSE(context.component_accessor<::std::string>("A"));
 }
 
-TEST_F(ApplicationContextTest, component_of_different_type_is_fine_with_same_name) {
+TEST_F(ApplicationContextTest,
+       component_of_different_type_is_fine_with_same_name) {
   ASSERT_FALSE(context.component_accessor<::std::string>("A"));
   ASSERT_FALSE(context.component_accessor<::std::vector<int>>("A"));
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::string>::create(), "A"));
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::vector<int>>::create(), "A"));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<::std::string>::create(), "A"));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<::std::vector<int>>::create(), "A"));
   ASSERT_TRUE(context.component_accessor<::std::string>());
   ASSERT_TRUE(context.component_accessor<::std::string>("A"));
   ASSERT_TRUE(context.component_accessor<::std::vector<int>>());
@@ -79,7 +94,8 @@ TEST_F(ApplicationContextTest, create_convertible_to_parent_registered) {
     int vs = 4;
   };
 
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<S, F, M>::create()));
+  ASSERT_EQ(
+      0, context.register_component(DefaultComponentHolder<S, F, M>::create()));
   ASSERT_TRUE(context.component_accessor<S>());
   ASSERT_EQ(4, context.component_accessor<S>().create()->vs);
   ASSERT_TRUE(context.component_accessor<F>());
@@ -110,7 +126,8 @@ TEST_F(ApplicationContextTest, create_with_auto_initialize_if_exist) {
       }
       int initialized = 0;
     };
-    ASSERT_EQ(0, context.register_component(DefaultComponentHolder<Initializable>::create()));
+    ASSERT_EQ(0, context.register_component(
+                     DefaultComponentHolder<Initializable>::create()));
     auto instance = context.component_accessor<Initializable>().create();
     ASSERT_TRUE(instance);
     ASSERT_EQ(1, instance->initialized);
@@ -131,7 +148,8 @@ TEST_F(ApplicationContextTest, create_with_auto_initialize_if_exist) {
       }
       int initialized = 0;
     };
-    ASSERT_EQ(0, context.register_component(DefaultComponentHolder<Initializable>::create()));
+    ASSERT_EQ(0, context.register_component(
+                     DefaultComponentHolder<Initializable>::create()));
     auto instance = context.component_accessor<Initializable>().create();
     ASSERT_TRUE(instance);
     ASSERT_EQ(2, instance->initialized);
@@ -148,7 +166,8 @@ TEST_F(ApplicationContextTest, create_with_auto_initialize_if_exist) {
       }
       int initialized = 0;
     };
-    ASSERT_EQ(0, context.register_component(DefaultComponentHolder<Initializable>::create()));
+    ASSERT_EQ(0, context.register_component(
+                     DefaultComponentHolder<Initializable>::create()));
     auto instance = context.component_accessor<Initializable>().create();
     ASSERT_TRUE(instance);
     ASSERT_EQ(3, instance->initialized);
@@ -161,13 +180,15 @@ TEST_F(ApplicationContextTest, create_with_auto_initialize_if_exist) {
       }
       int initialized = 0;
     };
-    ASSERT_EQ(0, context.register_component(DefaultComponentHolder<Initializable>::create()));
+    ASSERT_EQ(0, context.register_component(
+                     DefaultComponentHolder<Initializable>::create()));
     auto instance = context.component_accessor<Initializable>().create();
     ASSERT_TRUE(instance);
     ASSERT_EQ(4, instance->initialized);
   }
   {
-    ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::string>::create()));
+    ASSERT_EQ(0, context.register_component(
+                     DefaultComponentHolder<::std::string>::create()));
     auto instance = context.component_accessor<::std::string>().create();
     ASSERT_TRUE(instance);
     instance->assign("10086");
@@ -181,7 +202,8 @@ TEST_F(ApplicationContextTest, create_fail_if_auto_initialize_fail) {
       return -1;
     }
   };
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<Initializable>::create()));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<Initializable>::create()));
   ASSERT_TRUE(context.component_accessor<Initializable>());
   ASSERT_FALSE(context.component_accessor<Initializable>().create());
 }
@@ -220,7 +242,8 @@ TEST_F(ApplicationContextTest, singleton_convertible_to_parent_registered) {
     int vs = 4;
   };
 
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<S, F, M>::create()));
+  ASSERT_EQ(
+      0, context.register_component(DefaultComponentHolder<S, F, M>::create()));
   ASSERT_TRUE(context.component_accessor<S>());
   ASSERT_EQ(4, context.component_accessor<S>().get()->vs);
   ASSERT_TRUE(context.component_accessor<F>());
@@ -236,14 +259,16 @@ TEST_F(ApplicationContextTest, get_singleton_fail_if_auto_initialize_fail) {
       return -1;
     }
   };
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<Initializable>::create()));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<Initializable>::create()));
   ASSERT_TRUE(context.component_accessor<Initializable>());
   ASSERT_FALSE(context.component_accessor<Initializable>().get());
 }
 
-TEST_F(ApplicationContextTest, create_and_get_singleton_instance_both_support_autowire) {
+TEST_F(ApplicationContextTest,
+       create_and_get_singleton_instance_both_support_autowire) {
   class S {
-  public:
+   public:
     ::std::string& s() {
       return *_s;
     }
@@ -257,19 +282,21 @@ TEST_F(ApplicationContextTest, create_and_get_singleton_instance_both_support_au
       return *_nl_b;
     }
 
-  private:
-    BABYLON_AUTOWIRE(
-      BABYLON_MEMBER(::std::string, _s)
-      BABYLON_MEMBER(::std::vector<int>, _v)
-      BABYLON_MEMBER(::std::list<int>, _nl_a, "A")
-      BABYLON_MEMBER(::std::list<int>, _nl_b, "B")
-    )
+   private:
+    BABYLON_AUTOWIRE(BABYLON_MEMBER(::std::string, _s)
+                         BABYLON_MEMBER(::std::vector<int>, _v)
+                             BABYLON_MEMBER(::std::list<int>, _nl_a, "A")
+                                 BABYLON_MEMBER(::std::list<int>, _nl_b, "B"))
   };
   ASSERT_EQ(0, context.register_component(DefaultComponentHolder<S>::create()));
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::string>::create()));
-  ASSERT_EQ(0, context.register_component(FactoryComponentHolder<::std::vector<int>>::create()));
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::list<int>>::create(), "A"));
-  ASSERT_EQ(0, context.register_component(FactoryComponentHolder<::std::list<int>>::create(), "B"));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<::std::string>::create()));
+  ASSERT_EQ(0, context.register_component(
+                   FactoryComponentHolder<::std::vector<int>>::create()));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<::std::list<int>>::create(), "A"));
+  ASSERT_EQ(0, context.register_component(
+                   FactoryComponentHolder<::std::list<int>>::create(), "B"));
   ASSERT_TRUE(context.component_accessor<S>());
   ASSERT_TRUE(context.component_accessor<S>().get());
   context.component_accessor<S>().get()->s() = "10086";
@@ -286,9 +313,7 @@ TEST_F(ApplicationContextTest, create_and_get_singleton_instance_both_support_au
 
 TEST_F(ApplicationContextTest, component_autowire_is_critical) {
   struct S {
-    BABYLON_AUTOWIRE(
-      BABYLON_MEMBER(::std::string, _s)
-    )
+    BABYLON_AUTOWIRE(BABYLON_MEMBER(::std::string, _s))
   };
   ASSERT_EQ(0, context.register_component(DefaultComponentHolder<S>::create()));
   ASSERT_TRUE(context.component_accessor<S>());
@@ -302,13 +327,12 @@ TEST_F(ApplicationContextTest, component_autowire_before_initialize) {
       s = *_s;
       return 0;
     }
-    BABYLON_AUTOWIRE(
-      BABYLON_MEMBER(::std::string, _s)
-    )
+    BABYLON_AUTOWIRE(BABYLON_MEMBER(::std::string, _s))
     ::std::string s;
   };
   ASSERT_EQ(0, context.register_component(DefaultComponentHolder<S>::create()));
-  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<::std::string>::create()));
+  ASSERT_EQ(0, context.register_component(
+                   DefaultComponentHolder<::std::string>::create()));
   *context.component_accessor<::std::string>().get() = "10086";
   ASSERT_EQ("10086", context.component_accessor<S>().create()->s);
 }
@@ -338,7 +362,8 @@ TEST_F(ApplicationContextTest, component_create_with_external_option_if_given) {
   ASSERT_EQ(0, context.register_component(DefaultComponentHolder<S>::create()));
   ASSERT_TRUE(context.component_accessor<S>());
   ASSERT_TRUE(context.component_accessor<S>().create(Any {10086}));
-  ASSERT_EQ(10086, context.component_accessor<S>().create(Any {10086})->o.as<int>());
+  ASSERT_EQ(10086,
+            context.component_accessor<S>().create(Any {10086})->o.as<int>());
 }
 
 TEST_F(ApplicationContextTest, component_create_with_option_set_to_it) {
@@ -383,10 +408,10 @@ TEST_F(ApplicationContextTest, use_register_helper_to_register_component) {
   struct S : public F, public M, public X {
     int vs = 4;
   };
-  BABYLON_REGISTER_COMPONENT(::std::string);
-  BABYLON_REGISTER_COMPONENT(::std::vector<int>, "name1");
-  BABYLON_REGISTER_COMPONENT(::std::vector<int>, "name2");
-  BABYLON_REGISTER_COMPONENT(S, "", F, M);
+  BABYLON_REGISTER_COMPONENT(::std::string)
+  BABYLON_REGISTER_COMPONENT(::std::vector<int>, "name1")
+  BABYLON_REGISTER_COMPONENT(::std::vector<int>, "name2")
+  BABYLON_REGISTER_COMPONENT(S, "", F, M)
 
   ApplicationContext& context = ApplicationContext::instance();
   ASSERT_NE(nullptr, context.get_or_create<::std::string>());

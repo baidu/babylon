@@ -3,7 +3,10 @@
 #include "babylon/any.h"               // babylon::Any
 #include "babylon/logging/interface.h" // BABYLON_LOG
 
-#include "absl/container/flat_hash_map.h"           // absl::flat_hash_map
+// clang-foramt off
+#include BABYLON_EXTERNAL(absl / container / flat_hash_map.h) // absl::flat_hash_map
+// clang-foramt on
+
 #include "boost/preprocessor/comparison/less.hpp"   // BOOST_PP_LESS
 #include "boost/preprocessor/control/if.hpp"        // BOOST_PP_IF
 #include "boost/preprocessor/facilities/expand.hpp" // BOOST_PP_EXPAND
@@ -31,10 +34,6 @@ class ApplicationContext {
   template <typename T>
   using ScopedComponent = ::std::unique_ptr<T, OffsetDeleter>;
 
-  // 组件的使用侧接口，提供工厂和单例两种使用模式
-  template <typename T>
-  class ComponentAccessor;
-
   // 组件的提供侧接口，通过继承可以定制组件的初始化和组装行为
   class ComponentHolder;
   // 默认的组件机制DefaultComponentHolder
@@ -49,9 +48,12 @@ class ApplicationContext {
   class FactoryComponentHolder;
   // 内部使用，永远返回失败
   class EmptyComponentHolder;
-
   template <typename T, typename... BS>
   class DefaultComponentRegister;
+
+  // 组件的使用侧接口，提供工厂和单例两种使用模式
+  template <typename T>
+  class ComponentAccessor;
 
   // 可以默认构造，尽管大多情况下使用单例即可
   // 由于存在较多记录指针的场景，禁用移动和拷贝避免误用
@@ -127,51 +129,6 @@ class ApplicationContext::OffsetDeleter {
   ptrdiff_t offset {0};
 };
 
-template <typename T>
-class ApplicationContext::ComponentAccessor {
- public:
-  // ComponentHolder的轻量级包装
-  // 默认实现包装了可用且永远返回失败和nullptr
-  inline ComponentAccessor() noexcept = default;
-  inline ComponentAccessor(ComponentAccessor&&) noexcept = default;
-  inline ComponentAccessor(const ComponentAccessor&) noexcept = default;
-  inline ComponentAccessor& operator=(ComponentAccessor&&) noexcept = default;
-  inline ComponentAccessor& operator=(const ComponentAccessor&) noexcept =
-      default;
-  inline ~ComponentAccessor() noexcept = default;
-
-  // 作为ApplicationContext::component_accessor的返回值
-  // 用自身的bool转换来表达是否成功找到可用的Component
-  inline operator bool() const noexcept;
-
-  // 设置默认初始化选项，应用在后续组件初始化中
-  template <typename U>
-  void set_option(U&& option) noexcept;
-
-  // 按照工厂模式创建一个新的组件实例，由于组件实例可能存在非虚父类转换
-  // 返回携带定制销毁器的智能指针来实现正确的销毁
-  ScopedComponent<T> create() noexcept;
-  ScopedComponent<T> create(const Any& option) noexcept;
-
-  // 按照单例模式获取组件实例
-  inline T* get() noexcept;
-
-  // 综合组件获取接口
-  // 优先使用单例模式，单例模式不可用时使用工厂模式
-  inline ScopedComponent<T> get_or_create() noexcept;
-
- private:
-  // 仅供ApplicationContext::component_accessor使用
-  inline ComponentAccessor(ApplicationContext& context, ComponentHolder& holder,
-                           ptrdiff_t type_offset) noexcept;
-
-  ApplicationContext* _context {nullptr};
-  ComponentHolder* _holder {&EMPTY_COMPONENT_HOLDER};
-  ptrdiff_t _type_offset {0};
-
-  friend class ApplicationContext;
-};
-
 class ApplicationContext::ComponentHolder {
  public:
   // 构造时需要给定必要的类型信息，禁用默认构造
@@ -236,8 +193,8 @@ class ApplicationContext::ComponentHolder {
   virtual Any create_instance() noexcept = 0;
 
  private:
-  BABYLON_DECLARE_MEMBER_INVOCABLE(initialize, Initializeable);
-  BABYLON_DECLARE_MEMBER_INVOCABLE(__babylon_autowire, AutoWireable);
+  BABYLON_DECLARE_MEMBER_INVOCABLE(initialize, Initializeable)
+  BABYLON_DECLARE_MEMBER_INVOCABLE(__babylon_autowire, AutoWireable)
 
   // 单例的状态，未初始化、初始化中、初始化完成
   enum class SingletonState {
@@ -368,6 +325,51 @@ template <typename T, typename... BS>
 class ApplicationContext::DefaultComponentRegister {
  public:
   DefaultComponentRegister(StringView name) noexcept;
+};
+
+template <typename T>
+class ApplicationContext::ComponentAccessor {
+ public:
+  // ComponentHolder的轻量级包装
+  // 默认实现包装了可用且永远返回失败和nullptr
+  inline ComponentAccessor() noexcept = default;
+  inline ComponentAccessor(ComponentAccessor&&) noexcept = default;
+  inline ComponentAccessor(const ComponentAccessor&) noexcept = default;
+  inline ComponentAccessor& operator=(ComponentAccessor&&) noexcept = default;
+  inline ComponentAccessor& operator=(const ComponentAccessor&) noexcept =
+      default;
+  inline ~ComponentAccessor() noexcept = default;
+
+  // 作为ApplicationContext::component_accessor的返回值
+  // 用自身的bool转换来表达是否成功找到可用的Component
+  inline operator bool() const noexcept;
+
+  // 设置默认初始化选项，应用在后续组件初始化中
+  template <typename U>
+  void set_option(U&& option) noexcept;
+
+  // 按照工厂模式创建一个新的组件实例，由于组件实例可能存在非虚父类转换
+  // 返回携带定制销毁器的智能指针来实现正确的销毁
+  ScopedComponent<T> create() noexcept;
+  ScopedComponent<T> create(const Any& option) noexcept;
+
+  // 按照单例模式获取组件实例
+  inline T* get() noexcept;
+
+  // 综合组件获取接口
+  // 优先使用单例模式，单例模式不可用时使用工厂模式
+  inline ScopedComponent<T> get_or_create() noexcept;
+
+ private:
+  // 仅供ApplicationContext::component_accessor使用
+  inline ComponentAccessor(ApplicationContext& context, ComponentHolder& holder,
+                           ptrdiff_t type_offset) noexcept;
+
+  ApplicationContext* _context {nullptr};
+  ComponentHolder* _holder {&EMPTY_COMPONENT_HOLDER};
+  ptrdiff_t _type_offset {0};
+
+  friend class ApplicationContext;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

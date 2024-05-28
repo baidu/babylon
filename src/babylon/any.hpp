@@ -91,7 +91,9 @@ struct Any::TypeDescriptor<void> : public TypeDescriptor<void, int> {
   static void destructor(void*) noexcept {}
   static void deleter(void*) noexcept {}
   static void copy_constructor(void*, const void*) {}
-  static void* copy_creater(const void*) {return nullptr;}
+  static void* copy_creater(const void*) {
+    return nullptr;
+  }
 
   static constexpr Descriptor descriptor {
       .type_id = TypeId<void>::ID,
