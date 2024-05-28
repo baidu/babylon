@@ -52,13 +52,14 @@ cc_library(
 cc_library(
   name = 'application_context',
   srcs = ['application_context.cpp'],
-  hdrs = ['application_context.h', 'application_context.hpp'],
+  hdrs = ['application_context.h'],
   includes = ['.'],
   copts = BABYLON_COPTS,
   strip_include_prefix = '//src',
   deps = [
     ':any',
     '//src/babylon/logging',
+    '//:boost.preprocessor',
     '@com_google_absl//absl/container:flat_hash_map',
   ],
 )

@@ -50,7 +50,7 @@ common --registry=https://raw.githubusercontent.com/bazelboost/registry/main
 - 增加依赖项
 ```
 # in MODULE.bazel
-bazel_dep(name = 'babylon', version = '1.1.5')
+bazel_dep(name = 'babylon', version = '1.1.6')
 ```
 - 添加依赖的子模块到编译目标，全部可用子模块可以参照[模块功能文档](#模块功能文档)，或者[BUILD](BUILD)文件
 ```
@@ -74,9 +74,9 @@ cc_library(
 # in WORKSPACE
 http_archive(
   name = 'com_baidu_babylon',
-  urls = ['https://github.com/baidu/babylon/archive/refs/tags/v1.1.5.tar.gz'],
-  strip_prefix = 'babylon-1.1.5',
-  sha256 = 'a8d37251972a522b4c6f4d28ac6bf536444ff0e0c0e47eebff37aa75ca2a65a6',
+  urls = ['https://github.com/baidu/babylon/archive/refs/tags/v1.1.6.tar.gz'],
+  strip_prefix = 'babylon-1.1.6',
+  sha256 = 'a5bbc29f55819c90e00b40f9b5d2716d5f0232a158d69c530d8c7bac5bd794b6',
 )
 ```
 - 增加传递依赖项，内容拷贝自babylon代码库的WORKSPACE，并和项目自身依赖项合并
@@ -113,8 +113,8 @@ set(BUILD_DEPS ON)
 include(FetchContent)
 FetchContent_Declare(
   babylon
-  URL "https://github.com/baidu/babylon/archive/refs/tags/v1.1.5.tar.gz"
-  URL_HASH SHA256=a8d37251972a522b4c6f4d28ac6bf536444ff0e0c0e47eebff37aa75ca2a65a6
+  URL "https://github.com/baidu/babylon/archive/refs/tags/v1.1.6.tar.gz"
+  URL_HASH SHA256=a5bbc29f55819c90e00b40f9b5d2716d5f0232a158d69c530d8c7bac5bd794b6
 )
 FetchContent_MakeAvailable(babylon)
 ```

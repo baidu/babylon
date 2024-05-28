@@ -1,6 +1,6 @@
 #include "babylon/application_context.h"
 
-#include "babylon/logging/interface.h"
+#include "babylon/logging/interface.h" // BABYLON_LOG
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -149,21 +149,6 @@ void* ApplicationContext::ComponentHolder::create_and_then_get(ApplicationContex
   return _singleton.get();
 }
 
-/*
-int32_t ApplicationContext::ComponentHolder::initialize() {
-    return 0;
-}
-
-::std::tuple<void*, bool> ApplicationContext::ComponentHolder::get_or_create() {
-    return ::std::tuple<void*, bool>(nullptr, false);
-}
-
-void ApplicationContext::ComponentHolder::destroy(void*) noexcept {
-}
-
-::std::atomic<size_t> ApplicationContext::ComponentHolder::_s_next_seq;
-
-*/
 ApplicationContext::EmptyComponentHolder ApplicationContext::EMPTY_COMPONENT_HOLDER;
 
 ////////////////////////////////////////////////////////////////////////////////
