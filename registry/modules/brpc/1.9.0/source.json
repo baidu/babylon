@@ -1,0 +1,9 @@
+{
+  "url": "https://github.com/apache/brpc/archive/refs/tags/1.9.0.tar.gz",
+  "strip_prefix": "brpc-1.9.0",
+  "integrity": "sha256-hYVtoCFnc+EpaDQRb2n56AAHt/9CHbO+XJ0YkOz66nQ=",
+  "patch_strip": 1,
+  "patches": {
+    "osx-darwin.patch": "sha256-HhiWH/lqS3TLLzHDJ5aPrEM9m6qXuUncIKRv5ii8zC4="
+  }
+}

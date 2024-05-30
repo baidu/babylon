@@ -1,0 +1,9 @@
+{
+  "url": "https://github.com/openssl/openssl/archive/OpenSSL_1_1_1m.tar.gz",
+  "strip_prefix": "openssl-OpenSSL_1_1_1m",
+  "integrity": "sha256-Nq4krXzwqCTQt2rAiGEmLkfsVB5dDyDm2UurkLLas2A=",
+  "patch_strip": 1,
+  "patches": {
+    "add-build.patch": "sha256-To7GpgI8BscBdenGsLlfTZjS8V5ndqIo3T4Hj++7fws="
+  }
+}
