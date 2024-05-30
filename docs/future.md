@@ -5,6 +5,7 @@
 对标std::future，额外提供了
 
 - 使用模板参数支持自定义SchedInterface，支持在bthread等协程环境使用
+  - 在[example/use-with-bthread](https://github.com/baidu/babylon/tree/main/example/use-with-bthread)可以找到一个结合在bthread使用的例子
 - 增加on_finish/then功能，实现异步串联
 
 ## 使用方法
