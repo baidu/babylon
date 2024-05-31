@@ -44,26 +44,26 @@ constexpr Any::Descriptor Any::TypeDescriptor<
 #endif // __cplusplus < 201703L
 
 template <typename T, typename E>
-inline void Any::TypeDescriptor<T, E>::destructor(void* object) noexcept {
+void Any::TypeDescriptor<T, E>::destructor(void* object) noexcept {
   reinterpret_cast<T*>(object)->~T();
 }
 
 template <typename T, typename E>
-inline void Any::TypeDescriptor<T, E>::deleter(void* object) noexcept {
+void Any::TypeDescriptor<T, E>::deleter(void* object) noexcept {
   delete reinterpret_cast<T*>(object);
 }
 
 template <typename T>
 void Any::TypeDescriptor<T, typename ::std::enable_if<
                                 ::std::is_copy_constructible<T>::value>::type>::
-    copy_constructor(void* ptr, const void* object) {
+    copy_constructor(void* ptr, const void* object) noexcept {
   new (ptr) T(*reinterpret_cast<const T*>(object));
 }
 
 template <typename T>
 void Any::TypeDescriptor<
     T, typename ::std::enable_if<!::std::is_copy_constructible<T>::value>::
-           type>::copy_constructor(void*, const void*) {
+           type>::copy_constructor(void*, const void*) noexcept {
   assert(false &&
          "try copy non-copyable instance by copy an babylon::Any instance");
 }
@@ -71,29 +71,25 @@ void Any::TypeDescriptor<
 template <typename T>
 void* Any::TypeDescriptor<
     T, typename ::std::enable_if< ::std::is_copy_constructible<T>::value>::
-           type>::copy_creater(const void* object) {
+           type>::copy_creater(const void* object) noexcept {
   return new T(*reinterpret_cast<const T*>(object));
 }
 
 template <typename T>
 void* Any::TypeDescriptor<
     T, typename ::std::enable_if<!::std::is_copy_constructible<T>::value>::
-           type>::copy_creater(const void*) {
+           type>::copy_creater(const void*) noexcept {
   assert(false &&
          "try copy non-copyable instance by copy an babylon::Any instance");
   return nullptr;
 }
-// Any::TypeDescriptor end
-///////////////////////////////////////////////////////////////////////////////
 
 template <>
 struct Any::TypeDescriptor<void> : public TypeDescriptor<void, int> {
-  static void destructor(void*) noexcept {}
-  static void deleter(void*) noexcept {}
-  static void copy_constructor(void*, const void*) {}
-  static void* copy_creater(const void*) {
-    return nullptr;
-  }
+  static void destructor(void*) noexcept;
+  static void deleter(void*) noexcept;
+  static void copy_constructor(void*, const void*) noexcept;
+  static void* copy_creater(const void*) noexcept;
 
   static constexpr Descriptor descriptor {
       .type_id = TypeId<void>::ID,
@@ -102,9 +98,9 @@ struct Any::TypeDescriptor<void> : public TypeDescriptor<void, int> {
       .copy_constructor = copy_constructor,
       .copy_creater = copy_creater,
   };
-
-  const Id& type_id;
 };
+// Any::TypeDescriptor end
+///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
 // Any begin

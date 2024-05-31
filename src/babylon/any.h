@@ -42,10 +42,10 @@ class Any {
 
   struct Descriptor {
     const Id& type_id;
-    void (*const destructor)(void*);
-    void (*const deleter)(void*);
-    void (*const copy_constructor)(void*, const void*);
-    void* (*const copy_creater)(const void*);
+    void (*const destructor)(void*) noexcept;
+    void (*const deleter)(void*) noexcept;
+    void (*const copy_constructor)(void*, const void*) noexcept;
+    void* (*const copy_creater)(const void*) noexcept;
   };
 
   // 默认构造，后续可用 = 赋值
@@ -218,8 +218,8 @@ class Any {
 
   template <typename T, typename E = void>
   struct TypeDescriptor {
-    inline static void destructor(void* object) noexcept;
-    inline static void deleter(void* object) noexcept;
+    static void destructor(void* object) noexcept;
+    static void deleter(void* object) noexcept;
 
     static Meta meta_for_instance;
     static Meta meta_for_inplace_trivial;
@@ -230,8 +230,8 @@ class Any {
   struct TypeDescriptor<T, typename ::std::enable_if<
                                ::std::is_copy_constructible<T>::value>::type>
       : public TypeDescriptor<T, int> {
-    static void copy_constructor(void* ptr, const void* object);
-    static void* copy_creater(const void* object);
+    static void copy_constructor(void* ptr, const void* object) noexcept;
+    static void* copy_creater(const void* object) noexcept;
 
     static constexpr Descriptor descriptor {
         .type_id = TypeId<T>::ID,
@@ -246,8 +246,8 @@ class Any {
   struct TypeDescriptor<T, typename ::std::enable_if<
                                !::std::is_copy_constructible<T>::value>::type>
       : public TypeDescriptor<T, int> {
-    static void copy_constructor(void* ptr, const void* object);
-    static void* copy_creater(const void* object);
+    static void copy_constructor(void* ptr, const void* object) noexcept;
+    static void* copy_creater(const void* object) noexcept;
 
     static constexpr Descriptor descriptor {
         .type_id = TypeId<T>::ID,

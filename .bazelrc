@@ -2,7 +2,7 @@ common --registry=file://%workspace%/registry
 common --registry=https://raw.githubusercontent.com/bazelboost/registry/main
 common --registry=https://bcr.bazel.build
 
-build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+build --cxxopt=-std=c++17
 
 test --//:werror --features external_include_paths
 test --@rules_cuda//cuda:enable=False

@@ -341,7 +341,6 @@ inline BABYLON_CONSTEXPR bool operator<(
     typename ::std::common_type<BasicStringView<C, T>>::type left,
     BasicStringView<C, T> right) noexcept {
   return left.compare(right) < 0;
-  ;
 }
 
 template <typename C, typename T>
@@ -349,14 +348,12 @@ inline BABYLON_CONSTEXPR bool operator<(
     BasicStringView<C, T> left,
     typename ::std::common_type<BasicStringView<C, T>>::type right) noexcept {
   return left.compare(right) < 0;
-  ;
 }
 
 template <typename C, typename T>
 inline BABYLON_CONSTEXPR bool operator<(BasicStringView<C, T> left,
                                         BasicStringView<C, T> right) noexcept {
   return left.compare(right) < 0;
-  ;
 }
 
 template <typename C, typename T>
@@ -364,7 +361,6 @@ inline BABYLON_CONSTEXPR bool operator<=(
     typename ::std::common_type<BasicStringView<C, T>>::type left,
     BasicStringView<C, T> right) noexcept {
   return left.compare(right) <= 0;
-  ;
 }
 
 template <typename C, typename T>
@@ -372,14 +368,12 @@ inline BABYLON_CONSTEXPR bool operator<=(
     BasicStringView<C, T> left,
     typename ::std::common_type<BasicStringView<C, T>>::type right) noexcept {
   return left.compare(right) <= 0;
-  ;
 }
 
 template <typename C, typename T>
 inline BABYLON_CONSTEXPR bool operator<=(BasicStringView<C, T> left,
                                          BasicStringView<C, T> right) noexcept {
   return left.compare(right) <= 0;
-  ;
 }
 
 template <typename C, typename T>
@@ -387,7 +381,6 @@ inline BABYLON_CONSTEXPR bool operator>(
     typename ::std::common_type<BasicStringView<C, T>>::type left,
     BasicStringView<C, T> right) noexcept {
   return left.compare(right) > 0;
-  ;
 }
 
 template <typename C, typename T>
@@ -395,14 +388,12 @@ inline BABYLON_CONSTEXPR bool operator>(
     BasicStringView<C, T> left,
     typename ::std::common_type<BasicStringView<C, T>>::type right) noexcept {
   return left.compare(right) > 0;
-  ;
 }
 
 template <typename C, typename T>
 inline BABYLON_CONSTEXPR bool operator>(BasicStringView<C, T> left,
                                         BasicStringView<C, T> right) noexcept {
   return left.compare(right) > 0;
-  ;
 }
 
 template <typename C, typename T>
@@ -410,7 +401,6 @@ inline BABYLON_CONSTEXPR bool operator>=(
     typename ::std::common_type<BasicStringView<C, T>>::type left,
     BasicStringView<C, T> right) noexcept {
   return left.compare(right) >= 0;
-  ;
 }
 
 template <typename C, typename T>
@@ -418,14 +408,12 @@ inline BABYLON_CONSTEXPR bool operator>=(
     BasicStringView<C, T> left,
     typename ::std::common_type<BasicStringView<C, T>>::type right) noexcept {
   return left.compare(right) >= 0;
-  ;
 }
 
 template <typename C, typename T>
 inline BABYLON_CONSTEXPR bool operator>=(BasicStringView<C, T> left,
                                          BasicStringView<C, T> right) noexcept {
   return left.compare(right) >= 0;
-  ;
 }
 
 template <typename C, typename T>

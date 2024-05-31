@@ -2,6 +2,30 @@
 
 BABYLON_NAMESPACE_BEGIN
 
+///////////////////////////////////////////////////////////////////////////////
+// Any::TypeDescriptor begin
+void Any::TypeDescriptor<void>::destructor(void*) noexcept {}
+
+void Any::TypeDescriptor<void>::deleter(void*) noexcept {}
+
+void Any::TypeDescriptor<void>::copy_constructor(void*, const void*) noexcept {}
+
+void* Any::TypeDescriptor<void>::copy_creater(const void*) noexcept {
+  return nullptr;
+}
+
+#if __cplusplus < 201703L
+ABSL_ATTRIBUTE_WEAK constexpr Any::Descriptor Any::TypeDescriptor<void>::descriptor;
+#endif // __cplusplus < 201703L
+
+uintptr_t constexpr_symbol_generator();
+ABSL_ATTRIBUTE_WEAK uintptr_t constexpr_symbol_generator() {
+  return reinterpret_cast<uintptr_t>(Any::descriptor<void>());
+}
+// Any::TypeDescriptor end
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
 Any::Any(const Descriptor* descriptor, void* instance) noexcept
     : _meta {.v = reinterpret_cast<uint64_t>(descriptor) |
                   static_cast<uint64_t>(HolderType::INSTANCE) << 56 |
