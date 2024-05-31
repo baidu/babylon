@@ -51,7 +51,7 @@ class Operator {
  protected:
   using GetOperandFunction =
       const Any& (*)(size_t index, const ::std::vector<Any>& variables,
-                     const ::std::vector<Any>& constants) noexcept;
+                     const ::std::vector<Any>& constants);
 
   static const Any& get_operand_from_variables(
       size_t index, const ::std::vector<Any>& variables,

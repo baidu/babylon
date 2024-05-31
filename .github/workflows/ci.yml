@@ -13,17 +13,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
-        path: bazel-repo
-        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
-        restore-keys: |
-          bazel-repo-
-    - uses: actions/cache@v4
-      with:
         path: bazel-disk
         key: bazel-disk-gcc12-basic-asan-${{github.sha}}
-        restore-keys: |
-          bazel-disk-gcc12-basic-asan-
-          bazel-disk-
+        restore-keys: bazel-disk-gcc12-basic-asan-
     - run: bazel test --config=ci --action_env=CC=gcc-12 --features=asan test/...
 
   gcc12-basic-tsan:
@@ -32,17 +24,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
-        path: bazel-repo
-        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
-        restore-keys: |
-          bazel-repo-
-    - uses: actions/cache@v4
-      with:
         path: bazel-disk
         key: bazel-disk-gcc12-basic-tsan-${{github.sha}}
-        restore-keys: |
-          bazel-disk-gcc12-basic-tsan-
-          bazel-disk-
+        restore-keys: bazel-disk-gcc12-basic-tsan-
     - run: bazel test --config=ci --action_env=CC=gcc-12 --features=tsan test/...
 
   gcc12-arenastring-asan:
@@ -51,17 +35,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
-        path: bazel-repo
-        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
-        restore-keys: |
-          bazel-repo-
-    - uses: actions/cache@v4
-      with:
         path: bazel-disk
         key: bazel-disk-gcc12-arenastring-${{github.sha}}
-        restore-keys: |
-          bazel-disk-gcc12-arenastring-
-          bazel-disk-
+        restore-keys: bazel-disk-gcc12-arenastring-
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
     - run: bazel test --config=ci --action_env=CC=gcc-12 --config=arenastring --features=asan test/...
 
@@ -71,17 +47,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
-        path: bazel-repo
-        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
-        restore-keys: |
-          bazel-repo-
-    - uses: actions/cache@v4
-      with:
         path: bazel-disk
         key: bazel-disk-gcc12-mutable-donated-string-${{github.sha}}
-        restore-keys: |
-          bazel-disk-gcc12-mutable-donated-string-
-          bazel-disk-
+        restore-keys: bazel-disk-gcc12-mutable-donated-string-
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
     - run: bazel test --config=ci --action_env=CC=gcc-12 --config=mutable-donated-string --features=asan test/...
 
@@ -102,17 +70,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
-        path: bazel-repo
-        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
-        restore-keys: |
-          bazel-repo-
-    - uses: actions/cache@v4
-      with:
         path: bazel-disk
         key: bazel-disk-clang14-basic-asan-${{github.sha}}
-        restore-keys: |
-          bazel-disk-clang14-basic-asan-
-          bazel-disk-
+        restore-keys: bazel-disk-clang14-basic-asan-
     - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --features=asan test/...
 
   clang14-basic-tsan:
@@ -121,17 +81,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
-        path: bazel-repo
-        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
-        restore-keys: |
-          bazel-repo-
-    - uses: actions/cache@v4
-      with:
         path: bazel-disk
         key: bazel-disk-clang14-basic-tsan-${{github.sha}}
-        restore-keys: |
-          bazel-disk-clang14-basic-tsan-
-          bazel-disk-
+        restore-keys: bazel-disk-clang14-basic-tsan-
     - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --features=tsan test/...
 
   clang14-arenastring-asan:
@@ -140,17 +92,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
-        path: bazel-repo
-        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
-        restore-keys: |
-          bazel-repo-
-    - uses: actions/cache@v4
-      with:
         path: bazel-disk
         key: bazel-disk-clang14-arenastring-${{github.sha}}
-        restore-keys: |
-          bazel-disk-clang14-arenastring-
-          bazel-disk-
+        restore-keys: bazel-disk-clang14-arenastring-
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
     - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=arenastring --features=asan test/...
 
@@ -160,17 +104,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
-        path: bazel-repo
-        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
-        restore-keys: |
-          bazel-repo-
-    - uses: actions/cache@v4
-      with:
         path: bazel-disk
         key: bazel-disk-clang14-mutable-donated-string-${{github.sha}}
-        restore-keys: |
-          bazel-disk-clang14-mutable-donated-string-
-          bazel-disk-
+        restore-keys: bazel-disk-clang14-mutable-donated-string-
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
     - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=mutable-donated-string --features=asan test/...
 
@@ -191,17 +127,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
-        path: bazel-repo
-        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
-        restore-keys: |
-          bazel-repo-
-    - uses: actions/cache@v4
-      with:
         path: bazel-disk
         key: bazel-disk-gcc12-aarch64-asan-${{github.sha}}
-        restore-keys: |
-          bazel-disk-gcc12-aarch64-asan-
-          bazel-disk-
+        restore-keys: bazel-disk-gcc12-aarch64-asan-
     - run: sudo apt install g++-12-aarch64-linux-gnu
     - run: sudo apt install qemu-user
     - run: sudo ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/
@@ -213,17 +141,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
-        path: bazel-repo
-        key: bazel-repo-${{hashFiles('MODULE.bazel')}}
-        restore-keys: |
-          bazel-repo-
-    - uses: actions/cache@v4
-      with:
         path: bazel-disk
         key: bazel-disk-coverage-${{github.sha}}
-        restore-keys: |
-          bazel-disk-coverage-
-          bazel-disk-
+        restore-keys: bazel-disk-coverage-
     - run: bazel coverage --config=ci --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test/...
     - run: ln -s _coverage_report.dat bazel-out/_coverage/_coverage_report.lcov
     - uses: coverallsapp/github-action@v2
