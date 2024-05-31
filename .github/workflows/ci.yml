@@ -93,8 +93,7 @@ jobs:
       with:
         path: bazel-disk
         key: bazel-disk-gcc12-c++14-asan-${{github.sha}}
-        restore-keys: |
-          bazel-disk-gcc12-c++14-asan-
+        restore-keys: bazel-disk-gcc12-c++14-asan-
     - run: bazel test --disk_cache=bazel-disk --action_env=CC=gcc-12 --cxxopt=-std=c++14 --cxxopt=-faligned-new --features=asan test/...
 
   clang14-basic-asan:
@@ -183,8 +182,7 @@ jobs:
       with:
         path: bazel-disk
         key: bazel-disk-clang14-c++14-asan-${{github.sha}}
-        restore-keys: |
-          bazel-disk-clang14-c++14-asan-
+        restore-keys: bazel-disk-clang14-c++14-asan-
     - run: bazel test --disk_cache=bazel-disk --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --cxxopt=-std=c++14 --cxxopt=-faligned-new --features=asan test/...
 
   gcc12-aarch64-asan:
