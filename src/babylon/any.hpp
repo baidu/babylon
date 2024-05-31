@@ -450,8 +450,8 @@ inline ::std::unique_ptr<T> Any::release() noexcept {
   }
 
   auto pointer_value = _holder.pointer_value;
-  new (this) Any {};
-  return ::std::unique_ptr<T> {static_cast<T*>(pointer_value)};
+  new (this) Any;
+  return {static_cast<T*>(pointer_value), {}};
 }
 
 inline ::std::unique_ptr<void, void (*)(void*)> Any::release(
@@ -461,7 +461,7 @@ inline ::std::unique_ptr<void, void (*)(void*)> Any::release(
   }
 
   auto pointer_value = _holder.pointer_value;
-  new (this) Any {};
+  new (this) Any;
   return {pointer_value, descriptor->deleter};
 }
 
@@ -474,7 +474,7 @@ inline ::std::unique_ptr<void, void (*)(void*)> Any::release(
   if (type_name == instance_type().name) {
     auto pointer_value = _holder.pointer_value;
     auto deleter = _meta.descriptor()->deleter;
-    new (this) Any {};
+    new (this) Any;
     return {pointer_value, deleter};
   }
 

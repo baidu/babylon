@@ -1067,6 +1067,10 @@ TEST_F(AnyTest, release_empty_get_nullptr) {
   ASSERT_EQ(nullptr, any.release("AnyTest::NormalClass"));
 }
 
+#pragma GCC diagnostic push
+#if BABYLON_GCC_VERSION >= 120100 && BABYLON_GCC_VERSION < 120300
+#pragma GCC diagnostic ignored "-Wfree-nonheap-object"
+#endif // BABYLON_GCC_VERSION >= 120100 && BABYLON_GCC_VERSION < 120300
 TEST_F(AnyTest, release_wrong_type_get_nullptr_and_keep_instance_inside) {
   auto descriptor = Any::descriptor<NormalClass>();
   Any any(::std::string {"10086"});
@@ -1075,7 +1079,12 @@ TEST_F(AnyTest, release_wrong_type_get_nullptr_and_keep_instance_inside) {
   ASSERT_EQ(nullptr, any.release("AnyTest::NormalClass"));
   ASSERT_EQ("10086", *any.get<::std::string>());
 }
+#pragma GCC diagnostic pop
 
+#pragma GCC diagnostic push
+#if BABYLON_GCC_VERSION >= 120100 && BABYLON_GCC_VERSION < 120300
+#pragma GCC diagnostic ignored "-Wfree-nonheap-object"
+#endif // BABYLON_GCC_VERSION >= 120100 && BABYLON_GCC_VERSION < 120300
 TEST_F(AnyTest, release_reference_get_nullptr_and_keep_reference_inside) {
   auto descriptor = Any::descriptor<NormalClass>();
   Any any(::std::string {"10086"});
@@ -1084,6 +1093,7 @@ TEST_F(AnyTest, release_reference_get_nullptr_and_keep_reference_inside) {
   ASSERT_EQ(nullptr, any.release("AnyTest::NormalClass"));
   ASSERT_EQ("10086", *any.get<::std::string>());
 }
+#pragma GCC diagnostic pop
 
 TEST_F(AnyTest, release_inplace_get_nullptr_and_keep_inplace_inside) {
   {
