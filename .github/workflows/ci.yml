@@ -85,15 +85,15 @@ jobs:
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
     - run: bazel test --config=ci --action_env=CC=gcc-12 --config=mutable-donated-string --features=asan test/...
 
-  gcc12-c++14-asan:
+  gcc12-cxx14-asan:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
         path: bazel-disk
-        key: bazel-disk-gcc12-c++14-asan-${{github.sha}}
-        restore-keys: bazel-disk-gcc12-c++14-asan-
+        key: bazel-disk-gcc12-cxx14-asan-${{github.sha}}
+        restore-keys: bazel-disk-gcc12-cxx14-asan-
     - run: bazel test --disk_cache=bazel-disk --action_env=CC=gcc-12 --cxxopt=-std=c++14 --cxxopt=-faligned-new --features=asan test/...
 
   clang14-basic-asan:
@@ -174,15 +174,15 @@ jobs:
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
     - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=mutable-donated-string --features=asan test/...
 
-  clang14-c++14-asan:
+  clang14-cxx14-asan:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
         path: bazel-disk
-        key: bazel-disk-clang14-c++14-asan-${{github.sha}}
-        restore-keys: bazel-disk-clang14-c++14-asan-
+        key: bazel-disk-clang14-cxx14-asan-${{github.sha}}
+        restore-keys: bazel-disk-clang14-cxx14-asan-
     - run: bazel test --disk_cache=bazel-disk --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --cxxopt=-std=c++14 --cxxopt=-faligned-new --features=asan test/...
 
   gcc12-aarch64-asan:
