@@ -12,6 +12,3 @@ test --test_env=ASAN_OPTIONS=detect_odr_violation=1
 
 test:arenastring --//proto:arenastring
 test:mutable-donated-string --config=arenastring --copt=-DGOOGLE_PROTOBUF_MUTABLE_DONATED_STRING=1
-
-build:ci --disk_cache=bazel-disk
-build:ci --repository_cache=bazel-repo

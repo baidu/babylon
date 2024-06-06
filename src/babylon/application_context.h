@@ -120,6 +120,7 @@ class ApplicationContext::OffsetDeleter {
 
   // 在偏移offset后调用deleter来执行销毁
   // 使用在按基类销毁场景
+  inline OffsetDeleter(void (*deleter)(void*)) noexcept;
   inline OffsetDeleter(void (*deleter)(void*), ptrdiff_t offset) noexcept;
 
   void operator()(void* ptr) noexcept;
@@ -374,6 +375,10 @@ class ApplicationContext::ComponentAccessor {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationContext::OffsetDeleter begin
+inline ApplicationContext::OffsetDeleter::OffsetDeleter(
+    void (*deleter)(void*)) noexcept
+    : OffsetDeleter {deleter, 0} {}
+
 inline ApplicationContext::OffsetDeleter::OffsetDeleter(
     void (*deleter)(void*), ptrdiff_t offset) noexcept
     : deleter {deleter}, offset {offset} {}

@@ -16,7 +16,7 @@ jobs:
         path: bazel-disk
         key: bazel-disk-gcc12-basic-asan-${{github.sha}}
         restore-keys: bazel-disk-gcc12-basic-asan-
-    - run: bazel test --config=ci --action_env=CC=gcc-12 --features=asan test/...
+    - run: bazel test --disk_cache=bazel-disk --action_env=CC=gcc-12 --features=asan test/...
 
   gcc12-basic-tsan:
     runs-on: ubuntu-latest
@@ -27,7 +27,7 @@ jobs:
         path: bazel-disk
         key: bazel-disk-gcc12-basic-tsan-${{github.sha}}
         restore-keys: bazel-disk-gcc12-basic-tsan-
-    - run: bazel test --config=ci --action_env=CC=gcc-12 --features=tsan test/...
+    - run: bazel test --disk_cache=bazel-disk --action_env=CC=gcc-12 --features=tsan test/...
 
   gcc12-arenastring-asan:
     runs-on: ubuntu-latest
@@ -39,7 +39,7 @@ jobs:
         key: bazel-disk-gcc12-arenastring-${{github.sha}}
         restore-keys: bazel-disk-gcc12-arenastring-
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
-    - run: bazel test --config=ci --action_env=CC=gcc-12 --config=arenastring --features=asan test/...
+    - run: bazel test --disk_cache=bazel-disk --action_env=CC=gcc-12 --config=arenastring --features=asan test/...
 
   gcc12-mutable-donated-string-asan:
     runs-on: ubuntu-latest
@@ -51,7 +51,7 @@ jobs:
         key: bazel-disk-gcc12-mutable-donated-string-${{github.sha}}
         restore-keys: bazel-disk-gcc12-mutable-donated-string-
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
-    - run: bazel test --config=ci --action_env=CC=gcc-12 --config=mutable-donated-string --features=asan test/...
+    - run: bazel test --disk_cache=bazel-disk --action_env=CC=gcc-12 --config=mutable-donated-string --features=asan test/...
 
   gcc12-cxx14-asan:
     runs-on: ubuntu-latest
@@ -73,7 +73,7 @@ jobs:
         path: bazel-disk
         key: bazel-disk-clang14-basic-asan-${{github.sha}}
         restore-keys: bazel-disk-clang14-basic-asan-
-    - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --features=asan test/...
+    - run: bazel test --disk_cache=bazel-disk --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --features=asan test/...
 
   clang14-basic-tsan:
     runs-on: ubuntu-latest
@@ -84,7 +84,7 @@ jobs:
         path: bazel-disk
         key: bazel-disk-clang14-basic-tsan-${{github.sha}}
         restore-keys: bazel-disk-clang14-basic-tsan-
-    - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --features=tsan test/...
+    - run: bazel test --disk_cache=bazel-disk --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --features=tsan test/...
 
   clang14-arenastring-asan:
     runs-on: ubuntu-latest
@@ -96,7 +96,7 @@ jobs:
         key: bazel-disk-clang14-arenastring-${{github.sha}}
         restore-keys: bazel-disk-clang14-arenastring-
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
-    - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=arenastring --features=asan test/...
+    - run: bazel test --disk_cache=bazel-disk --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=arenastring --features=asan test/...
 
   clang14-mutable-donated-string-asan:
     runs-on: ubuntu-latest
@@ -108,7 +108,7 @@ jobs:
         key: bazel-disk-clang14-mutable-donated-string-${{github.sha}}
         restore-keys: bazel-disk-clang14-mutable-donated-string-
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '25.3.arenastring'/" MODULE.bazel
-    - run: bazel test --config=ci --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=mutable-donated-string --features=asan test/...
+    - run: bazel test --disk_cache=bazel-disk --action_env=CC=clang-14 --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++ --config=mutable-donated-string --features=asan test/...
 
   clang14-cxx14-asan:
     runs-on: ubuntu-latest
@@ -133,7 +133,7 @@ jobs:
     - run: sudo apt install g++-12-aarch64-linux-gnu
     - run: sudo apt install qemu-user
     - run: sudo ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/
-    - run: bazel test --config=ci --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --features=asan --linkopt=-fuse-ld=gold --test_env=LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib --test_env=ASAN_OPTIONS=detect_odr_violation=1:detect_leaks=0 test/...
+    - run: bazel test --disk_cache=bazel-disk --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --features=asan --linkopt=-fuse-ld=gold --test_env=LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib --test_env=ASAN_OPTIONS=detect_odr_violation=1:detect_leaks=0 test/...
 
   coverage:
     runs-on: ubuntu-latest
@@ -144,7 +144,7 @@ jobs:
         path: bazel-disk
         key: bazel-disk-coverage-${{github.sha}}
         restore-keys: bazel-disk-coverage-
-    - run: bazel coverage --config=ci --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test/...
+    - run: bazel coverage --disk_cache=bazel-disk --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test/...
     - run: ln -s _coverage_report.dat bazel-out/_coverage/_coverage_report.lcov
     - uses: coverallsapp/github-action@v2
       with:
