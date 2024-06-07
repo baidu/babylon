@@ -80,6 +80,7 @@ class Voidify {
 // 供内部使用的日志宏
 // 可以通过设置LogStreamProvider对接到不同的日志系统
 #define BABYLON_LOG(severity)                                           \
+  _Pragma("LCOV EXCL_LINE") \
   ::babylon::LogInterface::min_severity() >                             \
           ::babylon::LogInterface::SEVERITY_##severity                  \
       ? (void)0                                                         \

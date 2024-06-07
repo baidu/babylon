@@ -410,6 +410,10 @@ TEST_F(ApplicationContextTest, default_constructed_component_accessor_empty) {
   ASSERT_FALSE(accessor.get_or_create());
 }
 
+TEST_F(ApplicationContextTest, register_empty_component_failed) {
+  ASSERT_NE(0, context.register_component(::std::unique_ptr<DefaultComponentHolder<::std::string>> {}));
+}
+
 TEST_F(ApplicationContextTest, use_register_helper_to_register_component) {
   struct F {
     int vf = 1;
