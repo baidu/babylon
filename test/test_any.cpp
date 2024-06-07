@@ -954,7 +954,6 @@ size_t AnyTest::destruct_times = 0;
 
 TEST_F(AnyTest, release_instance_inside) {
   using S = NormalClass;
-
   {
     Any any(S {});
     auto ptr = any.release<S>();
@@ -966,22 +965,9 @@ TEST_F(AnyTest, release_instance_inside) {
     ptr.reset();
     ASSERT_EQ(1, destruct_times);
   }
-
   {
     Any any(S {});
-    auto ptr = any.release(Any::descriptor<S>());
-    ASSERT_NE(nullptr, ptr);
-    ASSERT_EQ(nullptr, any.get<S>());
-    destruct_times = 0;
-    any.clear();
-    ASSERT_EQ(0, destruct_times);
-    ptr.reset();
-    ASSERT_EQ(1, destruct_times);
-  }
-
-  {
-    Any any(S {});
-    auto ptr = any.release("AnyTest::NormalClass");
+    auto ptr = any.release();
     ASSERT_NE(nullptr, ptr);
     ASSERT_EQ(nullptr, any.get<S>());
     destruct_times = 0;
@@ -994,7 +980,6 @@ TEST_F(AnyTest, release_instance_inside) {
 
 TEST_F(AnyTest, release_inplace_instance_inside) {
   using S = InplaceClass;
-
   {
     Any any(::std::unique_ptr<S> {new S});
     auto ptr = any.release<S>();
@@ -1006,23 +991,9 @@ TEST_F(AnyTest, release_inplace_instance_inside) {
     ptr.reset();
     ASSERT_EQ(1, destruct_times);
   }
-
-  {
-    auto descriptor = Any::descriptor<S>();
-    Any any(::std::unique_ptr<S> {new S});
-    auto ptr = any.release(descriptor);
-    ASSERT_NE(nullptr, ptr);
-    ASSERT_EQ(nullptr, any.get<S>());
-    destruct_times = 0;
-    any.clear();
-    ASSERT_EQ(0, destruct_times);
-    ptr.reset();
-    ASSERT_EQ(1, destruct_times);
-  }
-
   {
     Any any(::std::unique_ptr<S> {new S});
-    auto ptr = any.release("AnyTest::InplaceClass");
+    auto ptr = any.release();
     ASSERT_NE(nullptr, ptr);
     ASSERT_EQ(nullptr, any.get<S>());
     destruct_times = 0;
@@ -1035,36 +1006,24 @@ TEST_F(AnyTest, release_inplace_instance_inside) {
 
 TEST_F(AnyTest, release_inplace_trivial_instance_inside) {
   using S = InplaceTrivialClass;
-
   {
     Any any(::std::unique_ptr<S> {new S});
     auto ptr = any.release<S>();
     ASSERT_NE(nullptr, ptr);
     ASSERT_EQ(nullptr, any.get<S>());
   }
-
-  {
-    auto descriptor = Any::descriptor<S>();
-    Any any(::std::unique_ptr<S> {new S});
-    auto ptr = any.release(descriptor);
-    ASSERT_NE(nullptr, ptr);
-    ASSERT_EQ(nullptr, any.get<S>());
-  }
-
   {
     Any any(::std::unique_ptr<S> {new S});
-    auto ptr = any.release("AnyTest::InplaceTrivialClass");
+    auto ptr = any.release();
     ASSERT_NE(nullptr, ptr);
     ASSERT_EQ(nullptr, any.get<S>());
   }
 }
 
 TEST_F(AnyTest, release_empty_get_nullptr) {
-  auto descriptor = Any::descriptor<NormalClass>();
   Any any;
   ASSERT_EQ(nullptr, any.release<NormalClass>());
-  ASSERT_EQ(nullptr, any.release(descriptor));
-  ASSERT_EQ(nullptr, any.release("AnyTest::NormalClass"));
+  ASSERT_EQ(nullptr, any.release());
 }
 
 #pragma GCC diagnostic push
@@ -1072,11 +1031,8 @@ TEST_F(AnyTest, release_empty_get_nullptr) {
 #pragma GCC diagnostic ignored "-Wfree-nonheap-object"
 #endif // BABYLON_GCC_VERSION >= 120100 && BABYLON_GCC_VERSION < 120300
 TEST_F(AnyTest, release_wrong_type_get_nullptr_and_keep_instance_inside) {
-  auto descriptor = Any::descriptor<NormalClass>();
   Any any(::std::string {"10086"});
   ASSERT_EQ(nullptr, any.release<NormalClass>());
-  ASSERT_EQ(nullptr, any.release(descriptor));
-  ASSERT_EQ(nullptr, any.release("AnyTest::NormalClass"));
   ASSERT_EQ("10086", *any.get<::std::string>());
 }
 #pragma GCC diagnostic pop
@@ -1086,32 +1042,28 @@ TEST_F(AnyTest, release_wrong_type_get_nullptr_and_keep_instance_inside) {
 #pragma GCC diagnostic ignored "-Wfree-nonheap-object"
 #endif // BABYLON_GCC_VERSION >= 120100 && BABYLON_GCC_VERSION < 120300
 TEST_F(AnyTest, release_reference_get_nullptr_and_keep_reference_inside) {
-  auto descriptor = Any::descriptor<NormalClass>();
-  Any any(::std::string {"10086"});
-  ASSERT_EQ(nullptr, any.release<NormalClass>());
-  ASSERT_EQ(nullptr, any.release(descriptor));
-  ASSERT_EQ(nullptr, any.release("AnyTest::NormalClass"));
+  ::std::string s {"10086"};
+  Any any;
+  any.ref(s);
+  ASSERT_EQ(nullptr, any.release<::std::string>());
+  ASSERT_EQ(nullptr, any.release());
   ASSERT_EQ("10086", *any.get<::std::string>());
 }
 #pragma GCC diagnostic pop
 
 TEST_F(AnyTest, release_inplace_get_nullptr_and_keep_inplace_inside) {
   {
-    auto descriptor = Any::descriptor<InplaceClass>();
     Any any(InplaceClass {});
     any.get<InplaceClass>()->v = 10086;
     ASSERT_EQ(nullptr, any.release<InplaceClass>());
-    ASSERT_EQ(nullptr, any.release(descriptor));
-    ASSERT_EQ(nullptr, any.release("AnyTest::InplaceClass"));
+    ASSERT_EQ(nullptr, any.release());
     ASSERT_EQ(10086, any.get<InplaceClass>()->v);
   }
   {
-    auto descriptor = Any::descriptor<InplaceTrivialClass>();
     Any any(InplaceTrivialClass {});
     any.get<InplaceTrivialClass>()->v = 10086;
     ASSERT_EQ(nullptr, any.release<InplaceTrivialClass>());
-    ASSERT_EQ(nullptr, any.release(descriptor));
-    ASSERT_EQ(nullptr, any.release("AnyTest::InplaceTrivialClass"));
+    ASSERT_EQ(nullptr, any.release());
     ASSERT_EQ(10086, any.get<InplaceTrivialClass>()->v);
   }
 }

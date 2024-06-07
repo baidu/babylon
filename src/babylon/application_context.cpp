@@ -67,6 +67,14 @@ int ApplicationContext::register_component(
   return 0;
 }
 
+ApplicationContext::ComponentIterator ApplicationContext::begin() noexcept {
+  return {_holders.begin()};
+}
+
+ApplicationContext::ComponentIterator ApplicationContext::end() noexcept {
+  return {_holders.end()};
+}
+
 void ApplicationContext::clear() noexcept {
   struct SeqGt {
     using T = ::std::unique_ptr<ComponentHolder>;
@@ -89,16 +97,14 @@ void ApplicationContext::clear() noexcept {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationContext::ComponentHolder begin
-::std::unique_ptr<void, void (*)(void*)>
-ApplicationContext::ComponentHolder::create(
+Any ApplicationContext::ComponentHolder::create(
     ApplicationContext& context) noexcept {
   return create(context, _option);
 }
 
-::std::unique_ptr<void, void (*)(void*)>
-ApplicationContext::ComponentHolder::create(ApplicationContext& context,
-                                            const Any& option) noexcept {
-  return create_instance(context, option).release(_type_id);
+Any ApplicationContext::ComponentHolder::create(ApplicationContext& context,
+                                                const Any& option) noexcept {
+  return create_instance(context, option);
 }
 
 void ApplicationContext::ComponentHolder::for_each_type(
@@ -149,14 +155,14 @@ Any ApplicationContext::ComponentHolder::create_instance(
   return instance;
 }
 
-void* ApplicationContext::ComponentHolder::create_and_then_get(
+void ApplicationContext::ComponentHolder::create_singleton(
     ApplicationContext& context) noexcept {
   ::std::lock_guard<std::recursive_mutex> lock(*_mutex);
   if (_singleton_state == ComponentHolder::SingletonState::INITIALIZING) {
     BABYLON_LOG(WARNING)
         << "initialize failed for recursive dependent component of type "
         << _type_id->type_id;
-    return nullptr;
+    return;
   }
   if (_singleton_state == ComponentHolder::SingletonState::UNINITIALIZED) {
     _singleton_state = ComponentHolder::SingletonState::INITIALIZING;
@@ -165,7 +171,6 @@ void* ApplicationContext::ComponentHolder::create_and_then_get(
     atomic_singleton_state().store(ComponentHolder::SingletonState::INITIALIZED,
                                    ::std::memory_order_release);
   }
-  return _singleton.get();
 }
 
 ApplicationContext::EmptyComponentHolder

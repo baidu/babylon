@@ -15,7 +15,8 @@ void* Any::TypeDescriptor<void>::copy_creater(const void*) noexcept {
 }
 
 #if __cplusplus < 201703L
-ABSL_ATTRIBUTE_WEAK constexpr Any::Descriptor Any::TypeDescriptor<void>::descriptor;
+ABSL_ATTRIBUTE_WEAK constexpr Any::Descriptor
+    Any::TypeDescriptor<void>::descriptor;
 #endif // __cplusplus < 201703L
 
 uintptr_t constexpr_symbol_generator();
