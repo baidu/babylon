@@ -1,5 +1,5 @@
-BABYLON_GCC_COPTS = ['-Wall', '-Wextra', '-Wno-unknown-pragmas']
-BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-option', '-Wno-unknown-pragmas',
+BABYLON_GCC_COPTS = ['-Wall', '-Wextra']
+BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-option',
                        # 不保持老版本c++语法兼容
                        '-Wno-c++98-compat', '-Wno-c++98-compat-pedantic',
                        # Boost Preprocessor中大量使用
