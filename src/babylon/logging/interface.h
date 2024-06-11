@@ -82,7 +82,7 @@ class Voidify {
 #define BABYLON_LOG(severity)                                           \
   ::babylon::LogInterface::min_severity() >                             \
           ::babylon::LogInterface::SEVERITY_##severity                  \
-      ? (void)"LCOV_EXCL_LINE"                                                         \
+      ? (void)0                                                         \
       : ::babylon::Voidify() &                                          \
             ::babylon::ScopedLogStream(                                 \
                 ::babylon::LogInterface::SEVERITY_##severity, __FILE__, \
