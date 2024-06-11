@@ -429,19 +429,24 @@ TEST_F(ApplicationContextTest, use_register_helper_to_register_component) {
   struct S : public F, public M, public X {
     int vs = 4;
   };
+  struct SS : public F, public M, public X {
+    int vs = 5;
+  };
   BABYLON_REGISTER_COMPONENT(::std::string)
   BABYLON_REGISTER_COMPONENT(::std::vector<int>, "name1")
   BABYLON_REGISTER_COMPONENT(::std::vector<int>, "name2")
   BABYLON_REGISTER_COMPONENT(S, "", F, M)
+  BABYLON_REGISTER_FACTORY_COMPONENT(::std::vector<int>, "name3")
+  BABYLON_REGISTER_FACTORY_COMPONENT(SS, "", X)
 
   ApplicationContext& context = ApplicationContext::instance();
   ASSERT_NE(nullptr, context.get_or_create<::std::string>());
   ASSERT_EQ(nullptr, context.get_or_create<::std::vector<int>>());
   ASSERT_NE(nullptr, context.get_or_create<::std::vector<int>>("name1"));
   ASSERT_NE(nullptr, context.get_or_create<::std::vector<int>>("name2"));
-  ASSERT_EQ(nullptr, context.get_or_create<::std::vector<int>>("name3"));
+  ASSERT_EQ(nullptr, context.get_or_create<::std::vector<int>>("name4"));
   ASSERT_NE(nullptr, context.get_or_create<S>());
   ASSERT_NE(nullptr, context.get_or_create<F>());
   ASSERT_NE(nullptr, context.get_or_create<M>());
-  ASSERT_EQ(nullptr, context.get_or_create<X>());
+  ASSERT_NE(nullptr, context.get_or_create<X>());
 }

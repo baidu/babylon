@@ -48,8 +48,9 @@ class ApplicationContext {
   class FactoryComponentHolder;
   // 内部使用，永远返回失败
   class EmptyComponentHolder;
-  template <typename T, typename... BS>
-  class DefaultComponentRegister;
+
+  template <typename T>
+  class ComponentRegister;
 
   // 组件的使用侧接口，提供工厂和单例两种使用模式
   template <typename T>
@@ -327,10 +328,10 @@ class ApplicationContext::EmptyComponentHolder
   virtual Any create_instance() noexcept override;
 };
 
-template <typename T, typename... BS>
-class ApplicationContext::DefaultComponentRegister {
+template <typename T>
+class ApplicationContext::ComponentRegister {
  public:
-  DefaultComponentRegister(StringView name) noexcept;
+  ComponentRegister(StringView name) noexcept;
 };
 
 template <typename T>
@@ -463,14 +464,12 @@ ApplicationContext::FactoryComponentHolder<T, BS...>::create() noexcept {
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// ApplicationContext::DefaultComponentRegister begin
-template <typename T, typename... BS>
-ApplicationContext::DefaultComponentRegister<
-    T, BS...>::DefaultComponentRegister(StringView name) noexcept {
-  ApplicationContext::instance().register_component(
-      DefaultComponentHolder<T, BS...>::create(), name);
+// ApplicationContext::ComponentRegister begin
+template <typename T>
+ApplicationContext::ComponentRegister<T>::ComponentRegister(StringView name) noexcept {
+  ApplicationContext::instance().register_component(T::create(), name);
 }
-// ApplicationContext::DefaultComponentRegister end
+// ApplicationContext::ComponentRegister end
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -872,6 +871,16 @@ BABYLON_NAMESPACE_END
               BOOST_PP_TUPLE_PUSH_BACK(args, ""), args)
 
 #define __BABYLON_REGISTER_COMPONENT(T, name, ...)                \
-  static ::babylon::ApplicationContext::DefaultComponentRegister< \
-      T, ##__VA_ARGS__>                                           \
+  static ::babylon::ApplicationContext::ComponentRegister< \
+      ::babylon::ApplicationContext::DefaultComponentHolder<T, ##__VA_ARGS__>>                                           \
+      BOOST_PP_CAT(Babylon_Application_Context_Register, __COUNTER__) {name};
+
+#define BABYLON_REGISTER_FACTORY_COMPONENT(T, ...)                                 \
+  BOOST_PP_EXPAND(                                                         \
+      __BABYLON_REGISTER_FACTORY_COMPONENT __BABYLON_REGISTER_COMPONENT_FILL_ARGS( \
+          (T, ##__VA_ARGS__)))
+
+#define __BABYLON_REGISTER_FACTORY_COMPONENT(T, name, ...)                \
+  static ::babylon::ApplicationContext::ComponentRegister< \
+      ::babylon::ApplicationContext::FactoryComponentHolder<T, ##__VA_ARGS__>>                                           \
       BOOST_PP_CAT(Babylon_Application_Context_Register, __COUNTER__) {name};
