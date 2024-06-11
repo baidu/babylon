@@ -61,6 +61,18 @@ class ReusableManager {
   template <typename T, typename... Args>
   ReusableAccessor<T> create_object(Args&&... args) noexcept;
 
+  // 特殊情况下，实例的首次创建可能无法通过uses-allocator
+  // construction协议自动完成 支持传入自定义函数来实现
+  //
+  // 例如通过反射机制使用基类统一管理Protobuf Message的情况
+  // 由于T都是基类Message，需要使用反射接口才能创建实际的子类
+  // 但是子类创建完成后，就可以将反射信息记录到ReusableTraits机制的AllocationMetadata中
+  // 后续的重建就可以依照协议完成了
+  template <typename T, typename C,
+            typename = typename ::std::enable_if<::std::is_same<
+                T*, typename InvokeResult<C, R&>::type>::value>::type>
+  ReusableAccessor<T> create_object(C&& creator) noexcept;
+
   // 对所有create_object创建的实例统计执行逻辑清空
   // 并周期性进行重建，以便保持内存尽量复用且持续地连续
   //
@@ -94,6 +106,9 @@ class ReusableManager {
     T* _instance;
     Reuse::AllocationMetadata<T> _meta;
   };
+
+  template <typename T>
+  ReusableAccessor<T> register_object(T* instance) noexcept;
 
   R _resource;
 

@@ -35,6 +35,9 @@ struct MockPageAllocator : public ::babylon::NewDeletePageAllocator {
 
 // 相当于一个特殊尺寸的NewDeletePageAllocator
 struct ReusableMessage : public ::testing::Test {
+  using Arena = ::google::protobuf::Arena;
+  using Message = ::google::protobuf::Message;
+
   void SetUp() override {
     allocator.set_page_size(256);
     manager.resource().set_page_allocator(allocator);
@@ -173,26 +176,28 @@ TEST_F(ReusableMessage, recreate_string_on_arena) {
       manager.resource().contains(message->mutable_m()->mutable_s()->data()));
 }
 
-/*
-TEST_F(ReusableMessage, arena_string_support_resize_uninitialized) {
-    auto message = manager.create_object<ArenaExample>();
-    message->set_s(long_string);
-    message->set_s("10086");
-    STLStringResizeUninitialized(&*message->mutable_s(), 4);
-    auto* data = message->mutable_s()->data();
-    ASSERT_EQ(4, message->s().size());
-    ASSERT_EQ("1008", message->s());
-    ASSERT_EQ(data, message->s().data());
-    STLStringResizeUninitialized(&*message->mutable_s(), 2);
-    data = message->mutable_s()->data();
-    ASSERT_EQ(2, message->s().size());
-    ASSERT_EQ("10", message->s());
-    ASSERT_EQ(data, message->s().data());
-    STLStringResizeUninitialized(&*message->mutable_s(), 4);
-    data = message->mutable_s()->data();
-    ASSERT_EQ(4, message->s().size());
-    ASSERT_EQ(::std::string_view("10\08", 4), message->s());
+TEST_F(ReusableMessage,
+       usable_with_base_protobuf_message_type_when_reflection) {
+  auto message = manager.create_object<Message>(
+      [](::babylon::SwissMemoryResource& resource) {
+        Arena& arena = resource;
+        Message* result = Arena::CreateMessage<ArenaExample>(&arena);
+        return result;
+      });
+  auto pmessage = static_cast<ArenaExample*>(message.get());
+  ASSERT_EQ(default_string_capacity, pmessage->s().capacity());
+  ASSERT_EQ("10086", pmessage->ds());
+  pmessage->set_s(long_string);
+  pmessage->set_ds(long_string);
+  manager.clear();
+  auto pmessage2 = static_cast<ArenaExample*>(message.get());
+  ASSERT_NE(pmessage, pmessage2);
+  ASSERT_FALSE(pmessage2->has_s());
+  ASSERT_TRUE(pmessage2->s().empty());
+  ASSERT_LE(long_string.size(), pmessage2->s().capacity());
+  ASSERT_FALSE(pmessage2->has_ds());
+  ASSERT_EQ("10086", pmessage2->ds());
+  ASSERT_LE(long_string.size(), pmessage2->ds().capacity());
 }
-*/
 
 #endif // BABYLON_USE_PROTOBUF
