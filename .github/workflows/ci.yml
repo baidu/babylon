@@ -146,7 +146,7 @@ jobs:
         key: bazel-disk-coverage-${{github.sha}}
         restore-keys: bazel-disk-coverage-
     - run: bazel coverage --disk_cache=bazel-disk --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test/...
-    - run: ln -s _coverage_report.dat bazel-out/_coverage/_coverage_report.lcov
+    - run: .github/workflows/filter_lcov.sh
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
