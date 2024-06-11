@@ -6,6 +6,8 @@
 #include BABYLON_EXTERNAL(absl/base/optimization.h) // ABSL_PREDICT_FALSE
 // clang-format on
 
+#include <cassert>  // ::assert
+
 BABYLON_NAMESPACE_BEGIN
 
 ////////////////////////////////////////////////////////////////////////////////

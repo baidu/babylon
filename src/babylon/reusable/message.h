@@ -137,6 +137,46 @@ constexpr bool ReusableTraits<
                                                    T>::value>::type>::REUSABLE;
 #endif // __cplusplus < 201703L
 
+template <>
+class ReusableTraits<::google::protobuf::Message>
+    : public BasicReusableTraits<ReusableTraits<::google::protobuf::Message>> {
+ private:
+  using Arena = ::google::protobuf::Arena;
+  using Message = ::google::protobuf::Message;
+  using Base = BasicReusableTraits<ReusableTraits<::google::protobuf::Message>>;
+
+ public:
+  struct AllocationMetadata {
+    MessageAllocationMetadata metadata;
+    const Message* default_instance {nullptr};
+  };
+
+  static constexpr bool REUSABLE = true;
+
+  static void update_allocation_metadata(
+      const Message& message, AllocationMetadata& metadata) noexcept {
+    if (metadata.default_instance == nullptr) {
+      auto descriptor = message.GetDescriptor();
+      auto reflection = message.GetReflection();
+      metadata.default_instance =
+          reflection->GetMessageFactory()->GetPrototype(descriptor);
+    }
+    metadata.metadata.update(message);
+  }
+
+  static Message* create_with_allocation_metadata(
+      SwissAllocator<> allocator, const AllocationMetadata& metadata) {
+    auto instance =
+        metadata.default_instance->New(&(Arena&)*allocator.resource());
+    metadata.metadata.reserve(*instance);
+    return instance;
+  }
+
+  inline static void reconstruct_instance(Message& instance, SwissAllocator<>) {
+    instance.Clear();
+  }
+};
+
 BABYLON_NAMESPACE_END
 
 #endif // GOOGLE_PROTOBUF_VERSION >= 3000000

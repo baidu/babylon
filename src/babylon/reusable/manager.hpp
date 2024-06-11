@@ -83,18 +83,17 @@ void ReusableManager<R>::set_recreate_interval(size_t interval) noexcept {
 template <typename R>
 template <typename T, typename... Args>
 ReusableAccessor<T> ReusableManager<R>::create_object(Args&&... args) noexcept {
-  MonotonicAllocator<T, R> allocator {_resource};
-  auto instance =
-      allocator.template create_object<T>(::std::forward<Args>(args)...);
-  auto unit = ::std::unique_ptr<TypedReusableUnit<T>>(
-      new TypedReusableUnit<T> {instance});
-  auto accessor = unit->accessor();
-  {
-    // 不在关键路径，简单用锁同步
-    ::std::lock_guard<::std::mutex> lock(_mutex);
-    _units.emplace_back(::std::move(unit));
-  }
-  return accessor;
+  return create_object<T>([&](R& resource) {
+    MonotonicAllocator<T, R> allocator {resource};
+    return allocator.create(::std::forward<Args>(args)...);
+  });
+}
+
+template <typename R>
+template <typename T, typename C, typename>
+ReusableAccessor<T> ReusableManager<R>::create_object(C&& creator) noexcept {
+  auto instance = creator(_resource);
+  return register_object(instance);
 }
 
 template <typename R>
@@ -113,6 +112,20 @@ void ReusableManager<R>::clear() noexcept {
       unit->clear(_resource);
     }
   }
+}
+
+template <typename R>
+template <typename T>
+ReusableAccessor<T> ReusableManager<R>::register_object(T* instance) noexcept {
+  auto unit = ::std::unique_ptr<TypedReusableUnit<T>>(
+      new TypedReusableUnit<T> {instance});
+  auto accessor = unit->accessor();
+  {
+    // 不在关键路径，简单用锁同步
+    ::std::lock_guard<::std::mutex> lock(_mutex);
+    _units.emplace_back(::std::move(unit));
+  }
+  return accessor;
 }
 // ReusableManager end
 ////////////////////////////////////////////////////////////////////////////////
