@@ -151,6 +151,7 @@ class Any {
   // 尝试获取const ref也会取到nullptr
   template <typename T>
   inline T* get() noexcept;
+  inline void* get() noexcept;
 
   // 常量取值
   template <typename T, typename ::std::enable_if<sizeof(size_t) < sizeof(T),
@@ -208,10 +209,7 @@ class Any {
   // and state of this Any is not changed
   template <typename T>
   inline ::std::unique_ptr<T> release() noexcept;
-  inline ::std::unique_ptr<void, void (*)(void*)> release(
-      const Descriptor* descriptor) noexcept;
-  inline ::std::unique_ptr<void, void (*)(void*)> release(
-      StringView type_name) noexcept;
+  inline ::std::unique_ptr<void, void (*)(void*)> release() noexcept;
 
  private:
   union Meta;

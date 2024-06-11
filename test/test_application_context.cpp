@@ -380,6 +380,21 @@ TEST_F(ApplicationContextTest, component_create_with_option_set_to_it) {
   ASSERT_EQ(10086, context.component_accessor<S>().create()->o.as<int>());
 }
 
+TEST_F(ApplicationContextTest, iterable) {
+  struct S {
+    int initialize() {
+      construct_times++;
+      return 0;
+    }
+  };
+  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<S>::create()));
+  ASSERT_EQ(0, context.register_component(DefaultComponentHolder<S>::create()));
+  for (auto& component : context) {
+    component.get(context);
+  }
+  ASSERT_EQ(2, construct_times);
+}
+
 TEST_F(ApplicationContextTest, can_clear_and_reuse) {
   context.register_component(DefaultComponentHolder<::std::string>::create());
   ASSERT_NE(nullptr, context.get_or_create<::std::string>());
@@ -393,6 +408,10 @@ TEST_F(ApplicationContextTest, default_constructed_component_accessor_empty) {
   ApplicationContext::ComponentAccessor<::std::string> accessor;
   ASSERT_FALSE(accessor);
   ASSERT_FALSE(accessor.get_or_create());
+}
+
+TEST_F(ApplicationContextTest, register_empty_component_failed) {
+  ASSERT_NE(0, context.register_component(::std::unique_ptr<DefaultComponentHolder<::std::string>> {}));
 }
 
 TEST_F(ApplicationContextTest, use_register_helper_to_register_component) {

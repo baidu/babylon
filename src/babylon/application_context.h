@@ -55,6 +55,9 @@ class ApplicationContext {
   template <typename T>
   class ComponentAccessor;
 
+  // 支持遍历组件的迭代器
+  class ComponentIterator;
+
   // 可以默认构造，尽管大多情况下使用单例即可
   // 由于存在较多记录指针的场景，禁用移动和拷贝避免误用
   ApplicationContext() = default;
@@ -92,6 +95,10 @@ class ApplicationContext {
   // 简化表达component_accessor<T>(name).get_or_create();
   template <typename T>
   ScopedComponent<T> get_or_create(StringView name) noexcept;
+
+  // 支持range-based loop
+  ComponentIterator begin() noexcept;
+  ComponentIterator end() noexcept;
 
   // 清空并销毁所有ComponentHolder，在ApplicationContext自身析构时会默认调用
   // 主动使用场景主要用于明确销毁时机，支持优雅退出
@@ -149,12 +156,10 @@ class ApplicationContext::ComponentHolder {
   template <typename T>
   inline ptrdiff_t offset() const noexcept;
 
-  ::std::unique_ptr<void, void (*)(void*)> create(
-      ApplicationContext& context) noexcept;
-  ::std::unique_ptr<void, void (*)(void*)> create(ApplicationContext& context,
-                                                  const Any& option) noexcept;
+  Any create(ApplicationContext& context) noexcept;
+  Any create(ApplicationContext& context, const Any& option) noexcept;
 
-  inline void* get(ApplicationContext& context) noexcept;
+  inline Any& get(ApplicationContext& context) noexcept;
 
   void for_each_type(
       const ::std::function<void(const Id*)>& callback) const noexcept;
@@ -219,7 +224,7 @@ class ApplicationContext::ComponentHolder {
   template <typename T, typename B, typename... BS>
   void add_convertible_type() noexcept;
 
-  void* create_and_then_get(ApplicationContext& context) noexcept;
+  void create_singleton(ApplicationContext& context) noexcept;
 
   inline ::std::atomic<SingletonState>& atomic_singleton_state() noexcept;
 
@@ -288,7 +293,7 @@ class ApplicationContext::ComponentHolder {
 
   ::std::unique_ptr<::std::recursive_mutex> _mutex {new ::std::recursive_mutex};
   SingletonState _singleton_state {SingletonState::UNINITIALIZED};
-  ::std::unique_ptr<void, void (*)(void*)> _singleton {nullptr, nullptr};
+  Any _singleton;
   size_t _sequence {0};
 };
 
@@ -369,6 +374,39 @@ class ApplicationContext::ComponentAccessor {
   ApplicationContext* _context {nullptr};
   ComponentHolder* _holder {&EMPTY_COMPONENT_HOLDER};
   ptrdiff_t _type_offset {0};
+
+  friend class ApplicationContext;
+};
+
+class ApplicationContext::ComponentIterator {
+ public:
+  using difference_type = ssize_t;
+  using value_type = ComponentHolder;
+  using pointer = value_type*;
+  using reference = value_type&;
+  using iterator_category = ::std::input_iterator_tag;
+
+  inline ComponentIterator() noexcept = default;
+  inline ComponentIterator(ComponentIterator&&) noexcept = default;
+  inline ComponentIterator(const ComponentIterator&) noexcept = default;
+  inline ComponentIterator& operator=(ComponentIterator&&) noexcept = default;
+  inline ComponentIterator& operator=(const ComponentIterator&) noexcept =
+      default;
+  inline ~ComponentIterator() noexcept = default;
+
+  inline reference operator*() const noexcept;
+  inline pointer operator->() const noexcept;
+  inline bool operator==(ComponentIterator other) const noexcept;
+  inline bool operator!=(ComponentIterator other) const noexcept;
+
+  inline ComponentIterator& operator++() noexcept;
+
+ private:
+  using UnderlyingIterator =
+      ::std::vector<::std::unique_ptr<ComponentHolder>>::iterator;
+  inline ComponentIterator(UnderlyingIterator iter) noexcept;
+
+  UnderlyingIterator _iter;
 
   friend class ApplicationContext;
 };
@@ -505,14 +543,15 @@ inline ptrdiff_t ApplicationContext::ComponentHolder::offset() const noexcept {
   return convert_offset(&Any::descriptor<T>()->type_id);
 }
 
-inline void* ApplicationContext::ComponentHolder::get(
+inline Any& ApplicationContext::ComponentHolder::get(
     ApplicationContext& context) noexcept {
   if (ABSL_PREDICT_TRUE(
           atomic_singleton_state().load(::std::memory_order_acquire) ==
           SingletonState::INITIALIZED)) {
-    return _singleton.get();
+    return _singleton;
   }
-  return create_and_then_get(context);
+  create_singleton(context);
+  return _singleton;
 }
 
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE bool
@@ -655,7 +694,7 @@ ApplicationContext::ComponentAccessor<T>::set_option(U&& option) noexcept {
 template <typename T>
 ApplicationContext::ScopedComponent<T>
 ApplicationContext::ComponentAccessor<T>::create() noexcept {
-  auto instance = _holder->create(*_context);
+  auto instance = _holder->create(*_context).release();
   if (instance) {
     auto address =
         reinterpret_cast<intptr_t>(instance.release()) + _type_offset;
@@ -668,7 +707,7 @@ ApplicationContext::ComponentAccessor<T>::create() noexcept {
 template <typename T>
 ApplicationContext::ScopedComponent<T>
 ApplicationContext::ComponentAccessor<T>::create(const Any& option) noexcept {
-  auto instance = _holder->create(*_context, option);
+  auto instance = _holder->create(*_context, option).release();
   if (instance) {
     auto address =
         reinterpret_cast<intptr_t>(instance.release()) + _type_offset;
@@ -680,9 +719,9 @@ ApplicationContext::ComponentAccessor<T>::create(const Any& option) noexcept {
 
 template <typename T>
 inline T* ApplicationContext::ComponentAccessor<T>::get() noexcept {
-  auto instance = _holder->get(*_context);
+  auto& instance = _holder->get(*_context);
   if (instance) {
-    auto address = reinterpret_cast<intptr_t>(instance) + _type_offset;
+    auto address = reinterpret_cast<intptr_t>(instance.get()) + _type_offset;
     return reinterpret_cast<T*>(address);
   }
   return nullptr;
@@ -703,6 +742,40 @@ inline ApplicationContext::ComponentAccessor<T>::ComponentAccessor(
     ptrdiff_t type_offset) noexcept
     : _context {&context}, _holder {&holder}, _type_offset {type_offset} {}
 // ApplicationContext::ComponentAccessor begin
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// ApplicationContext::ComponentIterator begin
+inline ApplicationContext::ComponentIterator::reference
+ApplicationContext::ComponentIterator::operator*() const noexcept {
+  return **_iter;
+}
+
+inline ApplicationContext::ComponentIterator::pointer
+ApplicationContext::ComponentIterator::operator->() const noexcept {
+  return &**_iter;
+}
+
+inline bool ApplicationContext::ComponentIterator::operator==(
+    ComponentIterator other) const noexcept {
+  return _iter == other._iter;
+}
+
+inline bool ApplicationContext::ComponentIterator::operator!=(
+    ComponentIterator other) const noexcept {
+  return _iter != other._iter;
+}
+
+inline ApplicationContext::ComponentIterator&
+ApplicationContext::ComponentIterator::operator++() noexcept {
+  ++_iter;
+  return *this;
+}
+
+inline ApplicationContext::ComponentIterator::ComponentIterator(
+    UnderlyingIterator iter) noexcept
+    : _iter {iter} {}
+// ApplicationContext::ComponentIterator end
 ////////////////////////////////////////////////////////////////////////////////
 
 BABYLON_NAMESPACE_END

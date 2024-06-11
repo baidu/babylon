@@ -283,6 +283,10 @@ inline T* Any::get() noexcept {
   return nullptr;
 }
 
+inline void* Any::get() noexcept {
+  return raw_pointer();
+}
+
 template <typename T,
           typename ::std::enable_if<sizeof(size_t) < sizeof(T), int32_t>::type>
 inline const T* Any::cget() const noexcept {
@@ -450,31 +454,15 @@ inline ::std::unique_ptr<T> Any::release() noexcept {
   return {static_cast<T*>(pointer_value), {}};
 }
 
-inline ::std::unique_ptr<void, void (*)(void*)> Any::release(
-    const Descriptor* descriptor) noexcept {
-  if (ABSL_PREDICT_FALSE(_meta.v != meta_for_instance(descriptor))) {
-    return {nullptr, nullptr};
-  }
-
-  auto pointer_value = _holder.pointer_value;
-  new (this) Any;
-  return {pointer_value, descriptor->deleter};
-}
-
-inline ::std::unique_ptr<void, void (*)(void*)> Any::release(
-    StringView type_name) noexcept {
+inline ::std::unique_ptr<void, void (*)(void*)> Any::release() noexcept {
   if (ABSL_PREDICT_FALSE(_meta.m.holder_type != HolderType::INSTANCE)) {
     return {nullptr, nullptr};
   }
 
-  if (type_name == instance_type().name) {
-    auto pointer_value = _holder.pointer_value;
-    auto deleter = _meta.descriptor()->deleter;
-    new (this) Any;
-    return {pointer_value, deleter};
-  }
-
-  return {nullptr, nullptr};
+  auto pointer_value = _holder.pointer_value;
+  auto deleter = _meta.descriptor()->deleter;
+  new (this) Any;
+  return {pointer_value, deleter};
 }
 // Any end
 ///////////////////////////////////////////////////////////////////////////////

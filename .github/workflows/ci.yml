@@ -130,6 +130,7 @@ jobs:
         path: bazel-disk
         key: bazel-disk-gcc12-aarch64-asan-${{github.sha}}
         restore-keys: bazel-disk-gcc12-aarch64-asan-
+    - run: sudo apt update
     - run: sudo apt install g++-12-aarch64-linux-gnu
     - run: sudo apt install qemu-user
     - run: sudo ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/
