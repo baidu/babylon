@@ -466,7 +466,8 @@ ApplicationContext::FactoryComponentHolder<T, BS...>::create() noexcept {
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationContext::ComponentRegister begin
 template <typename T>
-ApplicationContext::ComponentRegister<T>::ComponentRegister(StringView name) noexcept {
+ApplicationContext::ComponentRegister<T>::ComponentRegister(
+    StringView name) noexcept {
   ApplicationContext::instance().register_component(T::create(), name);
 }
 // ApplicationContext::ComponentRegister end
@@ -870,17 +871,17 @@ BABYLON_NAMESPACE_END
   BOOST_PP_IF(BOOST_PP_LESS(BOOST_PP_TUPLE_SIZE(args), 2), \
               BOOST_PP_TUPLE_PUSH_BACK(args, ""), args)
 
-#define __BABYLON_REGISTER_COMPONENT(T, name, ...)                \
-  static ::babylon::ApplicationContext::ComponentRegister< \
-      ::babylon::ApplicationContext::DefaultComponentHolder<T, ##__VA_ARGS__>>                                           \
+#define __BABYLON_REGISTER_COMPONENT(T, name, ...)                             \
+  static ::babylon::ApplicationContext::ComponentRegister<                     \
+      ::babylon::ApplicationContext::DefaultComponentHolder<T, ##__VA_ARGS__>> \
       BOOST_PP_CAT(Babylon_Application_Context_Register, __COUNTER__) {name};
 
-#define BABYLON_REGISTER_FACTORY_COMPONENT(T, ...)                                 \
-  BOOST_PP_EXPAND(                                                         \
-      __BABYLON_REGISTER_FACTORY_COMPONENT __BABYLON_REGISTER_COMPONENT_FILL_ARGS( \
-          (T, ##__VA_ARGS__)))
+#define BABYLON_REGISTER_FACTORY_COMPONENT(T, ...) \
+  BOOST_PP_EXPAND(                                 \
+      __BABYLON_REGISTER_FACTORY_COMPONENT         \
+          __BABYLON_REGISTER_COMPONENT_FILL_ARGS((T, ##__VA_ARGS__)))
 
-#define __BABYLON_REGISTER_FACTORY_COMPONENT(T, name, ...)                \
-  static ::babylon::ApplicationContext::ComponentRegister< \
-      ::babylon::ApplicationContext::FactoryComponentHolder<T, ##__VA_ARGS__>>                                           \
+#define __BABYLON_REGISTER_FACTORY_COMPONENT(T, name, ...)                     \
+  static ::babylon::ApplicationContext::ComponentRegister<                     \
+      ::babylon::ApplicationContext::FactoryComponentHolder<T, ##__VA_ARGS__>> \
       BOOST_PP_CAT(Babylon_Application_Context_Register, __COUNTER__) {name};
