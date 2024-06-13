@@ -1,0 +1,6 @@
+#common --registry=https://baidu.github.io/babylon/registry
+common --registry=https://bcr.bazel.build
+common --registry=file:///home/oathdruid/src/babylon/registry
+common --registry=https://raw.githubusercontent.com/bazelboost/registry/main
+
+build --compilation_mode opt --cxxopt=-std=c++17
