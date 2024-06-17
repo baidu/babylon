@@ -579,9 +579,12 @@ ApplicationContext::ComponentHolder::add_convertible_type() noexcept {}
 template <typename T, typename U, typename... US>
 ABSL_ATTRIBUTE_NOINLINE void
 ApplicationContext::ComponentHolder::add_convertible_type() noexcept {
-  _convert_offset[&TypeId<U>::ID] = reinterpret_cast<ptrdiff_t>(static_cast<U*>(
-                                        reinterpret_cast<T*>(alignof(T)))) -
-                                    alignof(T);
+  if (TypeId<T>::ID != TypeId<U>::ID) {
+    _convert_offset[&TypeId<U>::ID] =
+        reinterpret_cast<ptrdiff_t>(
+            static_cast<U*>(reinterpret_cast<T*>(alignof(T)))) -
+        alignof(T);
+  }
   add_convertible_type<T, US...>();
 }
 

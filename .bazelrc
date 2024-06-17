@@ -1,12 +1,12 @@
+common --registry=https://bcr.bazel.build
 common --registry=file://%workspace%/registry
 common --registry=https://raw.githubusercontent.com/bazelboost/registry/main
-common --registry=https://bcr.bazel.build
 
 build --cxxopt=-std=c++17
 
 test --//:werror --features external_include_paths
 test --@rules_cuda//cuda:enable=False
-# SwissMemoryResource's patch obey odr rule. But still keep same struct with same defination and same size
+# SwissMemoryResource's patch violate odr rule. But still keep same struct with same defination and same size
 # change detect_odr_violation to level 1 to check that
 test --test_env=ASAN_OPTIONS=detect_odr_violation=1
 
