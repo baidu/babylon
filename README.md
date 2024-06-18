@@ -178,6 +178,7 @@ target_link_libraries(your_target babylon::babylon)
 
 - [:any](docs/any.md)
 - [:anyflow](docs/anyflow/index.md)
+- [:application_context](docs/application_context.md)
 - [:concurrent](docs/concurrent/index.md)
 - [:executor](docs/executor.md)
 - [:future](docs/future.md)
