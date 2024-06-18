@@ -5,13 +5,17 @@
 ![](images/application_context_1.png)
 
 ApplicationContext：核心IOC容器，一般全局唯一单例模式足够；如果需要多个隔离的组件空间，可以创建多个；对外提供**注册组件**和**获取组件**两个API接口
+
 注册组件：按照指定的名字向容器内注册某一个类型的组件，一个组件可以同时注册一系列基类类型，组件的使用方可以通过任意一个类型来获取组件
+
 获取组件：按照指定的名字和类型向容器获取一个组件，组件可以用过**单例模式**共享引用，也可以通过**工厂模式**创建独立实例。**组件创建**由组件自身完成对使用方透明，以此来实现IOC模式
 
 ![](images/application_context_2.png)
 
 组件创建：组件实例在创建时可以通过ApplicationContext进一步获取自身依赖的组件，触发一次新的获取过程，持续递归直到一个依赖子树彻底完成。组件的创建和依赖通过**静态反射**方式实现
-静态放射：目标组件类型不需要具备框架预设的基类，而是通过类型是否具备**协议函数**来实现定制，定制创建过程有两个协议机制分别是**初始化**和**自动装配**
+
+静态反射：目标组件类型不需要具备框架预设的基类，而是通过类型是否具备**协议函数**来实现定制，定制创建过程有两个协议机制分别是**初始化**和**自动装配**
+
 初始化：初始化通过协议函数**initialize**成员函数来定制，支持4种函数签名，传入的ApplicationContext可以用于进一步寻址依赖，Any用于获取获取自身初始化所需的配置信息，返回==0表示成功
 ```c++
 int initialize(ApplicationContext&, const Any&);
@@ -19,6 +23,7 @@ int initialize(ApplicationContext&);
 int initialize(const Any&);
 int initialize();
 ```
+
 自动装配：对于无需配置动态调整的依赖，可以简化使用自动装配宏`BABYLON_AUTOWIRE`来声明式来实现
 ```c++
 class T {
@@ -28,6 +33,7 @@ class T {
     BABYLON_MEMBER(DependType, _member2, "component name2")
   )
 };
+```
 
 ## 使用方法
 
