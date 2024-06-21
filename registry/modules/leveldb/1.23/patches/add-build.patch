@@ -1,0 +1,62 @@
+diff --git a/BUILD b/BUILD
+new file mode 100644
+index 0000000..a91a213
+--- /dev/null
++++ b/BUILD
+@@ -0,0 +1,41 @@
++package(
++  default_visibility = ['//:__pkg__'],
++)
++
++load('@rules_foreign_cc//foreign_cc:defs.bzl', 'cmake')
++
++filegroup(
++  name = 'all_srcs',
++  srcs = glob(['**'], exclude = ['bazel-*/**']),
++)
++
++SYMLINK2REAL_SCRIPT = """bash -c '
++set -ex
++shopt -s globstar
++for file in $INSTALLDIR/** ; do
++  if [ -L $file ]; then
++    target=`readlink -f $file`
++    echo $file $target
++    rm $file
++    cp $target $file
++  fi
++done
++'"""
++
++cmake(
++  name = 'leveldb',
++  lib_source = ':all_srcs',
++  cache_entries = {
++    'LEVELDB_BUILD_TESTS': 'OFF',
++    'LEVELDB_BUILD_BENCHMARKS': 'OFF',
++    'CMAKE_CXX_FLAGS': '-I$$EXT_BUILD_DEPS$$/include',
++    'CMAKE_EXE_LINKER_FLAGS': '-L$$EXT_BUILD_DEPS$$/lib',
++  },
++  postfix_script = SYMLINK2REAL_SCRIPT,
++  lib_name = 'libleveldb',
++  visibility = ['//visibility:public'],
++  deps = [
++    '@crc32c',
++    '@snappy',
++  ],
++)
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f8285b8..1bf7b99 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -38,8 +38,9 @@ include(CheckIncludeFile)
+ check_include_file("unistd.h" HAVE_UNISTD_H)
+ 
+ include(CheckLibraryExists)
++include(CheckIncludeFileCXX)
+ check_library_exists(crc32c crc32c_value "" HAVE_CRC32C)
+-check_library_exists(snappy snappy_compress "" HAVE_SNAPPY)
++check_include_file_cxx("snappy.h" HAVE_SNAPPY)
+ check_library_exists(tcmalloc malloc "" HAVE_TCMALLOC)
+ 
+ include(CheckCXXSymbolExists)

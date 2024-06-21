@@ -1,0 +1,230 @@
+diff --git a/BUILD b/BUILD
+new file mode 100644
+index 0000000000..be015cd2c9
+--- /dev/null
++++ b/BUILD
+@@ -0,0 +1,45 @@
++package(
++  default_visibility = ['//:__pkg__'],
++)
++
++load('@rules_foreign_cc//foreign_cc:defs.bzl', 'configure_make')
++
++filegroup(
++  name = 'all_srcs',
++  srcs = glob(['**'], exclude = ['bazel-*/**']),
++)
++
++CONFIGURE_OPTIONS = [
++  'no-shared',
++  'zlib',
++  '--with-zlib-include=$$EXT_BUILD_DEPS$$/include',
++  '--with-zlib-lib=$$EXT_BUILD_DEPS$$/lib',
++]
++
++alias(
++  name = 'ssl',
++  actual = 'openssl',
++  visibility = ['//visibility:public'],
++)
++
++alias(
++  name = 'crypto',
++  actual = 'openssl',
++  visibility = ['//visibility:public'],
++)
++
++configure_make(
++  name = 'openssl',
++  lib_source = ':all_srcs',
++  configure_command = 'Configure',
++  configure_options = CONFIGURE_OPTIONS,
++  targets = ['install_dev'],
++  postfix_script = 'mkdir -p $INSTALLDIR/lib; mv $INSTALLDIR/lib64/*.a $INSTALLDIR/lib',
++  out_static_libs = [
++    'libssl.a',
++    'libcrypto.a',
++  ],
++  deps = [
++    '@zlib',
++  ],
++)
+diff --git a/Configure b/Configure
+index 3b6617c177..c569e796e7 100755
+--- a/Configure
++++ b/Configure
+@@ -17,7 +17,7 @@ use lib "$FindBin::Bin/util/perl";
+ use File::Basename;
+ use File::Spec::Functions qw/:DEFAULT abs2rel rel2abs splitdir/;
+ use File::Path qw/mkpath/;
+-use OpenSSL::fallback "$FindBin::Bin/external/perl/MODULES.txt";
++use OpenSSL::fallback "$FindBin::Bin/_external/perl/MODULES.txt";
+ use OpenSSL::Glob;
+ use OpenSSL::Template;
+ use OpenSSL::config;
+diff --git a/external/perl/Downloaded.txt b/_external/perl/Downloaded.txt
+similarity index 100%
+rename from external/perl/Downloaded.txt
+rename to _external/perl/Downloaded.txt
+diff --git a/external/perl/MODULES.txt b/_external/perl/MODULES.txt
+similarity index 100%
+rename from external/perl/MODULES.txt
+rename to _external/perl/MODULES.txt
+diff --git a/external/perl/Text-Template-1.56/Changes b/_external/perl/Text-Template-1.56/Changes
+similarity index 100%
+rename from external/perl/Text-Template-1.56/Changes
+rename to _external/perl/Text-Template-1.56/Changes
+diff --git a/external/perl/Text-Template-1.56/INSTALL b/_external/perl/Text-Template-1.56/INSTALL
+similarity index 100%
+rename from external/perl/Text-Template-1.56/INSTALL
+rename to _external/perl/Text-Template-1.56/INSTALL
+diff --git a/external/perl/Text-Template-1.56/LICENSE b/_external/perl/Text-Template-1.56/LICENSE
+similarity index 100%
+rename from external/perl/Text-Template-1.56/LICENSE
+rename to _external/perl/Text-Template-1.56/LICENSE
+diff --git a/external/perl/Text-Template-1.56/MANIFEST b/_external/perl/Text-Template-1.56/MANIFEST
+similarity index 100%
+rename from external/perl/Text-Template-1.56/MANIFEST
+rename to _external/perl/Text-Template-1.56/MANIFEST
+diff --git a/external/perl/Text-Template-1.56/META.json b/_external/perl/Text-Template-1.56/META.json
+similarity index 100%
+rename from external/perl/Text-Template-1.56/META.json
+rename to _external/perl/Text-Template-1.56/META.json
+diff --git a/external/perl/Text-Template-1.56/META.yml b/_external/perl/Text-Template-1.56/META.yml
+similarity index 100%
+rename from external/perl/Text-Template-1.56/META.yml
+rename to _external/perl/Text-Template-1.56/META.yml
+diff --git a/external/perl/Text-Template-1.56/Makefile.PL b/_external/perl/Text-Template-1.56/Makefile.PL
+similarity index 100%
+rename from external/perl/Text-Template-1.56/Makefile.PL
+rename to _external/perl/Text-Template-1.56/Makefile.PL
+diff --git a/external/perl/Text-Template-1.56/README b/_external/perl/Text-Template-1.56/README
+similarity index 100%
+rename from external/perl/Text-Template-1.56/README
+rename to _external/perl/Text-Template-1.56/README
+diff --git a/external/perl/Text-Template-1.56/SIGNATURE b/_external/perl/Text-Template-1.56/SIGNATURE
+similarity index 100%
+rename from external/perl/Text-Template-1.56/SIGNATURE
+rename to _external/perl/Text-Template-1.56/SIGNATURE
+diff --git a/external/perl/Text-Template-1.56/lib/Text/Template.pm b/_external/perl/Text-Template-1.56/lib/Text/Template.pm
+similarity index 100%
+rename from external/perl/Text-Template-1.56/lib/Text/Template.pm
+rename to _external/perl/Text-Template-1.56/lib/Text/Template.pm
+diff --git a/external/perl/Text-Template-1.56/lib/Text/Template/Preprocess.pm b/_external/perl/Text-Template-1.56/lib/Text/Template/Preprocess.pm
+similarity index 100%
+rename from external/perl/Text-Template-1.56/lib/Text/Template/Preprocess.pm
+rename to _external/perl/Text-Template-1.56/lib/Text/Template/Preprocess.pm
+diff --git a/external/perl/Text-Template-1.56/t/author-pod-syntax.t b/_external/perl/Text-Template-1.56/t/author-pod-syntax.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/author-pod-syntax.t
+rename to _external/perl/Text-Template-1.56/t/author-pod-syntax.t
+diff --git a/external/perl/Text-Template-1.56/t/author-signature.t b/_external/perl/Text-Template-1.56/t/author-signature.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/author-signature.t
+rename to _external/perl/Text-Template-1.56/t/author-signature.t
+diff --git a/external/perl/Text-Template-1.56/t/basic.t b/_external/perl/Text-Template-1.56/t/basic.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/basic.t
+rename to _external/perl/Text-Template-1.56/t/basic.t
+diff --git a/external/perl/Text-Template-1.56/t/broken.t b/_external/perl/Text-Template-1.56/t/broken.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/broken.t
+rename to _external/perl/Text-Template-1.56/t/broken.t
+diff --git a/external/perl/Text-Template-1.56/t/delimiters.t b/_external/perl/Text-Template-1.56/t/delimiters.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/delimiters.t
+rename to _external/perl/Text-Template-1.56/t/delimiters.t
+diff --git a/external/perl/Text-Template-1.56/t/error.t b/_external/perl/Text-Template-1.56/t/error.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/error.t
+rename to _external/perl/Text-Template-1.56/t/error.t
+diff --git a/external/perl/Text-Template-1.56/t/exported.t b/_external/perl/Text-Template-1.56/t/exported.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/exported.t
+rename to _external/perl/Text-Template-1.56/t/exported.t
+diff --git a/external/perl/Text-Template-1.56/t/hash.t b/_external/perl/Text-Template-1.56/t/hash.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/hash.t
+rename to _external/perl/Text-Template-1.56/t/hash.t
+diff --git a/external/perl/Text-Template-1.56/t/inline-comment.t b/_external/perl/Text-Template-1.56/t/inline-comment.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/inline-comment.t
+rename to _external/perl/Text-Template-1.56/t/inline-comment.t
+diff --git a/external/perl/Text-Template-1.56/t/nested-tags.t b/_external/perl/Text-Template-1.56/t/nested-tags.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/nested-tags.t
+rename to _external/perl/Text-Template-1.56/t/nested-tags.t
+diff --git a/external/perl/Text-Template-1.56/t/ofh.t b/_external/perl/Text-Template-1.56/t/ofh.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/ofh.t
+rename to _external/perl/Text-Template-1.56/t/ofh.t
+diff --git a/external/perl/Text-Template-1.56/t/out.t b/_external/perl/Text-Template-1.56/t/out.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/out.t
+rename to _external/perl/Text-Template-1.56/t/out.t
+diff --git a/external/perl/Text-Template-1.56/t/prepend.t b/_external/perl/Text-Template-1.56/t/prepend.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/prepend.t
+rename to _external/perl/Text-Template-1.56/t/prepend.t
+diff --git a/external/perl/Text-Template-1.56/t/preprocess.t b/_external/perl/Text-Template-1.56/t/preprocess.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/preprocess.t
+rename to _external/perl/Text-Template-1.56/t/preprocess.t
+diff --git a/external/perl/Text-Template-1.56/t/rt29928.t b/_external/perl/Text-Template-1.56/t/rt29928.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/rt29928.t
+rename to _external/perl/Text-Template-1.56/t/rt29928.t
+diff --git a/external/perl/Text-Template-1.56/t/safe.t b/_external/perl/Text-Template-1.56/t/safe.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/safe.t
+rename to _external/perl/Text-Template-1.56/t/safe.t
+diff --git a/external/perl/Text-Template-1.56/t/safe2.t b/_external/perl/Text-Template-1.56/t/safe2.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/safe2.t
+rename to _external/perl/Text-Template-1.56/t/safe2.t
+diff --git a/external/perl/Text-Template-1.56/t/safe3.t b/_external/perl/Text-Template-1.56/t/safe3.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/safe3.t
+rename to _external/perl/Text-Template-1.56/t/safe3.t
+diff --git a/external/perl/Text-Template-1.56/t/strict.t b/_external/perl/Text-Template-1.56/t/strict.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/strict.t
+rename to _external/perl/Text-Template-1.56/t/strict.t
+diff --git a/external/perl/Text-Template-1.56/t/taint.t b/_external/perl/Text-Template-1.56/t/taint.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/taint.t
+rename to _external/perl/Text-Template-1.56/t/taint.t
+diff --git a/external/perl/Text-Template-1.56/t/template-encoding.t b/_external/perl/Text-Template-1.56/t/template-encoding.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/template-encoding.t
+rename to _external/perl/Text-Template-1.56/t/template-encoding.t
+diff --git a/external/perl/Text-Template-1.56/t/warnings.t b/_external/perl/Text-Template-1.56/t/warnings.t
+similarity index 100%
+rename from external/perl/Text-Template-1.56/t/warnings.t
+rename to _external/perl/Text-Template-1.56/t/warnings.t
+diff --git a/configdata.pm.in b/configdata.pm.in
+index 68439ae93c..6fa66d39a5 100644
+--- a/configdata.pm.in
++++ b/configdata.pm.in
+@@ -82,7 +82,7 @@ unless (caller) {
+     use Pod::Usage;
+ 
+     use lib '{- sourcedir('util', 'perl') -}';
+-    use OpenSSL::fallback '{- sourcefile('external', 'perl', 'MODULES.txt') -}';
++    use OpenSSL::fallback '{- sourcefile('_external', 'perl', 'MODULES.txt') -}';
+ 
+     my $here = dirname($0);
+ 
+diff --git a/util/dofile.pl b/util/dofile.pl
+index d1ed1e4098..a99cd8413d 100644
+--- a/util/dofile.pl
++++ b/util/dofile.pl
+@@ -16,7 +16,7 @@ use warnings;
+ 
+ use FindBin;
+ use lib "$FindBin::Bin/perl";
+-use OpenSSL::fallback "$FindBin::Bin/../external/perl/MODULES.txt";
++use OpenSSL::fallback "$FindBin::Bin/../_external/perl/MODULES.txt";
+ use Getopt::Std;
+ use OpenSSL::Template;
+ 

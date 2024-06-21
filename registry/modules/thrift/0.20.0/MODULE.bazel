@@ -1,0 +1,15 @@
+module(
+  name = 'thrift',
+  version = '0.20.0',
+  compatibility_level = 1,
+)
+
+bazel_dep(name = 'rules_foreign_cc', version = '0.8.0')
+bazel_dep(name = 'boost.algorithm', version = '1.83.0.bzl.1')
+bazel_dep(name = 'boost.locale', version = '1.83.0.bzl.1')
+bazel_dep(name = 'boost.numeric_conversion', version = '1.83.0.bzl.1')
+bazel_dep(name = 'boost.smart_ptr', version = '1.83.0.bzl.1')
+bazel_dep(name = 'boost.tokenizer', version = '1.83.0.bzl.1')
+bazel_dep(name = 'libevent', version = '2.1.12')
+bazel_dep(name = 'openssl', version = '3.3.1')
+bazel_dep(name = 'zlib', version = '1.2.13')

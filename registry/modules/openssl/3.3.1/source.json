@@ -1,0 +1,9 @@
+{
+  "url": "https://github.com/openssl/openssl/archive/refs/tags/openssl-3.3.1.tar.gz",
+  "strip_prefix": "openssl-openssl-3.3.1",
+  "integrity": "sha256-Ezvzm40WNayUqEgwQsxEglG3cKDRLHrwwF6old3Zjx0=",
+  "patch_strip": 1,
+  "patches": {
+    "add-build.patch": "sha256-oATRSKbw5A+cLP0hLs64sn0oRUkUK1P+TUTEaMcwqW8="
+  }
+}
