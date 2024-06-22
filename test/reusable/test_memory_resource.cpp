@@ -338,11 +338,11 @@ TEST(SwissMemoryResource, compatible_with_protobuf_in_asan_mode) {
     SwissMemoryResource resource(page_heap);
     for (int j = 0; j < 10; ++j) {
       Arena& arena = resource;
-#if GOOGLE_PROTOBUF_VERSION >= 4260000
-        auto message = Arena::Create<ArenaExample>(&arena);
-#else // GOOGLE_PROTOBUF_VERSION < 4260000
-        auto message = Arena::CreateMessage<ArenaExample>(&arena);
-#endif // GOOGLE_PROTOBUF_VERSION < 4260000
+#if GOOGLE_PROTOBUF_VERSION >= 5026000
+      auto message = Arena::Create<ArenaExample>(&arena);
+#else  // GOOGLE_PROTOBUF_VERSION < 5026000
+      auto message = Arena::CreateMessage<ArenaExample>(&arena);
+#endif // GOOGLE_PROTOBUF_VERSION < 5026000
       // 反复reserve会触发protobuf 4.x的重用功能
       // 内部有对应的asan poison标记动作
       // 验证和MemoryResource的标记可兼容
@@ -427,11 +427,11 @@ TEST(memory_resource, can_use_as_arena_with_protobuf) {
   resource.allocate<1>(128);
   auto* ptr_in_resource = (char*)resource.allocate<1>(128);
   Arena& arena = resource;
-#if GOOGLE_PROTOBUF_VERSION >= 4260000
+#if GOOGLE_PROTOBUF_VERSION >= 5026000
   auto message = Arena::Create<ArenaExample>(&arena);
-#else // GOOGLE_PROTOBUF_VERSION < 4260000
+#else  // GOOGLE_PROTOBUF_VERSION < 5026000
   auto message = Arena::CreateMessage<ArenaExample>(&arena);
-#endif // GOOGLE_PROTOBUF_VERSION < 4260000
+#endif // GOOGLE_PROTOBUF_VERSION < 5026000
   for (size_t i = 0; i < 1024; ++i) {
     message->add_rs("10086");
     message->add_rp(10086);
@@ -484,11 +484,11 @@ TEST(memory_resource, release_also_clear_arena) {
     resource.allocate<1>(128);
     auto* ptr_in_resource = (char*)resource.allocate<1>(128);
     Arena& arena = resource;
-#if GOOGLE_PROTOBUF_VERSION >= 4260000
+#if GOOGLE_PROTOBUF_VERSION >= 5026000
     auto message = Arena::Create<ArenaExample>(&arena);
-#else // GOOGLE_PROTOBUF_VERSION < 4260000
+#else  // GOOGLE_PROTOBUF_VERSION < 5026000
     auto message = Arena::CreateMessage<ArenaExample>(&arena);
-#endif // GOOGLE_PROTOBUF_VERSION < 4260000
+#endif // GOOGLE_PROTOBUF_VERSION < 5026000
     ASSERT_EQ(&arena, message->GetArena());
     ASSERT_EQ(&arena, message->mutable_m()->GetArena());
     ASSERT_LE(ptr_in_resource + 128, (char*)message);
@@ -500,11 +500,11 @@ TEST(memory_resource, release_also_clear_arena) {
     resource.allocate<1>(128);
     auto* ptr_in_resource = (char*)resource.allocate<1>(128);
     Arena& arena = resource;
-#if GOOGLE_PROTOBUF_VERSION >= 4260000
+#if GOOGLE_PROTOBUF_VERSION >= 5026000
     auto message = Arena::Create<ArenaExample>(&arena);
-#else // GOOGLE_PROTOBUF_VERSION < 4260000
+#else  // GOOGLE_PROTOBUF_VERSION < 5026000
     auto message = Arena::CreateMessage<ArenaExample>(&arena);
-#endif // GOOGLE_PROTOBUF_VERSION < 4260000
+#endif // GOOGLE_PROTOBUF_VERSION < 5026000
     ASSERT_EQ(&arena, message->GetArena());
     ASSERT_EQ(&arena, message->mutable_m()->GetArena());
     ASSERT_LE(ptr_in_resource + 128, (char*)message);

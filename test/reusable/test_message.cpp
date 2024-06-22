@@ -181,11 +181,11 @@ TEST_F(ReusableMessage,
   auto message = manager.create_object<Message>(
       [](::babylon::SwissMemoryResource& resource) {
         Arena& arena = resource;
-#if GOOGLE_PROTOBUF_VERSION >= 4260000
+#if GOOGLE_PROTOBUF_VERSION >= 5026000
         Message* result = Arena::Create<ArenaExample>(&arena);
-#else // GOOGLE_PROTOBUF_VERSION < 4260000
+#else  // GOOGLE_PROTOBUF_VERSION < 5026000
         Message* result = Arena::CreateMessage<ArenaExample>(&arena);
-#endif // GOOGLE_PROTOBUF_VERSION < 4260000
+#endif // GOOGLE_PROTOBUF_VERSION < 5026000
         return result;
       });
   auto pmessage = static_cast<ArenaExample*>(message.get());
