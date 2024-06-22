@@ -29,7 +29,7 @@ bazel_dep(name = 'googletest', version = '1.14.0', repo_name = 'com_google_googl
 
 # --registry=file://%workspace%/registry
 # protobuf 25.3 is not officially support in BCR
-single_version_override(module_name = 'protobuf', version = '25.3')
+single_version_override(module_name = 'protobuf', version = '27.1')
 # rules_cuda latest release 0.2.1 is too old and do not have auto detect feature
 bazel_dep(name = 'rules_cuda', version = '0.2.2-dev', dev_dependency = True)
 
