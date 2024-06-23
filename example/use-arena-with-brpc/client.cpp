@@ -9,10 +9,9 @@
 DEFINE_string(connection_type, "",
               "Connection type. Available values: single, pooled, short");
 DEFINE_string(server, "0.0.0.0:8000", "IP Address of server");
-DEFINE_int32(timeout_ms, 100, "RPC timeout in milliseconds");
+DEFINE_int32(timeout_ms, 500, "RPC timeout in milliseconds");
 
-DEFINE_int32(qps, 100, "Milliseconds between consecutive requests");
-DEFINE_uint64(payload_scale, 1, "");
+DEFINE_uint64(payload_scale, 10, "");
 
 void finish(::example::EchoResponse* response, ::brpc::Controller* controller) {
   if (!controller->Failed()) {
@@ -84,19 +83,13 @@ int main(int argc, char* argv[]) {
   example::EchoService_Stub stub(&channel);
 
   ::example::EchoRequest request;
-  int64_t expect_used = 1000000 / FLAGS_qps;
   while (!brpc::IsAskedToQuit()) {
-    int64_t begin = ::butil::gettimeofday_us();
     request.Clear();
     fill(request.mutable_payload());
     auto response = new ::example::EchoResponse;
     auto controller = new brpc::Controller;
     stub.Echo(controller, &request, response,
               ::google::protobuf::NewCallback(finish, response, controller));
-    int64_t used = ::butil::gettimeofday_us() - begin;
-    if (used < expect_used) {
-      usleep(expect_used - used);
-    }
   }
 
   LOG(INFO) << "EchoClient is going to quit";

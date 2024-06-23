@@ -18,6 +18,8 @@ class EchoServiceImpl : public EchoService {
                     google::protobuf::Closure* done) {
     brpc::ClosureGuard done_guard(done);
     response->mutable_payload()->CopyFrom(request->payload());
+    LOG_EVERY_SECOND(INFO) << "Request SpaceUsedLong = " << request->SpaceUsedLong()
+                           << " Response SpaceUsedLong = " << response->SpaceUsedLong();
   }
 };
 } // namespace example

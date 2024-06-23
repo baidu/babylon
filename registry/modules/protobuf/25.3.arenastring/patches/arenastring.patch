@@ -4850,7 +4850,7 @@ index 000000000..c128b2ba0
 +        size_type capacity) noexcept {
 +#if __GLIBCXX__
 +    size_t buffer_size = capacity + 1;
-+    buffer_size = (buffer_size + 8) & static_cast<size_t>(-8);
++    buffer_size = (buffer_size + 7) & static_cast<size_t>(-8);
 +    capacity = buffer_size - 1;
 +#if _GLIBCXX_USE_CXX11_ABI
 +    auto* buffer = reinterpret_cast<char*>(_arena->AllocateAligned(buffer_size));
@@ -4869,7 +4869,7 @@ index 000000000..c128b2ba0
 +    return rep->data;
 +#endif // !_GLIBCXX_USE_CXX11_ABI
 +#else // !__GLIBCXX__
-+    capacity = (capacity + 16) & static_cast<size_type>(-16);
++    capacity = (capacity + 15) & static_cast<size_type>(-16);
 +    auto* buffer = reinterpret_cast<pointer>(_arena->AllocateAligned(capacity));
 +    __builtin_memcpy(buffer, data(), size());
 +    auto& rep = representation();
