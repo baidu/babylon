@@ -4869,7 +4869,7 @@ index 000000000..c128b2ba0
 +    return rep->data;
 +#endif // !_GLIBCXX_USE_CXX11_ABI
 +#else // !__GLIBCXX__
-+    capacity = (capacity + 15) & static_cast<size_type>(-16);
++    capacity = (capacity + 16) & static_cast<size_type>(-16);
 +    auto* buffer = reinterpret_cast<pointer>(_arena->AllocateAligned(capacity));
 +    __builtin_memcpy(buffer, data(), size());
 +    auto& rep = representation();
