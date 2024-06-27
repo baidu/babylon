@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(babylon VERSION 1.2.0)
+project(babylon VERSION 1.2.1)
 
 include(CTest)                      # for BUILD_TESTING option
 include(CMakePackageConfigHelpers)  # for write_basic_package_version_file
@@ -16,8 +16,8 @@ if(BUILD_DEPS)
   )
   FetchContent_Declare(
     protobuf
-    URL "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v25.3.tar.gz"
-    URL_HASH SHA256=d19643d265b978383352b3143f04c0641eea75a75235c111cc01a1350173180e
+    URL "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v27.2.tar.gz"
+    URL_HASH SHA256=e4ff2aeb767da6f4f52485c2e72468960ddfe5262483879ef6ad552e52757a77
   )
   FetchContent_Declare(
     boost

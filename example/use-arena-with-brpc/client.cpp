@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
     stub.Echo(controller, &request, response,
               ::google::protobuf::NewCallback(finish, response, controller));
     auto use_us = ::butil::gettimeofday_us() - begin_us;
-    
+
     if (use_us < expected_us) {
       usleep(expected_us - use_us);
     }
