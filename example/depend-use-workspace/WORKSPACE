@@ -16,9 +16,9 @@ http_archive(
 # copy from WORKSPACE of babylon
 http_archive(
   name = 'com_google_absl',
-  urls = ['https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.1.tar.gz'],
-  strip_prefix = 'abseil-cpp-20230802.1',
-  sha256 = '987ce98f02eefbaf930d6e38ab16aa05737234d7afbab2d5c4ea7adbe50c28ed',
+  urls = ['https://github.com/abseil/abseil-cpp/archive/refs/tags/20240116.2.tar.gz'],
+  strip_prefix = 'abseil-cpp-20240116.2',
+  sha256 = '733726b8c3a6d39a4120d7e45ea8b41a434cdacde401cba500f14236c49b39dc',
 )
 
 http_archive(

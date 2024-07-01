@@ -149,21 +149,29 @@ struct IdAllocatorFotType {
 } // namespace internal
 
 template <typename T>
-ABSL_ATTRIBUTE_NOINLINE VersionedValue<uint16_t>
-ThreadId::current_thread_id() noexcept {
+// The identity of thread_local within inline function has some bug as mentioned in
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85400
+//
+// disable inline hint for buggy versions of GCC
+#if !__clang__ && BABYLON_GCC_VERSION < 80400
+ABSL_ATTRIBUTE_NOINLINE
+#else // __clang__ || BABYLON_GCC_VERSION >= 80400
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE
+#endif // __clang__ || BABYLON_GCC_VERSION >= 80400
+VersionedValue<uint16_t> ThreadId::current_thread_id() noexcept {
   thread_local ThreadId id(
       internal::concurrent_id_allocator::IdAllocatorFotType<T>::instance());
   return id._value;
 }
 
 template <typename T>
-inline __attribute__((always_inline)) uint16_t ThreadId::end() noexcept {
+inline uint16_t ThreadId::end() noexcept {
   return internal::concurrent_id_allocator::IdAllocatorFotType<T>::instance()
       .end();
 }
 
 template <typename T, typename C, typename>
-inline __attribute__((always_inline)) void ThreadId::for_each(C&& callback) {
+ABSL_ATTRIBUTE_NOINLINE void ThreadId::for_each(C&& callback) {
   internal::concurrent_id_allocator::IdAllocatorFotType<T>::instance().for_each(
       ::std::forward<C>(callback));
 }

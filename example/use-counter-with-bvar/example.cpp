@@ -6,46 +6,67 @@
 #include <thread>
 
 DEFINE_int32(dummy_port, 8000, "TCP Port of this dummy server");
-DEFINE_uint64(concurrency, 4, "Concurrent counting thread num");
-DEFINE_uint64(vars, 10, "Counting bvar num");
-DEFINE_bool(use_counter, false, "use babylon counter implemented bvar");
+DEFINE_uint64(concurrency, 8, "Concurrent counting thread num");
 DEFINE_string(mode, "latency_recorder",
               "adder/maxer/int_recorder/latency_recorder");
+DEFINE_bool(use_counter, false, "use babylon counter implemented bvar");
 
 template <typename T>
-void __attribute__((noinline)) work(T& var, uint32_t value) {
+ABSL_ATTRIBUTE_NOINLINE
+void run_once(T& var, uint32_t value, ::bvar::LatencyRecorder& latency) {
+  auto begin = ::butil::cpuwide_time_ns();
   var << value;
+  auto end = ::butil::cpuwide_time_ns();
+  latency << end - begin;
+}
+
+template <typename T>
+ABSL_ATTRIBUTE_NOINLINE
+void run_once(T& var, uint32_t value) {
+  var << value;
+}
+
+template <typename T>
+ABSL_ATTRIBUTE_NOINLINE
+void run_once(T& var, ::std::vector<uint32_t>& values) {
+  for (auto value : values) {
+    run_once(var, value);
+  }
 }
 
 template <typename S>
 void run_loop(::std::string prefix) {
-  ::std::vector<::std::unique_ptr<S>> vec;
-  for (size_t i = 0; i < FLAGS_vars; ++i) {
-    auto s = ::std::make_unique<S>();
-    s->expose("test-" + prefix + "-" + ::std::to_string(i));
-    vec.emplace_back(::std::move(s));
+  S s;
+  s.expose("test-" + prefix + "_var");
+  ::bvar::LatencyRecorder latency {"test-" + prefix};
+
+  ::std::vector<uint32_t> values;
+  values.resize(4096);
+  ::std::mt19937_64 gen {::std::random_device {}()};
+  ::std::normal_distribution<> dis {600, 100};
+  for (auto& value : values) {
+    value = dis(gen);
   }
 
-  ::bvar::LatencyRecorder latency("test-" + prefix);
   ::std::vector<::std::thread> threads;
   for (size_t i = 0; i < FLAGS_concurrency; ++i) {
     threads.emplace_back([&] {
-      ::std::mt19937_64 gen {::std::random_device {}()};
-      ::std::normal_distribution<> dis(600, 100);
-      while (true) {
+      while (!::brpc::IsAskedToQuit()) {
         auto begin = ::butil::cpuwide_time_ns();
-        auto v = dis(gen);
-        for (size_t i = 0; i < 1000; ++i) {
-          for (auto& s : vec) {
-            work(s->var, v);
-          }
-        }
-        auto use = (::butil::cpuwide_time_ns() - begin) / 1000 / vec.size();
-        latency << use;
+        //for (auto value : values) {
+        //  //run_once(s.var, value, latency);
+        //  s.var << value;
+        //}
+        run_once(s.var, values);
+        auto end = ::butil::cpuwide_time_ns();
+        latency << (end - begin) / (values.size() * 1.0 / 1000);
       }
     });
   }
-  usleep(1000000000);
+
+  for (auto& thread : threads) {
+    thread.join();
+  }
 }
 
 template <typename V>
@@ -112,34 +133,6 @@ int main(int argc, char* argv[]) {
       run<::bvar::LatencyRecorder>("bvar");
     }
   }
-
-  /*
-  ::babylon::BvarAdder adder;
-  adder.expose("xxxx_adder");
-
-  ::bvar::Window<::babylon::BvarAdder, ::bvar::SERIES_IN_SECOND> adder_window {
-      &adder, -1};
-  adder_window.expose("xxxx_adder_win");
-
-  ::babylon::BvarMaxer maxer;
-  maxer.expose("xxxx_maxer");
-
-  ::bvar::Window<::babylon::BvarMaxer, ::bvar::SERIES_IN_SECOND> maxer_window {
-      &maxer, -1};
-  maxer_window.expose("xxxx_maxer_win");
-
-  ::babylon::BvarIntRecorder int_recorder;
-  int_recorder.expose("xxxx_int_recorder");
-
-  ::bvar::Window<::babylon::BvarIntRecorder, ::bvar::SERIES_IN_SECOND>
-      int_recorder_window {&int_recorder, -1};
-  int_recorder_window.expose("xxxx_int_recorder_win");
-
-  ::babylon::BvarPercentile percentile;
-  ::bvar::Window<::babylon::BvarPercentile, ::bvar::SERIES_IN_SECOND>
-      percentile_window {&percentile, -1};
-  percentile_window.expose("xxxx_percentile_win");
-  */
 
   return 0;
 }
