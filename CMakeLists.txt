@@ -11,10 +11,8 @@ if(BUILD_DEPS)
   include(FetchContent)
   FetchContent_Declare(
     absl
-    #URL "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230125.1.tar.gz"
-    #URL_HASH SHA256=81311c17599b3712069ded20cca09a62ab0bf2a89dfa16993786c8782b7ed145
-    URL "https://github.com/abseil/abseil-cpp/archive/refs/tags/20220623.2.tar.gz"
-    URL_HASH SHA256=773652c0fc276bcd5c461668dc112d0e3b6cde499600bfe3499c5fdda4ed4a5b
+    URL "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230125.1.tar.gz"
+    URL_HASH SHA256=81311c17599b3712069ded20cca09a62ab0bf2a89dfa16993786c8782b7ed145
   )
   FetchContent_Declare(
     protobuf
