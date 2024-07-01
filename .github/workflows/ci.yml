@@ -136,6 +136,17 @@ jobs:
     - run: sudo ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/
     - run: bazel test --disk_cache=bazel-disk --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --features=asan --linkopt=-fuse-ld=gold --test_env=LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib --test_env=ASAN_OPTIONS=detect_odr_violation=1:detect_leaks=0 test/...
 
+  workspace:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
+      with:
+        path: bazel-disk
+        key: bazel-disk-workspace-${{github.sha}}
+        restore-keys: bazel-workspace-
+    - run: bazel test --enable_bzlmod=false --disk_cache=bazel-disk --action_env=CC=gcc-12 --features=asan test/...
+
   coverage:
     runs-on: ubuntu-latest
     steps:
