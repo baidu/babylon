@@ -32,3 +32,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: cd example/depend-use-cmake-fetch && ./build.sh
+
+  depend-use-cmake-find:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: sudo apt instal abseil-cpp
+    - run: sudo apt instal boost
+    - run: sudo apt instal protobuf
+    - run: cd example/depend-use-cmake-find && ./build.sh

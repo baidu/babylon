@@ -1,10 +1,6 @@
 #!/bin/sh
 set -ex
 
-# sudo apt instal abseil-cpp
-# sudo apt instal boost
-# sudo apt instal protobuf
-
 URL=https://github.com/baidu/babylon/archive/refs/tags/v1.2.2.tar.gz
 NAME=babylon-1.2.2
 SHA256=241d0d3e8bf89c9b47765c794aa5153f73b32a7f419c48d8aeeeb4461cf8aec7
