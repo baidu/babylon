@@ -1,0 +1,22 @@
+name: example
+
+on:
+  push:
+    branches: ["main"]
+
+#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:16 anyflow
+#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:24 depend-use-bzlmod
+#drwxrwxr-x 3 oathdruid oathdruid 4096 Jul  1 19:27 depend-use-cmake-fetch
+#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:28 depend-use-cmake-find
+#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:28 depend-use-cmake-subdir
+#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:31 depend-use-workspace
+#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:32 use-arena-with-brpc
+#drwxrwxr-x 3 oathdruid oathdruid 4096 Jul  1 19:42 use-counter-with-bvar
+#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:42 use-with-bthread
+
+jobs:
+  anyflow:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: cd example/anyflow && ./build.sh

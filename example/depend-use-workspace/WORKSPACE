@@ -6,9 +6,9 @@ load('@bazel_tools//tools/build_defs/repo:http.bzl', 'http_archive')
 # babylon
 http_archive(
   name = 'com_baidu_babylon',
-  urls = ['https://github.com/baidu/babylon/archive/refs/tags/v1.2.1.tar.gz'],
-  strip_prefix = 'babylon-1.2.1',
-  sha256 = 'f5b200d1190d00d9d74519174b38d45a816cd3489a038696c3ae3885ba56d151',
+  urls = ['https://github.com/baidu/babylon/archive/refs/tags/v1.2.2.tar.gz'],
+  strip_prefix = 'babylon-1.2.2',
+  sha256 = '241d0d3e8bf89c9b47765c794aa5153f73b32a7f419c48d8aeeeb4461cf8aec7',
 )
 ################################################################################
 
@@ -16,18 +16,16 @@ http_archive(
 # copy from WORKSPACE of babylon
 http_archive(
   name = 'com_google_absl',
-  urls = ['https://github.com/abseil/abseil-cpp/archive/refs/tags/20240116.2.tar.gz'],
-  strip_prefix = 'abseil-cpp-20240116.2',
-  sha256 = '733726b8c3a6d39a4120d7e45ea8b41a434cdacde401cba500f14236c49b39dc',
+  urls = ['https://github.com/abseil/abseil-cpp/archive/refs/tags/20211102.0.tar.gz'],
+  strip_prefix = 'abseil-cpp-20211102.0',
+  sha256 = 'dcf71b9cba8dc0ca9940c4b316a0c796be8fab42b070bb6b7cab62b48f0e66c4',
 )
 
 http_archive(
   name = 'com_google_protobuf',
-  urls = ['https://github.com/protocolbuffers/protobuf/archive/refs/tags/v25.3.tar.gz'],
-  strip_prefix = 'protobuf-25.3',
-  sha256 = 'd19643d265b978383352b3143f04c0641eea75a75235c111cc01a1350173180e',
-  patches = ['@com_baidu_babylon//:registry/modules/protobuf/25.3.arenastring/patches/arenastring.patch'],
-  patch_args = ['-p1'],
+  urls = ['https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.19.6.tar.gz'],
+  strip_prefix = 'protobuf-3.19.6',
+  sha256 = '9a301cf94a8ddcb380b901e7aac852780b826595075577bb967004050c835056',
 )
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
