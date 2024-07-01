@@ -13,10 +13,8 @@ if(BUILD_DEPS)
     absl
     #URL "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.1.tar.gz"
     #URL_HASH SHA256=987ce98f02eefbaf930d6e38ab16aa05737234d7afbab2d5c4ea7adbe50c28ed
-    #URL "https://github.com/abseil/abseil-cpp/archive/refs/tags/20211102.0.tar.gz"
-    #URL_HASH SHA256=dcf71b9cba8dc0ca9940c4b316a0c796be8fab42b070bb6b7cab62b48f0e66c4
-    URL "https://github.com/abseil/abseil-cpp/archive/refs/tags/20220623.1.tar.gz"
-    URL_HASH SHA256=91ac87d30cc6d79f9ab974c51874a704de9c2647c40f6932597329a282217ba8
+    URL "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230125.1.tar.gz"
+    URL_HASH SHA256=81311c17599b3712069ded20cca09a62ab0bf2a89dfa16993786c8782b7ed145
   )
   FetchContent_Declare(
     protobuf
