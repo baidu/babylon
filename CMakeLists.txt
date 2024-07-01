@@ -16,8 +16,8 @@ if(BUILD_DEPS)
   )
   FetchContent_Declare(
     protobuf
-    URL "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v25.3.tar.gz"
-    URL_HASH SHA256=d19643d265b978383352b3143f04c0641eea75a75235c111cc01a1350173180e
+    URL "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v22.5.tar.gz"
+    URL_HASH SHA256=4b98c800b352e7582bc92ed398999030ce4ebb49c7858dcb070850ec476b72f2
   )
   FetchContent_Declare(
     boost
