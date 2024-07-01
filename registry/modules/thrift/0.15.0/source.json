@@ -1,8 +1,0 @@
-{
-  "url": "https://github.com/apache/thrift/archive/refs/tags/v0.15.0.tar.gz",
-  "strip_prefix": "thrift-0.15.0",
-  "integrity": "sha256-mjf4phdPCb1iK8cjtViB3FQc1QdHy9CIMcKoLWIPbXZ=",
-  "patches": {
-    "add-build.patch": "sha256-9USLUHaptsPTKvD8X8DftpSmoy8mpYJFPOPjHZfLFod="
-  }
-}

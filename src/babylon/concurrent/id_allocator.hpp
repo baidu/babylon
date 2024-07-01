@@ -149,16 +149,18 @@ struct IdAllocatorFotType {
 } // namespace internal
 
 template <typename T>
-// The identity of thread_local within inline function has some bug as mentioned in
-// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85400
+// The identity of thread_local within inline function has some bug as mentioned
+// in https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85400
 //
 // disable inline hint for buggy versions of GCC
 #if !__clang__ && BABYLON_GCC_VERSION < 80400
 ABSL_ATTRIBUTE_NOINLINE
-#else // __clang__ || BABYLON_GCC_VERSION >= 80400
+#else  // __clang__ || BABYLON_GCC_VERSION >= 80400
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE
 #endif // __clang__ || BABYLON_GCC_VERSION >= 80400
+       // clang-format off
 VersionedValue<uint16_t> ThreadId::current_thread_id() noexcept {
+       // clang-format on
   thread_local ThreadId id(
       internal::concurrent_id_allocator::IdAllocatorFotType<T>::instance());
   return id._value;

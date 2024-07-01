@@ -13,8 +13,7 @@ DEFINE_string(mode, "latency_recorder",
 DEFINE_bool(use_counter, false, "Use babylon counter implemented bvar");
 
 template <typename T>
-ABSL_ATTRIBUTE_NOINLINE
-void run_once(T& var, uint32_t value) {
+ABSL_ATTRIBUTE_NOINLINE void run_once(T& var, uint32_t value) {
   var << value;
 }
 
