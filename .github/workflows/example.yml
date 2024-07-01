@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - run: sudo apt install abseil-cpp
-    - run: sudo apt install boost
-    - run: sudo apt install protobuf
+    - run: sudo apt install libabsl-dev
+    - run: sudo apt install libboost-all-dev
+    - run: sudo apt install libprotobuf-dev
     - run: cd example/depend-use-cmake-find && ./build.sh
