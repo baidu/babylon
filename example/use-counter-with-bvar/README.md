@@ -16,7 +16,7 @@ brpc的bvar在实现高并发计数器时，核心机制是采用『可遍历的
   - 每个线程局部采样桶和收集线程通过采样size上的acquire-release同步替换锁保护
   - 每个线程通过局部蓄水池采样处理溢出，避免提前提交操作中的全局锁
 
-[](images/bvar.png)
+![](images/bvar.png)
 
 ## 示例构成
 
