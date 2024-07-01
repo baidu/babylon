@@ -547,7 +547,6 @@ ThreadSafeArena::ThreadSafeArena(void* mem, size_t size,
     thread_cache().last_lifecycle_id_seen = UINT64_MAX;
   }
 }
-}
 
 ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size) {
   ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(buf) & 7, 0u);
