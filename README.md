@@ -63,7 +63,7 @@ Babylon也支持使用[CMake](https://cmake.org)进行构建，并支持通过[f
 - Typical usage with [brpc](https://github.com/apache/brpc)
   - use [:future](docs/future.md) with bthread: [example/use-with-bthread](example/use-with-bthread)
   - use [:reusable_memory_resource](docs/reusable/memory_resource.md) for rpc server: [example/use-arena-with-brpc](example/use-arena-with-brpc)
-  - use [:concurrent_counter](docs/concurrent/counter.md): [example/use-counter-with-bvar](example/use-counter-with-bvar)
+  - use [:concurrent_counter](docs/concurrent/counter.md) implement bvar: [example/use-counter-with-bvar](example/use-counter-with-bvar)
 
 ## 整体设计思路
 
