@@ -27,21 +27,9 @@ brpc的bvar在实现高并发计数器时，核心机制是采用『可遍历的
 
 ### 计数性能
 
-持续打满所有核心`-concurrent=8`
-
-- Intel机型，整体性能有优势
-- AMD机型，CAS操作开销较低，但普通访存开销较高，轻量操作上babylon采用的分段数组开销显现有小幅劣化，复杂操作依然能有优势
-
-| Intel(R) Xeon(R) Platinum 8350C CPU @ 2.60GHz | bvar      | babylon  |
-|-----------------------------------------------|-----------|----------|
-| adder                                         | 44 ns     | 39 ns    |
-| maxer                                         | 17.11 ns  | 14.52 ns |
-| int_recorder                                  | 19.20 ns  | 15.23 ns |
-| latency_recorder                              | 139.59 ns | 44.80 ns |
-
-| AMD EPYC 7W83 64-Core Processor | bvar     | babylon  |
-|---------------------------------|----------|----------|
-| adder                           | 36 ns    | 32 ns    |
-| maxer                           | 36 ns    | 32 ns    |
-| int_recorder                    | 37 ns    | 36 ns    |
-| latency_recorder                | 87 ns    | 60 ns    |
+| AMD EPYC 7W83 64-Core Processor | bvar      | babylon  |
+|---------------------------------|-----------|----------|
+| adder                           | 12.51 ns  | 7.68 ns  |
+| maxer                           | 12.53 ns  | 8.21 ns  |
+| int_recorder                    | 15.48 ns  | 9.82 ns  |
+| latency_recorder                | 132.36 ns | 28.66 ns |

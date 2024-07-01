@@ -7,31 +7,15 @@
 
 DEFINE_int32(dummy_port, 8000, "TCP Port of this dummy server");
 DEFINE_uint64(concurrency, 8, "Concurrent counting thread num");
+DEFINE_uint64(loop, 1024, "Counting times in one time measure scope");
 DEFINE_string(mode, "latency_recorder",
-              "adder/maxer/int_recorder/latency_recorder");
-DEFINE_bool(use_counter, false, "use babylon counter implemented bvar");
-
-template <typename T>
-ABSL_ATTRIBUTE_NOINLINE
-void run_once(T& var, uint32_t value, ::bvar::LatencyRecorder& latency) {
-  auto begin = ::butil::cpuwide_time_ns();
-  var << value;
-  auto end = ::butil::cpuwide_time_ns();
-  latency << end - begin;
-}
+              "One of adder/maxer/int_recorder/latency_recorder");
+DEFINE_bool(use_counter, false, "Use babylon counter implemented bvar");
 
 template <typename T>
 ABSL_ATTRIBUTE_NOINLINE
 void run_once(T& var, uint32_t value) {
   var << value;
-}
-
-template <typename T>
-ABSL_ATTRIBUTE_NOINLINE
-void run_once(T& var, ::std::vector<uint32_t>& values) {
-  for (auto value : values) {
-    run_once(var, value);
-  }
 }
 
 template <typename S>
@@ -41,7 +25,7 @@ void run_loop(::std::string prefix) {
   ::bvar::LatencyRecorder latency {"test-" + prefix};
 
   ::std::vector<uint32_t> values;
-  values.resize(4096);
+  values.resize(FLAGS_loop);
   ::std::mt19937_64 gen {::std::random_device {}()};
   ::std::normal_distribution<> dis {600, 100};
   for (auto& value : values) {
@@ -53,13 +37,11 @@ void run_loop(::std::string prefix) {
     threads.emplace_back([&] {
       while (!::brpc::IsAskedToQuit()) {
         auto begin = ::butil::cpuwide_time_ns();
-        //for (auto value : values) {
-        //  //run_once(s.var, value, latency);
-        //  s.var << value;
-        //}
-        run_once(s.var, values);
+        for (auto value : values) {
+          run_once(s.var, value);
+        }
         auto end = ::butil::cpuwide_time_ns();
-        latency << (end - begin) / (values.size() * 1.0 / 1000);
+        latency << (end - begin) * 1000.0 / values.size();
       }
     });
   }

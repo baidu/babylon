@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(babylon VERSION 1.2.1)
+project(babylon VERSION 1.2.2)
 
 include(CTest)                      # for BUILD_TESTING option
 include(CMakePackageConfigHelpers)  # for write_basic_package_version_file
@@ -11,13 +11,17 @@ if(BUILD_DEPS)
   include(FetchContent)
   FetchContent_Declare(
     absl
-    URL "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.1.tar.gz"
-    URL_HASH SHA256=987ce98f02eefbaf930d6e38ab16aa05737234d7afbab2d5c4ea7adbe50c28ed
+    #URL "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.1.tar.gz"
+    #URL_HASH SHA256=987ce98f02eefbaf930d6e38ab16aa05737234d7afbab2d5c4ea7adbe50c28ed
+    #URL "https://github.com/abseil/abseil-cpp/archive/refs/tags/20211102.0.tar.gz"
+    #URL_HASH SHA256=dcf71b9cba8dc0ca9940c4b316a0c796be8fab42b070bb6b7cab62b48f0e66c4
+    URL "https://github.com/abseil/abseil-cpp/archive/refs/tags/20220623.1.tar.gz"
+    URL_HASH SHA256=91ac87d30cc6d79f9ab974c51874a704de9c2647c40f6932597329a282217ba8
   )
   FetchContent_Declare(
     protobuf
-    URL "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v27.2.tar.gz"
-    URL_HASH SHA256=e4ff2aeb767da6f4f52485c2e72468960ddfe5262483879ef6ad552e52757a77
+    URL "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v22.5.tar.gz"
+    URL_HASH SHA256=4b98c800b352e7582bc92ed398999030ce4ebb49c7858dcb070850ec476b72f2
   )
   FetchContent_Declare(
     boost
