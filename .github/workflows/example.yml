@@ -4,16 +4,6 @@ on:
   push:
     branches: ["main"]
 
-#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:16 anyflow
-#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:24 depend-use-bzlmod
-#drwxrwxr-x 3 oathdruid oathdruid 4096 Jul  1 19:27 depend-use-cmake-fetch
-#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:28 depend-use-cmake-find
-#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:28 depend-use-cmake-subdir
-#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:31 depend-use-workspace
-#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:32 use-arena-with-brpc
-#drwxrwxr-x 3 oathdruid oathdruid 4096 Jul  1 19:42 use-counter-with-bvar
-#drwxrwxr-x 2 oathdruid oathdruid 4096 Jul  1 19:42 use-with-bthread
-
 jobs:
   anyflow:
     runs-on: ubuntu-latest
@@ -53,3 +43,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: cd example/depend-use-workspace && ./build.sh
+
+  use-arena-with-brpc:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: cd example/use-arena-with-brpc && ./build.sh
+
+  use-counter-with-bvar:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: cd example/use-counter-with-bvar && ./build.sh
+
+  use-with-bthread:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: cd example/use-with-bthread && ./build.sh
