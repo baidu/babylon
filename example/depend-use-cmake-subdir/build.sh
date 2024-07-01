@@ -11,9 +11,9 @@ rm -rf $NAME babylon
 tar xzf $NAME.tar.gz
 mv $NAME babylon
 
-URL=https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.1.tar.gz
-NAME=abseil-cpp-20230802.1
-SHA256=987ce98f02eefbaf930d6e38ab16aa05737234d7afbab2d5c4ea7adbe50c28ed
+URL=https://github.com/abseil/abseil-cpp/archive/refs/tags/20230125.1.tar.gz
+NAME=abseil-cpp-20230125.1
+SHA256=81311c17599b3712069ded20cca09a62ab0bf2a89dfa16993786c8782b7ed145
 if ! echo "$SHA256 $NAME.tar.gz" | sha256sum -c; then
   wget $URL --continue -O $NAME.tar.gz
 fi
@@ -31,9 +31,9 @@ rm -rf $NAME boost
 tar xzf $NAME.tar.gz
 mv $NAME boost
 
-URL=https://github.com/protocolbuffers/protobuf/archive/refs/tags/v25.3.tar.gz
-NAME=protobuf-25.3
-SHA256=d19643d265b978383352b3143f04c0641eea75a75235c111cc01a1350173180e
+URL=https://github.com/protocolbuffers/protobuf/archive/refs/tags/v22.5.tar.gz
+NAME=protobuf-22.5
+SHA256=4b98c800b352e7582bc92ed398999030ce4ebb49c7858dcb070850ec476b72f2
 if ! echo "$SHA256 $NAME.tar.gz" | sha256sum -c; then
   wget $URL --continue -O $NAME.tar.gz
 fi

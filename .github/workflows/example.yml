@@ -41,3 +41,15 @@ jobs:
     - run: sudo apt install libboost-all-dev
     - run: sudo apt install libprotobuf-dev
     - run: cd example/depend-use-cmake-find && ./build.sh
+
+  depend-use-cmake-subdir:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: cd example/depend-use-cmake-subdir && ./build.sh
+
+  depend-use-workspace:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: cd example/depend-use-workspace && ./build.sh
