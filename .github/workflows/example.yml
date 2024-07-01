@@ -20,3 +20,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: cd example/anyflow && ./build.sh
+
+  depend-use-bzlmod:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: cd example/depend-use-bzlmod && ./build.sh
+
+  depend-use-cmake-fetch:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: cd example/depend-use-cmake-fetch && ./build.sh
