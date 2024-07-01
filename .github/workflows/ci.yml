@@ -144,7 +144,7 @@ jobs:
       with:
         path: bazel-disk
         key: bazel-disk-workspace-${{github.sha}}
-        restore-keys: bazel-workspace-
+        restore-keys: bazel-disk-workspace-
     - run: bazel test --enable_bzlmod=false --disk_cache=bazel-disk --action_env=CC=gcc-12 --features=asan test/...
 
   coverage:
