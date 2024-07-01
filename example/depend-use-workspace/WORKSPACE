@@ -6,9 +6,9 @@ load('@bazel_tools//tools/build_defs/repo:http.bzl', 'http_archive')
 # babylon
 http_archive(
   name = 'com_baidu_babylon',
-  urls = ['https://github.com/baidu/babylon/archive/refs/tags/v1.2.0.tar.gz'],
-  strip_prefix = 'babylon-1.2.0',
-  sha256 = '7e83e5177e44e98c48373a751eff6d90367cad0d539641ed4b59558606eed727',
+  urls = ['https://github.com/baidu/babylon/archive/refs/tags/v1.2.1.tar.gz'],
+  strip_prefix = 'babylon-1.2.1',
+  sha256 = 'f5b200d1190d00d9d74519174b38d45a816cd3489a038696c3ae3885ba56d151',
 )
 ################################################################################
 
@@ -16,9 +16,9 @@ http_archive(
 # copy from WORKSPACE of babylon
 http_archive(
   name = 'com_google_absl',
-  urls = ['https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.1.tar.gz'],
-  strip_prefix = 'abseil-cpp-20230802.1',
-  sha256 = '987ce98f02eefbaf930d6e38ab16aa05737234d7afbab2d5c4ea7adbe50c28ed',
+  urls = ['https://github.com/abseil/abseil-cpp/archive/refs/tags/20240116.2.tar.gz'],
+  strip_prefix = 'abseil-cpp-20240116.2',
+  sha256 = '733726b8c3a6d39a4120d7e45ea8b41a434cdacde401cba500f14236c49b39dc',
 )
 
 http_archive(

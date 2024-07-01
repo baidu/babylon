@@ -30,149 +30,22 @@ Babylon是一个用于支持C++高性能服务端开发的基础库，从内存�
 
 - OS: Linux
 - CPU: x86-64/aarch64
-- COMPILER: gcc-9/gcc-10/gcc-12/clang-10/clang-14
+- COMPILER: gcc/clang
 
 ### Bazel
 
 Babylon使用[Bazel](https://bazel.build)进行构建并使用[bzlmod](https://bazel.build/external/module)进行依赖管理，考虑到目前Bazel生态整体处于bzlmod的转换周期，Babylon也依然兼容[workspace](https://bazel.build/rules/lib/globals/workspace)依赖管理模式
 
-#### bzlmod
-
-- 增加仓库注册表
-```
-# in .bazelrc
-# babylon自身发布在独立注册表
-common --registry=https://baidu.github.io/babylon/registry
-# babylon依赖的boost发布在bazelboost项目的注册表，当然如果有其他源可以提供boost的注册表也可以替换
-# 只要同样能够提供boost.preprocessor和boost.spirit模块寻址即可
-common --registry=https://raw.githubusercontent.com/bazelboost/registry/main
-```
-- 增加依赖项
-```
-# in MODULE.bazel
-bazel_dep(name = 'babylon', version = '1.1.6')
-```
-- 添加依赖的子模块到编译目标，全部可用子模块可以参照[模块功能文档](#模块功能文档)，或者[BUILD](BUILD)文件
-```
-# in BUILD
-cc_library(
-  ...
-  deps = [
-    ...
-    '@babylon//:any',
-    '@babylon//:concurrent',
-  ],
-)
-```
-- 也可以直接添加All in One依赖目标`@babylon//:babylon`
-- 在[example/depend-use-bzlmod](example/depend-use-bzlmod)可以找到一个如何通过bzlmod依赖的简单样例
-
-#### workspace
-
-- 增加babylon依赖项
-```
-# in WORKSPACE
-http_archive(
-  name = 'com_baidu_babylon',
-  urls = ['https://github.com/baidu/babylon/archive/refs/tags/v1.1.6.tar.gz'],
-  strip_prefix = 'babylon-1.1.6',
-  sha256 = 'a5bbc29f55819c90e00b40f9b5d2716d5f0232a158d69c530d8c7bac5bd794b6',
-)
-```
-- 增加传递依赖项，内容拷贝自babylon代码库的WORKSPACE，并和项目自身依赖项合并
-```
-# in WORKSPACE
-... // 增加babylon的WORKSPACE内的依赖项，注意和项目已有依赖去重合并
-```
-- 添加依赖的子模块到编译目标，全部可用子模块可以参照[模块功能文档](#模块功能文档)，或者[BUILD](BUILD)文件
-```
-# in BUILD
-cc_library(
-  ...
-  deps = [
-    ...
-    '@com_baidu_babylon//:any',
-    '@com_baidu_babylon//:concurrent',
-  ],
-)
-```
-- 也可以直接添加All in One依赖目标`@com_baidu_babylon//:babylon`
-- 在[example/depend-use-workspace](example/depend-use-workspace)可以找到一个如何通过workspace依赖的简单样例
+- [Depend with bazel use bzlmod](example/depend-use-bzlmod)
+- [Depend with bazel use workspace](example/depend-use-workspace)
 
 ### CMake
 
 Babylon也支持使用[CMake](https://cmake.org)进行构建，并支持通过[find_package](https://cmake.org/cmake/help/latest/command/find_package.html)、[add_subdirectory](https://cmake.org/cmake/help/latest/command/add_subdirectory.html)或[FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)进行依赖引入
 
-#### FetchContent
-
-- 增加依赖项到目标项目
-```
-# in CMakeList.txt
-set(BUILD_DEPS ON)
-
-include(FetchContent)
-FetchContent_Declare(
-  babylon
-  URL "https://github.com/baidu/babylon/archive/refs/tags/v1.1.6.tar.gz"
-  URL_HASH SHA256=a5bbc29f55819c90e00b40f9b5d2716d5f0232a158d69c530d8c7bac5bd794b6
-)
-FetchContent_MakeAvailable(babylon)
-```
-- 添加依赖到编译目标，CMake编译目前只提供All in One依赖目标`babylon::babylon`
-```
-# in CMakeList.txt
-target_link_libraries(your_target babylon::babylon)
-```
-- 编译目标项目
-  - `cmake -Bbuild`
-  - `cmake --build build -j$(nproc)`
-- 在[example/depend-use-cmake-fetch](example/depend-use-cmake-fetch)可以找到一个如何通过CMake FetchContent依赖的简单样例
-
-#### find_package
-
-- 编译并安装`boost` `abseil-cpp` `protobuf`或者直接使用apt等包管理工具安装对应平台的预编译包
-- 编译并安装babylon
-  - `cmake -Bbuild -DCMAKE_INSTALL_PREFIX=/your/install/path -DCMAKE_PREFIX_PATH=/your/install/path`
-  - `cmake --build build -j$(nproc)`
-  - `cmake --install build`
-- 增加依赖项到目标项目
-```
-# in CMakeList.txt
-find_package(babylon REQUIRED)
-```
-- 添加依赖到编译目标，CMake编译目前只提供All in One依赖目标`babylon::babylon`
-```
-# in CMakeList.txt
-target_link_libraries(your_target babylon::babylon)
-```
-- 编译目标项目
-  - `cmake -Bbuild -DCMAKE_PREFIX_PATH=/your/install/path`
-  - `cmake --build build -j$(nproc)`
-- 在[example/depend-use-cmake-find](example/depend-use-cmake-find)可以找到一个如何通过CMake find_package依赖的简单样例
-
-#### add_subdirectory
-
-- 下载`boost` `abseil-cpp` `protobuf``babylon`源码
-- 增加依赖项到目标项目
-```
-# in CMakeList.txt
-set(BOOST_INCLUDE_LIBRARIES preprocessor spirit)
-add_subdirectory(boost EXCLUDE_FROM_ALL)
-set(ABSL_ENABLE_INSTALL ON)
-add_subdirectory(abseil-cpp)
-set(protobuf_BUILD_TESTS OFF)
-add_subdirectory(protobuf)
-add_subdirectory(babylon)
-```
-- 添加依赖到编译目标，CMake编译目前只提供All in One依赖目标`babylon::babylon`
-```
-# in CMakeList.txt
-target_link_libraries(your_target babylon::babylon)
-```
-- 编译目标项目
-  - `cmake -Bbuild`
-  - `cmake --build build -j$(nproc)`
-- 在[example/depend-use-cmake-subdir](example/depend-use-cmake-subdir)可以找到一个如何通过CMake sub_directory依赖的简单样例
+- [Depend with cmake use FetchContent](example/depend-use-cmake-fetch)
+- [Depend with cmake use find_package](example/depend-use-cmake-find)
+- [Depend with cmake use add_subdirectory](example/depend-use-cmake-subdir)
 
 ## 模块功能文档
 
@@ -187,6 +60,10 @@ target_link_libraries(your_target babylon::babylon)
 - [:serialization](docs/serialization.md)
 - [:time](docs/time.md)
 - Protobuf [arenastring](docs/arenastring.md) patch
+- Typical usage with [brpc](https://github.com/apache/brpc)
+  - use [:future](docs/future.md) with bthread: [example/use-with-bthread](example/use-with-bthread)
+  - use [:reusable_memory_resource](docs/reusable/memory_resource.md) for rpc server: [example/use-arena-with-brpc](example/use-arena-with-brpc)
+  - use [:concurrent_counter](docs/concurrent/counter.md) implement bvar: [example/use-counter-with-bvar](example/use-counter-with-bvar)
 
 ## 整体设计思路
 

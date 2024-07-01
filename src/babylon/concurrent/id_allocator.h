@@ -114,7 +114,7 @@ class ThreadId {
   template <typename T = void, typename C,
             typename = typename ::std::enable_if<
                 IsInvocable<C, uint16_t, uint16_t>::value>::type>
-  inline static void for_each(C&& callback);
+  static void for_each(C&& callback);
 
  private:
   // 内部类型，用thread local持有，使用者不应尝试构造

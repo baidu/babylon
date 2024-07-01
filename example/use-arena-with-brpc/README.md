@@ -8,7 +8,7 @@ brpc在调用用户的service前，需要在内部先完成Request和Response的
 
 ## 示例构成
 
-- `:reusable_rpc_protocol`: 独立的brpc:Protocol实现，集成了内存复用和实例复用的功能
+- `:reusable_rpc_protocol`: 独立的brpc::Protocol实现，集成了内存复用和实例复用的功能
   - `reusable_rpc_protocol.h`&`reusable_rpc_protocol.cpp`: 独立逻辑，和对应brpc版本无关
   - `reusable_rpc_protocol.trick.cpp`: 拷贝自`src/brpc/policy/baidu_rpc_protocol.cpp`并进行简要修改
 - `:client`&`:server`: 模拟比较复杂的Message演示性能对比
@@ -55,6 +55,7 @@ class SomeServiceImpl : public SomeService {
 ## 性能演示
 
 CPU: AMD EPYC 7W83 64-Core Processor, taskset 0-3 core
+
 QPS: 750
 
 - 原始模式

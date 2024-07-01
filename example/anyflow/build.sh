@@ -1,4 +1,4 @@
 #!/bin/sh
 set -ex
 
-bazel build //...
+bazel run anyflow_multi_nodes

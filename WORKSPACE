@@ -4,18 +4,16 @@ load('@bazel_tools//tools/build_defs/repo:http.bzl', 'http_archive')
 
 http_archive(
   name = 'com_google_absl',
-  urls = ['https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.1.tar.gz'],
-  strip_prefix = 'abseil-cpp-20230802.1',
-  sha256 = '987ce98f02eefbaf930d6e38ab16aa05737234d7afbab2d5c4ea7adbe50c28ed',
+  urls = ['https://github.com/abseil/abseil-cpp/archive/refs/tags/20211102.0.tar.gz'],
+  strip_prefix = 'abseil-cpp-20211102.0',
+  sha256 = 'dcf71b9cba8dc0ca9940c4b316a0c796be8fab42b070bb6b7cab62b48f0e66c4',
 )
 
 http_archive(
   name = 'com_google_protobuf',
-  urls = ['https://github.com/protocolbuffers/protobuf/archive/refs/tags/v25.3.tar.gz'],
-  strip_prefix = 'protobuf-25.3',
-  sha256 = 'd19643d265b978383352b3143f04c0641eea75a75235c111cc01a1350173180e',
-  patches = ['@com_baidu_babylon//:registry/modules/protobuf/25.3.arenastring/patches/arenastring.patch'],
-  patch_args = ['-p1'],
+  urls = ['https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.19.6.tar.gz'],
+  strip_prefix = 'protobuf-3.19.6',
+  sha256 = '9a301cf94a8ddcb380b901e7aac852780b826595075577bb967004050c835056',
 )
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
