@@ -43,3 +43,23 @@ cc_test(
     '@com_google_googletest//:gtest_main',
   ]
 )
+
+cc_test(
+  name = 'test_logger',
+  srcs = ['test_logger.cpp'],
+  copts = BABYLON_COPTS + ['-fno-access-control'],
+  deps = [
+    '//:logging_logger',
+    '@com_google_googletest//:gtest_main',
+  ]
+)
+
+#cc_test(
+#  name = 'test_rolling_file_object',
+#  srcs = ['test_rolling_file_object.cpp'],
+#  copts = BABYLON_COPTS,
+#  deps = [
+#    '//:logging_ro',
+#    '@com_google_googletest//:gtest_main',
+#  ]
+#)

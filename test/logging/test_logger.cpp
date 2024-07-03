@@ -90,7 +90,7 @@ TEST_F(LoggerTest, stream_has_correct_basic_info) {
     auto severity = static_cast<::babylon::LogSeverity>(i);
     ASSERT_EQ(severity, logger.stream(severity, __FILE__, __LINE__).severity());
     ASSERT_EQ(__FILE__, logger.stream(severity, __FILE__, __LINE__).file());
-    ASSERT_EQ(__LINE__ + 1, logger.stream(severity, __FILE__, __LINE__).line());
+    ASSERT_EQ(__LINE__, logger.stream(severity, __FILE__, __LINE__).line());
   }
 }
 

@@ -141,6 +141,11 @@ alias(
 )
 
 alias(
+  name = 'logging_logger',
+  actual = '//src/babylon/logging:logger',
+)
+
+alias(
   name = 'move_only_function',
   actual = '//src/babylon:move_only_function',
 )
