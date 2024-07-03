@@ -16,6 +16,7 @@ cc_library(
   name = 'allocator',
   hdrs = ['allocator.h', 'allocator.hpp'],
   copts = BABYLON_COPTS,
+  includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
     ':memory_resource',
@@ -27,6 +28,7 @@ cc_library(
   name = 'manager',
   hdrs = ['manager.h', 'manager.hpp'],
   copts = BABYLON_COPTS,
+  includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
     ':traits',
@@ -46,6 +48,7 @@ cc_library(
   srcs = ['memory_resource.cpp'],
   hdrs = ['memory_resource.h'],
   copts = BABYLON_COPTS,
+  includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
     ':page_allocator',
@@ -60,6 +63,7 @@ cc_library(
   srcs = ['message.trick.cpp'],
   hdrs = ['traits.h', 'message.h'],
   copts = BABYLON_COPTS + ['-fno-access-control'],
+  includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
     ':allocator',
@@ -72,6 +76,7 @@ cc_library(
   srcs = ['page_allocator.cpp'],
   hdrs = ['page_allocator.h'],
   copts = BABYLON_COPTS,
+  includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
     '//src/babylon/concurrent:bounded_queue',
@@ -83,6 +88,7 @@ cc_library(
   name = 'string',
   hdrs = ['string.h'],
   copts = BABYLON_COPTS,
+  includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
     ':traits',
@@ -103,6 +109,7 @@ cc_library(
   srcs = ['message.cpp'],
   hdrs = ['traits.h', 'message.h'],
   copts = BABYLON_COPTS,
+  includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
     ':allocator',
@@ -114,6 +121,7 @@ cc_library(
   name = 'vector',
   hdrs = ['vector.h', 'vector.hpp'],
   copts = BABYLON_COPTS,
+  includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
     ':traits',

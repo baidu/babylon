@@ -18,6 +18,7 @@ cc_library(
   srcs = ['async_file_appender.cpp'],
   hdrs = ['async_file_appender.h'],
   copts = BABYLON_COPTS,
+  includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
     '//src/babylon/reusable:page_allocator',
@@ -29,6 +30,7 @@ cc_library(
   srcs = ['interface.cpp'],
   hdrs = ['interface.h'],
   copts = BABYLON_COPTS,
+  includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
     ':log_stream',
@@ -40,6 +42,7 @@ cc_library(
   srcs = ['log_stream.cpp'],
   hdrs = ['log_stream.h', 'log_stream.hpp'],
   copts = BABYLON_COPTS,
+  includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
     '//src/babylon:type_traits',
