@@ -7,24 +7,27 @@
 
 using ::babylon::AsyncFileAppender;
 using ::babylon::FileObject;
-using ::babylon::Log;
+using ::babylon::LogEntry;
 using ::babylon::LogStreamBuffer;
 using ::babylon::PageAllocator;
 using ::babylon::PageHeap;
 
 struct StaticFileObject : public FileObject {
-  virtual int check_and_get_file_descriptor() noexcept override {
-    return fd;
+  virtual ::std::tuple<int, int> check_and_get_file_descriptor() noexcept
+      override {
+    return ::std::tuple<int, int> {fd, old_fd};
   }
   int fd;
+  int old_fd;
 };
 
 struct LogStream : public ::std::ostream {
   LogStream(PageAllocator& page_allocator) noexcept : ::std::ostream(&buffer) {
-    buffer.begin(page_allocator);
+    buffer.set_page_allocator(page_allocator);
+    buffer.begin();
   }
 
-  inline Log& end() noexcept {
+  inline LogEntry& end() noexcept {
     return buffer.end();
   }
 
@@ -60,19 +63,11 @@ struct AsyncFileAppenderTest : public ::testing::Test {
   AsyncFileAppender appender;
 };
 
-TEST_F(AsyncFileAppenderTest, default_write_to_stderr) {
-  ASSERT_EQ(0, appender.initialize());
-  LogStream ls(appender.page_allocator());
-  ls << "this line should appear in stderr with num " << 10086 << ::std::endl;
-  appender.write(ls.end());
-}
-
 TEST_F(AsyncFileAppenderTest, write_to_file_object) {
-  appender.set_file_object(file_object);
   ASSERT_EQ(0, appender.initialize());
   LogStream ls(appender.page_allocator());
   ls << "this line should appear in pipe with num " << 10010 << ::std::endl;
-  appender.write(ls.end());
+  appender.write(ls.end(), &file_object);
 
   ::std::string expected = "this line should appear in pipe with num 10010\n";
   ::std::string s;
@@ -82,12 +77,11 @@ TEST_F(AsyncFileAppenderTest, write_to_file_object) {
 }
 
 TEST_F(AsyncFileAppenderTest, write_happen_async) {
-  appender.set_file_object(file_object);
   ASSERT_EQ(0, appender.initialize());
   for (size_t i = 0; i < 1000; ++i) {
     LogStream ls(appender.page_allocator());
     ls << "this line should appear in pipe with num " << i << ::std::endl;
-    appender.write(ls.end());
+    appender.write(ls.end(), &file_object);
   }
   ASSERT_LT(0, appender.pending_size());
   for (size_t i = 0; i < 1000; ++i) {
@@ -102,7 +96,6 @@ TEST_F(AsyncFileAppenderTest, write_happen_async) {
 }
 
 TEST_F(AsyncFileAppenderTest, can_discard_log) {
-  appender.set_file_object(file_object);
   ASSERT_EQ(0, appender.initialize());
   for (size_t i = 0; i < 100; ++i) {
     LogStream ls(appender.page_allocator());
@@ -124,14 +117,13 @@ TEST_F(AsyncFileAppenderTest, write_different_size_level_correct) {
 
   page_heap.set_page_size(page_size);
   appender.set_page_allocator(page_heap);
-  appender.set_file_object(file_object);
   appender.set_queue_capacity(64);
   ASSERT_EQ(0, appender.initialize());
 
   for (size_t i = page_size / 2; i < max_log_size; i += page_size / 2) {
     LogStream ls(appender.page_allocator());
     ls << s.substr(0, i);
-    appender.write(ls.end());
+    appender.write(ls.end(), &file_object);
 
     ::std::string rs;
     rs.resize(i);

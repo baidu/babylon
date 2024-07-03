@@ -1,12 +1,16 @@
 #pragma once
 
-#include "babylon/type_traits.h" // BABYLON_DECLARE_MEMBER_INVOCABLE
+#include <ctime>
+#include "babylon/logging/log_severity.h" // LogSeverity
+#include "babylon/type_traits.h"          // BABYLON_DECLARE_MEMBER_INVOCABLE
 
 // clang-format off
 #include BABYLON_EXTERNAL(absl/strings/str_format.h) // absl::Format
 // clang-format on
 
 #include <inttypes.h> // ::*int*_t
+
+#include <mutex> // std::mutex
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -32,12 +36,21 @@ class LogStream : protected ::std::ostream {
  private:
   using Base = ::std::ostream;
 
-  BABYLON_DECLARE_MEMBER_INVOCABLE(write_object, IsDirectWritable)
+  BABYLON_DECLARE_MEMBER_INVOCABLE(write_object, IsDirectWritable);
 
  public:
   using Base::rdbuf;
 
   inline LogStream(::std::streambuf& streambuf) noexcept;
+
+  inline void set_severity(LogSeverity severity) noexcept;
+  inline LogSeverity severity() const noexcept;
+
+  inline void set_file(StringView file) noexcept;
+  inline StringView file() const noexcept;
+
+  inline void set_line(int line) noexcept;
+  inline int line() const noexcept;
 
   template <typename... Args>
   inline LogStream& begin(const Args&... args) noexcept;
@@ -121,6 +134,44 @@ class LogStream : protected ::std::ostream {
 
   size_t _depth {0};
   bool _noflush {false};
+  LogSeverity _severity {LogSeverity::DEBUG};
+  int _line {-1};
+  StringView _file;
+};
+
+// 便于实现LOG宏的RAII控制器
+class ScopedLogStream {
+ public:
+  ScopedLogStream() = delete;
+  ScopedLogStream(ScopedLogStream&&) = delete;
+  ScopedLogStream(const ScopedLogStream&) = delete;
+  ScopedLogStream& operator=(ScopedLogStream&&) = delete;
+  ScopedLogStream& operator=(const ScopedLogStream&) = delete;
+  inline ~ScopedLogStream() noexcept;
+
+  template <typename... Args>
+  inline ScopedLogStream(LogStream& stream, Args&&... args) noexcept;
+
+  inline LogStream& stream() noexcept;
+
+ private:
+  LogStream& _stream;
+};
+
+class DefaultLogStream : public LogStream {
+ public:
+  DefaultLogStream() noexcept;
+
+ private:
+  static ::std::mutex& mutex() noexcept;
+
+  virtual void do_begin() noexcept override;
+  virtual void do_end() noexcept override;
+};
+
+class NullLogStream : public LogStream {
+ public:
+  NullLogStream() noexcept;
 };
 
 BABYLON_NAMESPACE_END

@@ -1,88 +1,30 @@
 #include "babylon/logging/async_file_appender.h"
 
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+
 BABYLON_NAMESPACE_BEGIN
 
-////////////////////////////////////////////////////////////////////////////////
-// FileObject begin
-FileObject::~FileObject() noexcept {}
-// FileObject end
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// StderrFileObject begin
-StderrFileObject& StderrFileObject::instance() noexcept {
-  static StderrFileObject object;
-  return object;
+void AsyncFileAppender::DirectBuffer::Deleter::operator()(
+    DirectBuffer* buffer) noexcept {
+  ::operator delete(buffer->data(), buffer->size(), buffer->alignment());
 }
 
-int StderrFileObject::check_and_get_file_descriptor() noexcept {
-  return STDERR_FILENO;
+AsyncFileAppender::DirectBuffer::Ptr
+AsyncFileAppender::DirectBuffer::create() noexcept {
+  auto buffer = static_cast<DirectBuffer*>(
+      ::operator new(DirectBuffer::size(), DirectBuffer::alignment()));
+  ::madvise(buffer->data(), buffer->size(), MADV_HUGEPAGE);
+  ::memset(buffer->data(), 0, buffer->size());
+  Ptr ptr {buffer, Deleter()};
+  return ptr;
 }
-// StderrFileObject end
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// LogStreamBuffer begin
-int LogStreamBuffer::overflow(int ch) noexcept {
-  // 先同步字节数
-  sync();
-  // 分配一个新页，设置到缓冲区
-  auto page = reinterpret_cast<char*>(_page_allocator->allocate());
-  if (ABSL_PREDICT_FALSE(_pages == _pages_end)) {
-    overflow_page_table();
-  }
-  *_pages++ = page;
-  _sync_point = page;
-  setp(page, page + _page_allocator->page_size());
-  return sputc(ch);
-}
-
-int LogStreamBuffer::sync() noexcept {
-  auto ptr = pptr();
-  if (ptr > _sync_point) {
-    _log.size += ptr - _sync_point;
-    _sync_point = ptr;
-  }
-  return 0;
-}
-
-void LogStreamBuffer::overflow_page_table() noexcept {
-  // 当前页表用尽，需要分配一个新的页表
-  auto page_table =
-      reinterpret_cast<Log::PageTable*>(_page_allocator->allocate());
-  page_table->next = nullptr;
-  // 计算新页表的起止点
-  auto pages = page_table->pages;
-  auto pages_end = reinterpret_cast<char**>(
-      reinterpret_cast<uintptr_t>(page_table) + _page_allocator->page_size());
-  // 如果当前页表是日志对象内联页表
-  if (_pages == _log.pages + Log::INLINE_PAGE_CAPACITY) {
-    // 转存最后一个页指针到新页表内，腾出页表的单链表头
-    // 并将新页表挂载到头上
-    *pages++ = reinterpret_cast<char*>(_log.head);
-    _log.head = page_table;
-  } else {
-    // 从最后一个页表项推算出对应页表地址
-    // 将新页表接在后面
-    auto last_page_table = reinterpret_cast<Log::PageTable*>(
-        reinterpret_cast<uintptr_t>(_pages_end) - _page_allocator->page_size());
-    last_page_table->next = page_table;
-  }
-  // 更新当前页表起止点
-  _pages = pages;
-  _pages_end = pages_end;
-}
-// LogStreamBuffer end
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // AsyncFileAppender begin
 AsyncFileAppender::~AsyncFileAppender() noexcept {
   close();
-}
-
-void AsyncFileAppender::set_file_object(FileObject& file_object) noexcept {
-  _file_object = &file_object;
 }
 
 void AsyncFileAppender::set_page_allocator(
@@ -95,66 +37,124 @@ void AsyncFileAppender::set_queue_capacity(size_t queue_capacity) noexcept {
 }
 
 int AsyncFileAppender::initialize() noexcept {
-  // 根据页大小，计算出页表容量
-  _extend_page_capacity =
-      (_page_allocator->page_size() - sizeof(Log::PageTable)) / sizeof(char*);
+  _direct_buffer = DirectBuffer::create();
+
   _write_thread = ::std::thread(&AsyncFileAppender::keep_writing, this);
   return 0;
 }
 
-void AsyncFileAppender::write(Log& log) noexcept {
-  _queue.push<true, false, false>([&](Log& target) {
-    target = log;
+void AsyncFileAppender::write(LogEntry& entry, FileObject* file) noexcept {
+  _queue.push<true, false, false>([&](Item& target) {
+    target.entry = entry;
+    target.file = file;
   });
 }
 
-void AsyncFileAppender::discard(Log& log) noexcept {
-  thread_local ::std::vector<::iovec> writev_payloads;
-  thread_local ::std::vector<void*> pages_to_release;
-  writev_payloads.clear();
-  pages_to_release.clear();
-  collect_log_pages(log, writev_payloads, pages_to_release);
-  _page_allocator->deallocate(pages_to_release.data(), pages_to_release.size());
+void AsyncFileAppender::discard(LogEntry& entry) noexcept {
+  static thread_local ::std::vector<struct ::iovec> iov;
+  static thread_local ::std::vector<void*> pages;
+
+  entry.append_to_iovec(_page_allocator->page_size(), iov);
+  for (auto& one_iov : iov) {
+    pages.push_back(one_iov.iov_base);
+  }
+
+  _page_allocator->deallocate(pages.data(), pages.size());
+  pages.clear();
+  iov.clear();
 }
 
 int AsyncFileAppender::close() noexcept {
   if (_write_thread.joinable()) {
-    _queue.push([](Log& log) {
-      log.size = 0;
+    _queue.push([](Item& target) {
+      target.entry.size = 0;
+      target.file = nullptr;
     });
     _write_thread.join();
   }
+  _direct_buffer.reset();
   return 0;
 }
 
+void AsyncFileAppender::prepare_destination(int fd,
+                                            Destination& dest) noexcept {
+  dest.fd = fd;
+  dest.fd_index = -1;
+  auto flags = ::fcntl(dest.fd, F_GETFL);
+  if (flags < 0) {
+    flags = 0;
+  }
+
+  dest.direct = static_cast<bool>(flags & O_DIRECT);
+  if (!dest.direct) {
+    dest.write = &AsyncFileAppender::write_use_plain_writev;
+    return;
+  }
+
+  dest.write = &AsyncFileAppender::write_use_direct_pwrite;
+  struct ::stat st;
+  auto ret = ::fstat(dest.fd, &st);
+  auto file_size = st.st_size;
+  if (ret < 0) {
+    file_size = 0;
+  }
+
+  dest.offset = file_size / 512 * 512;
+  auto last_sector_size = file_size % 512;
+  if (last_sector_size > 0) {
+    auto bytes = ::pread(dest.fd, _direct_buffer->data(), 512, 0);
+    if (bytes > 0) {
+      auto page = _page_allocator->allocate();
+      ::memcpy(page, _direct_buffer->data(), bytes);
+      dest.iov.emplace(
+          dest.iov.begin(),
+          ::iovec {.iov_base = page, .iov_len = static_cast<size_t>(bytes)});
+    }
+  }
+}
+
 void AsyncFileAppender::keep_writing() noexcept {
-  ::std::vector<::iovec> writev_payloads;
-  ::std::vector<void*> pages_to_release;
   auto stop = false;
   // 由于writev限制了单次最大长度到UIO_MAXIOV，更大的batch并无意义
   // 另一方面ConcurrentBoundedQueue也限制了最大batch，合并取最严的限制
   auto batch = ::std::min<size_t>(UIO_MAXIOV, _queue.capacity());
 
   do {
-    writev_payloads.clear();
-    pages_to_release.clear();
-
     // 无论本轮是否有日志要写出，都检测一次文件描述符
     // 便于长期无日志输出时依然保持日志滚动
-    auto fd = _file_object->check_and_get_file_descriptor();
     auto poped = _queue.try_pop_n<false, false>(
         [&](Queue::Iterator iter, Queue::Iterator end) {
           while (iter < end) {
-            stop =
-                collect_log_pages(*iter++, writev_payloads, pages_to_release);
+            auto& item = *iter++;
+            if (ABSL_PREDICT_FALSE(item.entry.size == 0)) {
+              stop = true;
+              break;
+            }
+            auto& dest = destination(item.file);
+            item.entry.append_to_iovec(_page_allocator->page_size(), dest.iov);
+            dest.synced = false;
           }
         },
         batch);
 
-    if (writev_payloads.size() > 0) {
-      write_to_fd(writev_payloads, fd);
-      _page_allocator->deallocate(pages_to_release.data(),
-                                  pages_to_release.size());
+    for (auto& dest : _destinations) {
+      auto result = dest.file->check_and_get_file_descriptor();
+      auto fd = ::std::get<0>(result);
+      auto old_fd = ::std::get<1>(result);
+      ::std::cerr << "index " << dest.file->index() << " fd " << fd
+                  << " old_fd " << old_fd << ::std::endl;
+      if (old_fd >= 0) {
+        abort();
+      }
+      if (dest.fd < 0) {
+        prepare_destination(fd, dest);
+      }
+    }
+
+    for (auto& dest : _destinations) {
+      if (!dest.iov.empty()) {
+        (this->*(dest.write))(dest);
+      }
     }
 
     // 当一轮日志量过低时，拉长下一轮写入的周期
@@ -171,97 +171,128 @@ void AsyncFileAppender::keep_writing() noexcept {
   } while (!stop);
 }
 
-bool AsyncFileAppender::collect_log_pages(
-    Log& log, ::std::vector<::iovec>& writev_payloads,
-    ::std::vector<void*>& pages_to_release) noexcept {
-  if (ABSL_PREDICT_FALSE(log.size == 0)) {
-    return true;
+AsyncFileAppender::Destination& AsyncFileAppender::destination(
+    FileObject* file) noexcept {
+  auto index = file->index();
+  if (index != SIZE_MAX) {
+    return _destinations[index];
   }
 
-  auto page_size = _page_allocator->page_size();
-  size_t data_page_num = (log.size + page_size - 1) / page_size;
-  // 页面数量超过了可内联规模，需要考虑扩展页表
-  if (data_page_num > Log::INLINE_PAGE_CAPACITY) {
-    // 先收集内联的整页
-    collect_full_pages(log.pages, Log::INLINE_PAGE_CAPACITY - 1,
-                       writev_payloads, pages_to_release);
-    // 再收集扩展页单链表中的内容
-    auto remain = log.size - ((Log::INLINE_PAGE_CAPACITY - 1) * page_size);
-    collect_log_pages(*log.head, remain, writev_payloads, pages_to_release);
-    return false;
-  }
-
-  collect_pages(log.pages, log.size, writev_payloads, pages_to_release);
-  return false;
+  file->set_index(_destinations.size());
+  _destinations.emplace_back(Destination {.file = file});
+  return _destinations.back();
 }
 
-void AsyncFileAppender::collect_log_pages(
-    Log::PageTable& extend_log, size_t size, ::std::vector<::iovec>& payloads,
-    ::std::vector<void*>& pages) noexcept {
-  auto extend_page_capacity = _extend_page_capacity;
-  auto extend_capacity = extend_page_capacity * _page_allocator->page_size();
-
+size_t AsyncFileAppender::pwrite_all(int fd, const char* buffer, size_t size,
+                                     off_t offset) noexcept {
+  auto total = 0;
   auto remain = size;
-  auto extend_log_ptr = &extend_log;
-  // 剩余内容足够填满一个页表内的所有页，完整收集
-  while (remain >= extend_capacity) {
-    collect_full_pages(extend_log_ptr->pages, extend_page_capacity, payloads,
-                       pages);
-    pages.emplace_back(extend_log_ptr);
-    extend_log_ptr = extend_log_ptr->next;
-    remain -= extend_capacity;
+  while (remain > 0) {
+    auto written = ::pwrite(fd, buffer, remain, offset);
+    if (written < 0) {
+      return total;
+    }
+    buffer += written;
+    remain -= written;
+    offset += written;
+    total += written;
   }
-  // 收集尾部可能不完整的页表
-  if (remain > 0) {
-    collect_pages(extend_log_ptr->pages, remain, payloads, pages);
-    pages.emplace_back(extend_log_ptr);
-  }
+  return total;
 }
 
-void AsyncFileAppender::collect_full_pages(
-    char** pages, size_t num, ::std::vector<::iovec>& writev_payloads,
-    ::std::vector<void*>& pages_to_release) noexcept {
-  auto page_size = _page_allocator->page_size();
-  for (size_t i = 0; i < num; ++i) {
-    auto page = pages[i];
-    writev_payloads.emplace_back(
-        ::iovec {.iov_base = page, .iov_len = page_size});
-    pages_to_release.emplace_back(page);
+void AsyncFileAppender::write_use_plain_writev(Destination& dest) noexcept {
+  static thread_local ::std::vector<void*> pages;
+
+  auto fd = dest.fd;
+  auto& iov = dest.iov;
+  for (auto iter = iov.begin(); iter < iov.end();) {
+    auto piov = &*iter;
+    auto size = ::std::min<size_t>(IOV_MAX, iov.end() - iter);
+    auto bytes = 0;
+    for (size_t i = 0; i < size; ++i) {
+      pages.emplace_back(piov[i].iov_base);
+      bytes += piov[i].iov_len;
+    }
+    auto written = ::writev(fd, piov, size);
+    ::std::cerr << "write_use_plain_writev writev to fd " << fd << " ret "
+                << written << ::std::endl;
+    if (bytes == written) {
+      iter += size;
+      continue;
+    }
+    abort();
   }
+
+  _page_allocator->deallocate(pages.data(), pages.size());
+  pages.clear();
+  iov.clear();
+  dest.synced = true;
 }
 
-void AsyncFileAppender::collect_pages(
-    char** pages, size_t byte_size, ::std::vector<::iovec>& writev_payloads,
-    ::std::vector<void*>& pages_to_release) noexcept {
-  auto page_size = _page_allocator->page_size();
-  auto page_ptr = pages;
-  auto remain = byte_size;
-  // 先收集靠前的整页
-  while (remain >= page_size) {
-    auto page = *page_ptr++;
-    writev_payloads.emplace_back(
-        ::iovec {.iov_base = page, .iov_len = page_size});
-    pages_to_release.emplace_back(page);
-    remain -= page_size;
+void AsyncFileAppender::write_use_direct_pwrite(Destination& dest) noexcept {
+  if (dest.synced) {
+    return;
   }
-  // 收集位于尾部的最后一个非整页
-  if (remain > 0) {
-    auto page = *page_ptr;
-    writev_payloads.emplace_back(::iovec {.iov_base = page, .iov_len = remain});
-    pages_to_release.emplace_back(page);
-  }
-}
 
-void AsyncFileAppender::write_to_fd(::std::vector<::iovec>& writev_payloads,
-                                    int fd) noexcept {
-  size_t begin_index = 0;
-  do {
-    auto size =
-        ::std::min<size_t>(UIO_MAXIOV, writev_payloads.size() - begin_index);
-    auto written = ::writev(fd, &writev_payloads[begin_index], size);
-    (void)written;
-    begin_index += size;
-  } while (begin_index < writev_payloads.size());
+  static thread_local ::std::vector<void*> pages;
+  pages.clear();
+
+  char* buffer = _direct_buffer->data();
+  size_t size = _direct_buffer->size();
+  auto& iov = dest.iov;
+
+  for (auto& one_iov : iov) {
+    ::std::cerr << "write_use_direct_pwrite process iov " << one_iov.iov_base
+                << " size " << one_iov.iov_len << ::std::endl;
+    if (one_iov.iov_len <= size) {
+      ::memcpy(buffer, one_iov.iov_base, one_iov.iov_len);
+      buffer += one_iov.iov_len;
+      size -= one_iov.iov_len;
+    } else {
+      auto src = static_cast<char*>(one_iov.iov_base);
+      auto remain = one_iov.iov_len;
+      ::memcpy(buffer, src, size);
+      auto written = pwrite_all(dest.fd, _direct_buffer->data(),
+                                _direct_buffer->size(), dest.offset);
+      dest.offset += written;
+      buffer = _direct_buffer->data();
+      src += size;
+      remain -= size;
+      ::memcpy(buffer, src, remain);
+      buffer += remain;
+      size = _direct_buffer->size() - remain;
+    }
+    pages.emplace_back(one_iov.iov_base);
+  }
+
+  auto fill_bytes = size % 512;
+  if (fill_bytes > 0) {
+    ::memset(buffer, '\0', fill_bytes);
+    size -= fill_bytes;
+  }
+
+  auto write_bytes = _direct_buffer->size() - size;
+  auto content_bytes = write_bytes - fill_bytes;
+  auto written =
+      pwrite_all(dest.fd, _direct_buffer->data(), write_bytes, dest.offset);
+  if (written < content_bytes) {
+    fill_bytes = 0;
+  }
+  dest.offset += written;
+
+  if (fill_bytes > 0) {
+    dest.offset -= 512;
+    auto keep_bytes = 512 - fill_bytes;
+    iov.resize(1);
+    auto& first_iov = iov[0];
+    first_iov.iov_base = pages.back();
+    pages.pop_back();
+    ::memcpy(first_iov.iov_base, buffer - keep_bytes, keep_bytes);
+    first_iov.iov_len = keep_bytes;
+    ::std::cerr << "copy_to_direct_buffer keep " << keep_bytes << ::std::endl;
+  }
+  _page_allocator->deallocate(pages.data(), pages.size());
+  dest.synced = true;
 }
 // AsyncFileAppender end
 ////////////////////////////////////////////////////////////////////////////////

@@ -4,6 +4,30 @@
 
 BABYLON_NAMESPACE_BEGIN
 
+inline void LogStream::set_severity(LogSeverity severity) noexcept {
+  _severity = severity;
+}
+
+inline LogSeverity LogStream::severity() const noexcept {
+  return _severity;
+}
+
+inline void LogStream::set_file(StringView file) noexcept {
+  _file = file;
+}
+
+inline StringView LogStream::file() const noexcept {
+  return _file;
+}
+
+inline void LogStream::set_line(int line) noexcept {
+  _line = line;
+}
+
+inline int LogStream::line() const noexcept {
+  return _line;
+}
+
 template <typename... Args>
 inline LogStream& LogStream::begin(const Args&... args) noexcept {
   if (ABSL_PREDICT_FALSE(++_depth != 1)) {
@@ -115,5 +139,24 @@ inline LogStream& LogStream::write_object(StringView sv) noexcept {
 inline LogStream& LogStream::write_object(char c) noexcept {
   return write(c);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ScopedLogStream begin
+inline ScopedLogStream::~ScopedLogStream() noexcept {
+  _stream.end();
+}
+
+template <typename... Args>
+inline ScopedLogStream::ScopedLogStream(LogStream& stream,
+                                        Args&&... args) noexcept
+    : _stream {stream} {
+  _stream.begin(::std::forward<Args>(args)...);
+}
+
+inline LogStream& ScopedLogStream::stream() noexcept {
+  return _stream;
+}
+// ScopedLogStream end
+////////////////////////////////////////////////////////////////////////////////
 
 BABYLON_NAMESPACE_END
