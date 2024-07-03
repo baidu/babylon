@@ -14,6 +14,7 @@
 #include "boost/preprocessor/tuple/push_back.hpp"   // BOOST_PP_TUPLE_PUSH_BACK
 #include "boost/preprocessor/tuple/size.hpp"        // BOOST_PP_TUPLE_SIZE
 
+#include <atomic> // std::atomic
 #include <memory> // std::unique_ptr
 #include <mutex>  // std::recursive_mutex
 
