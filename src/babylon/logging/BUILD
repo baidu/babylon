@@ -65,6 +65,7 @@ cc_library(
 
 cc_library(
   name = 'log_severity',
+  srcs = ['log_severity.cpp'],
   hdrs = ['log_severity.h'],
   copts = BABYLON_COPTS,
   strip_include_prefix = '//src',

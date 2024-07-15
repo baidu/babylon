@@ -80,11 +80,8 @@ class LogStream : protected ::std::ostream {
 
   // 支持基于std::ostream的流操作符
   inline LogStream& operator<<(
-      ::std::ostream& (*function)(::std::ostream&)) noexcept;
-  inline LogStream& operator<<(LogStream& (*function)(LogStream&)) noexcept;
-  inline LogStream& operator<<(LogStream& (&function)(LogStream&)) noexcept {
-    return function(*this);
-  }
+      ::std::ostream& (&function)(::std::ostream&)) noexcept;
+  inline LogStream& operator<<(LogStream& (&function)(LogStream&)) noexcept;
 
  private:
   // 支持absl::Format
@@ -294,13 +291,13 @@ inline LogStream& LogStream::operator<<(const T& object) noexcept {
 }
 
 inline LogStream& LogStream::operator<<(
-    ::std::ostream& (*function)(::std::ostream&)) noexcept {
+    ::std::ostream& (&function)(::std::ostream&)) noexcept {
   function(*this);
   return *this;
 }
 
 inline LogStream& LogStream::operator<<(
-    LogStream& (*function)(LogStream&)) noexcept {
+    LogStream& (&function)(LogStream&)) noexcept {
   return function(*this);
 }
 
@@ -345,7 +342,7 @@ inline LogStream& ScopedLogStream::stream() noexcept {
 // ScopedLogStream end
 ////////////////////////////////////////////////////////////////////////////////
 
-inline LogStream& noflush(LogStream& stream) noexcept {
+inline LogStream& noflush(LogStream& stream) {
   return stream.noflush();
 }
 
