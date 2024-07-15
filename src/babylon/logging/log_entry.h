@@ -91,7 +91,7 @@ inline void LogStreamBuffer::begin() noexcept {
   _pages = _log.pages;
   _pages_end = _log.pages + LogEntry::INLINE_PAGE_CAPACITY;
   _sync_point = nullptr;
-  setp(nullptr, 0);
+  setp(nullptr, nullptr);
 }
 
 inline LogEntry& LogStreamBuffer::end() noexcept {

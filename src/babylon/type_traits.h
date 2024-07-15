@@ -178,7 +178,7 @@ struct IsInvocable {
 // 例如，如下检测可以通过
 // IsHashable<std::hash<::std::string>, const std::string&>::value == true
 // IsHashable<std::hash<::std::string>, const char*>::value == true
-BABYLON_DECLARE_MEMBER_INVOCABLE(operator(), IsHashable);
+BABYLON_DECLARE_MEMBER_INVOCABLE(operator(), IsHashable)
 
 // 检测是否可以进行==和!=运算
 template <typename A, typename B>

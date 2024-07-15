@@ -35,7 +35,7 @@ class LogStream : protected ::std::ostream {
  private:
   using Base = ::std::ostream;
 
-  BABYLON_DECLARE_MEMBER_INVOCABLE(write_object, IsDirectWritable);
+  BABYLON_DECLARE_MEMBER_INVOCABLE(write_object, IsDirectWritable)
 
  public:
   using Base::rdbuf;

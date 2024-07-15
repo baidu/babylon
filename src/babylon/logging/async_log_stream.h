@@ -36,7 +36,7 @@ class AsyncLogStream : public LogStream {
   AsyncLogStream(const AsyncLogStream&) = delete;
   AsyncLogStream& operator=(AsyncLogStream&&) = delete;
   AsyncLogStream& operator=(const AsyncLogStream&) = delete;
-  ~AsyncLogStream() noexcept = default;
+  virtual ~AsyncLogStream() noexcept override = default;
 
  private:
   static void default_header_formatter(AsyncLogStream& ls) noexcept;

@@ -48,7 +48,6 @@ TEST_F(LoggerTest, assign_stream_for_severity) {
   builder.set_log_stream_creator(::babylon::LogSeverity::INFO, [this] {
     auto ptr = new ::babylon::LogStream(buffer);
     return ::std::unique_ptr<::babylon::LogStream>(ptr);
-    ;
   });
   auto logger = builder.build();
   ASSERT_TRUE(logger.initialized());
@@ -62,7 +61,6 @@ TEST_F(LoggerTest, assign_stream_for_all_severity) {
   builder.set_log_stream_creator([this] {
     auto ptr = new ::babylon::LogStream(buffer);
     return ::std::unique_ptr<::babylon::LogStream>(ptr);
-    ;
   });
   auto logger = builder.build();
   ASSERT_TRUE(logger.initialized());
@@ -80,7 +78,6 @@ TEST_F(LoggerTest, stream_has_correct_basic_info) {
   builder.set_log_stream_creator(::babylon::LogSeverity::INFO, [this] {
     auto ptr = new ::babylon::LogStream(buffer);
     return ::std::unique_ptr<::babylon::LogStream>(ptr);
-    ;
   });
   builder.set_min_severity(::babylon::LogSeverity::DEBUG);
   auto logger = builder.build();
@@ -114,7 +111,6 @@ TEST_F(LoggerTest, builder_set_to_manager_cover_a_sub_tree) {
   builder.set_log_stream_creator([this] {
     auto ptr = new ::babylon::LogStream(buffer);
     return ::std::unique_ptr<::babylon::LogStream>(ptr);
-    ;
   });
   builder.set_min_severity(::babylon::LogSeverity::WARNING);
   ::babylon::LoggerManager::instance().set_builder("a.b", ::std::move(builder));
@@ -163,7 +159,6 @@ TEST_F(LoggerTest, builder_set_to_root_cover_all) {
   builder.set_log_stream_creator([this] {
     auto ptr = new ::babylon::LogStream(buffer);
     return ::std::unique_ptr<::babylon::LogStream>(ptr);
-    ;
   });
   builder.set_min_severity(::babylon::LogSeverity::WARNING);
   ::babylon::LoggerManager::instance().set_root_builder(::std::move(builder));
@@ -216,14 +211,12 @@ TEST_F(LoggerTest, builder_set_cover_logger_get_before) {
   builder.set_log_stream_creator([this] {
     auto ptr = new ::babylon::LogStream(buffer);
     return ::std::unique_ptr<::babylon::LogStream>(ptr);
-    ;
   });
   builder.set_min_severity(::babylon::LogSeverity::WARNING);
   ::babylon::LoggerManager::instance().set_root_builder(::std::move(builder));
   builder.set_log_stream_creator([this] {
     auto ptr = new ::babylon::LogStream(buffer2);
     return ::std::unique_ptr<::babylon::LogStream>(ptr);
-    ;
   });
   builder.set_min_severity(::babylon::LogSeverity::WARNING);
   ::babylon::LoggerManager::instance().set_builder("a.b", ::std::move(builder));
@@ -270,7 +263,6 @@ TEST_F(LoggerTest, concise_log_macro_use_root_logger) {
   builder.set_log_stream_creator([this] {
     auto ptr = new ::babylon::LogStream(buffer);
     return ::std::unique_ptr<::babylon::LogStream>(ptr);
-    ;
   });
   builder.set_min_severity(::babylon::LogSeverity::INFO);
   ::babylon::LoggerManager::instance().set_root_builder(::std::move(builder));

@@ -1,7 +1,7 @@
 BABYLON_GCC_COPTS = ['-Wall', '-Wextra']
 BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-option',
                        # 不保持老版本c++语法兼容
-                       '-Wno-c++98-compat', '-Wno-c++98-compat-pedantic',
+                       '-Wno-c++98-compat-pedantic', '-Wno-c99-designator',
                        # Boost Preprocessor中大量使用
                        '-Wno-disabled-macro-expansion',
                        # 未定义宏默认为0作为一个惯例特性保留使用
@@ -21,7 +21,7 @@ BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-op
                        # TODO(lijiang01): 逐步梳理清除
                        '-Wno-old-style-cast', '-Wno-shadow-field',
                        '-Wno-exit-time-destructors', '-Wno-sign-conversion',
-                       '-Wno-c++20-designator', '-Wno-shadow-field-in-constructor', '-Wno-gnu-anonymous-struct', '-Wno-nested-anon-types',
+                       '-Wno-shadow-field-in-constructor', '-Wno-gnu-anonymous-struct', '-Wno-nested-anon-types',
                        '-Wno-shadow-uncaptured-local', '-Wno-weak-vtables', '-Wno-float-conversion', '-Wno-switch-enum',
                        '-Wno-shadow', '-Wno-array-bounds-pointer-arithmetic', '-Wno-cast-align', '-Wno-vla-extension',
                        '-Wno-unneeded-member-function', '-Wno-deprecated-declarations']
