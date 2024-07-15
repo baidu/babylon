@@ -3,7 +3,7 @@
 #include "babylon/anyflow/closure.h"
 #include "babylon/anyflow/executor.h"
 #include "babylon/future.h"
-#include "babylon/logging/interface.h"
+#include "babylon/logging/logger.h"
 
 BABYLON_NAMESPACE_BEGIN
 namespace anyflow {

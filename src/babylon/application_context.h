@@ -1,7 +1,7 @@
 #pragma once
 
-#include "babylon/any.h"               // babylon::Any
-#include "babylon/logging/interface.h" // BABYLON_LOG
+#include "babylon/any.h"            // babylon::Any
+#include "babylon/logging/logger.h" // BABYLON_LOG
 
 // clang-format off
 #include BABYLON_EXTERNAL(absl/container/flat_hash_map.h) // absl::flat_hash_map

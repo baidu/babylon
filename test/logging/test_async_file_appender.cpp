@@ -10,7 +10,6 @@ using ::babylon::FileObject;
 using ::babylon::LogEntry;
 using ::babylon::LogStreamBuffer;
 using ::babylon::PageAllocator;
-using ::babylon::PageHeap;
 
 struct StaticFileObject : public FileObject {
   virtual ::std::tuple<int, int> check_and_get_file_descriptor() noexcept
@@ -59,7 +58,6 @@ struct AsyncFileAppenderTest : public ::testing::Test {
 
   int pipefd[2];
   StaticFileObject file_object;
-  PageHeap page_heap;
   AsyncFileAppender appender;
 };
 
@@ -115,8 +113,9 @@ TEST_F(AsyncFileAppenderTest, write_different_size_level_correct) {
     s.push_back(gen());
   }
 
-  page_heap.set_page_size(page_size);
-  appender.set_page_allocator(page_heap);
+  ::babylon::NewDeletePageAllocator page_allocator;
+  page_allocator.set_page_size(page_size);
+  appender.set_page_allocator(page_allocator);
   appender.set_queue_capacity(64);
   ASSERT_EQ(0, appender.initialize());
 

@@ -265,3 +265,16 @@ TEST_F(LoggerTest, builder_set_cover_logger_get_before) {
       "this text also appear in a.b",
       buffer2.str());
 }
+
+TEST_F(LoggerTest, concise_log_macro_use_root_logger) {
+  builder.set_log_stream_creator([this] {
+    auto ptr = new ::babylon::LogStream(buffer);
+    return ::std::unique_ptr<::babylon::LogStream>(ptr);
+    ;
+  });
+  builder.set_min_severity(::babylon::LogSeverity::INFO);
+  ::babylon::LoggerManager::instance().set_root_builder(::std::move(builder));
+  ::babylon::LoggerManager::instance().apply();
+  BABYLON_LOG(INFO) << "this text appear in root";
+  ASSERT_EQ("this text appear in root", buffer.str());
+}

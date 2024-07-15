@@ -1,9 +1,10 @@
 #pragma once
 
-#include "babylon/concurrent/thread_local.h"          // babylon::EnumerableThreadLocal
-#include "babylon/concurrent/transient_hash_table.h"  // babylon::ConcurrentTransientHashMap
-#include "babylon/logging/log_severity.h"             // babylon::LogSeverity
-#include "babylon/logging/log_stream.h"               // babylon::LogStream
+#include "babylon/concurrent/thread_local.h" // babylon::EnumerableThreadLocal
+#include "babylon/concurrent/transient_hash_table.h" // babylon::ConcurrentTransientHashMap
+#include "babylon/logging/interface.h"               // babylon::LogInterface
+#include "babylon/logging/log_severity.h"            // babylon::LogSeverity
+#include "babylon/logging/log_stream.h"              // babylon::LogStream
 
 #include <functional>
 
@@ -40,6 +41,7 @@ class Logger final {
   LogSeverity _min_severity;
   bool _initialized;
 
+  friend class LogInterface;
   friend class LoggerBuilder;
   friend class LoggerManager;
 };
@@ -134,3 +136,7 @@ BABYLON_NAMESPACE_END
                                 __LINE__),                                  \
                 ##__VA_ARGS__)                                              \
                 .stream()
+
+#define BABYLON_LOG(severity)                                                \
+  BABYLON_LOG_STREAM(::babylon::LoggerManager::instance().get_root_logger(), \
+                     severity)

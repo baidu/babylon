@@ -2,7 +2,7 @@
 
 #if BABYLON_USE_PROTOBUF
 
-#include "babylon/logging/interface.h"
+#include "babylon/logging/logger.h"
 
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"

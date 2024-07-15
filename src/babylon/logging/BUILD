@@ -8,8 +8,9 @@ cc_library(
   name = 'logging',
   deps = [
     'async_file_appender',
-    'interface',
+    'logger',
     'log_stream',
+    'rolling_file_object',
   ]
 )
 
@@ -23,8 +24,20 @@ cc_library(
   deps = [
     ':file_object',
     ':log_entry',
-    ':logger',
     '//src/babylon/reusable:page_allocator',
+  ],
+)
+
+cc_library(
+  name = 'async_log_stream',
+  srcs = ['async_log_stream.cpp'],
+  hdrs = ['async_log_stream.h'],
+  copts = BABYLON_COPTS,
+  includes = ['//src'],
+  strip_include_prefix = '//src',
+  deps = [
+    ':async_file_appender',
+    ':logger',
   ],
 )
 
@@ -36,19 +49,6 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     '//src/babylon:environment',
-  ],
-)
-
-cc_library(
-  name = 'interface',
-  srcs = ['interface.cpp'],
-  hdrs = ['interface.h'],
-  copts = BABYLON_COPTS,
-  includes = ['//src'],
-  strip_include_prefix = '//src',
-  deps = [
-    ':log_stream',
-    ':logger',
   ],
 )
 
@@ -76,7 +76,7 @@ cc_library(
 cc_library(
   name = 'log_stream',
   srcs = ['log_stream.cpp'],
-  hdrs = ['log_stream.h', 'log_stream.hpp'],
+  hdrs = ['log_stream.h'],
   copts = BABYLON_COPTS,
   includes = ['//src'],
   strip_include_prefix = '//src',
@@ -90,8 +90,8 @@ cc_library(
 
 cc_library(
   name = 'logger',
-  srcs = ['logger.cpp'],
-  hdrs = ['logger.h'],
+  srcs = ['logger.cpp', 'interface.cpp'],
+  hdrs = ['logger.h', 'interface.h'],
   copts = BABYLON_COPTS,
   strip_include_prefix = '//src',
   deps = [
@@ -99,5 +99,19 @@ cc_library(
     '//src/babylon/concurrent:thread_local',
     '//src/babylon/concurrent:transient_hash_table',
     '//src/babylon/reusable:page_allocator',
+  ],
+)
+
+cc_library(
+  name = 'rolling_file_object',
+  srcs = ['rolling_file_object.cpp'],
+  hdrs = ['rolling_file_object.h'],
+  copts = BABYLON_COPTS,
+  strip_include_prefix = '//src',
+  deps = [
+    ':file_object',
+    '//src/babylon:string_view',
+    '//src/babylon:time',
+    '@com_google_absl//absl/time',
   ],
 )

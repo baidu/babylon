@@ -1,4 +1,5 @@
 #include "babylon/logging/interface.h"
+#include "babylon/logging/logger.h"
 
 #include <gtest/gtest.h>
 
@@ -29,13 +30,6 @@ struct LogInterfaceTest : public ::testing::Test {
     LogInterface::set_provider(nullptr);
   }
 };
-
-TEST_F(LogInterfaceTest, default_log_to_stderr) {
-  ::testing::internal::CaptureStderr();
-  BABYLON_LOG(INFO) << "this line should appear in stderr";
-  auto text = ::testing::internal::GetCapturedStderr();
-  ASSERT_NE(text.npos, text.find("this line should appear in stderr"));
-}
 
 TEST_F(LogInterfaceTest, ignore_log_less_than_min_severity) {
   LogInterface::set_min_severity(LogInterface::SEVERITY_WARNING);

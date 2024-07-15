@@ -3,7 +3,6 @@
 #include "babylon/concurrent/bounded_queue.h" // babylon::ConcurrentBoundedQueue
 #include "babylon/logging/file_object.h"      // babylon::PageAllocator
 #include "babylon/logging/log_entry.h"        // babylon::LogEntry
-#include "babylon/logging/logger.h"           // babylon::LoggerBuilder
 #include "babylon/reusable/page_allocator.h"  // babylon::PageAllocator
 
 #include <sys/uio.h> // ::iovec
@@ -42,23 +41,6 @@ class AsyncFileAppender {
   // 等待已入队日志写入完成后关闭异步线程
   int close() noexcept;
 
-  struct DirectBuffer {
-    struct Deleter {
-      void operator()(DirectBuffer* buffer) noexcept;
-
-      friend class ::std::unique_ptr<DirectBuffer, Deleter>;
-    };
-    using Ptr = ::std::unique_ptr<DirectBuffer, Deleter>;
-
-    static Ptr create() noexcept;
-
-    inline char* data() noexcept;
-    inline static constexpr size_t size() noexcept;
-    inline static constexpr ::std::align_val_t alignment() noexcept;
-
-    friend class ::std::unique_ptr<DirectBuffer, Deleter>;
-  };
-
  private:
   struct Item {
     LogEntry entry;
@@ -66,58 +48,25 @@ class AsyncFileAppender {
   };
   using Queue = ConcurrentBoundedQueue<Item>;
 
-  struct Destination;
-  using Writer = void (AsyncFileAppender::*)(Destination&) noexcept;
   struct Destination {
-    FileObject* file;
+    FileObject* file {nullptr};
     ::std::vector<struct ::iovec> iov {};
-    int fd {-1};
-    int fd_index {-1};
-    bool direct {false};
-    bool synced {false};
-    size_t offset {0};
-    Writer write {nullptr};
   };
 
-  constexpr static size_t INLINE_PAGE_CAPACITY = LogEntry::INLINE_PAGE_CAPACITY;
+  static void writev_all(int fd, const ::std::vector<struct ::iovec>& iov,
+                         size_t bytes) noexcept;
 
-  static size_t pwrite_all(int fd, const char* buffer, size_t size,
-                           off_t offset) noexcept;
-
-  void prepare_destination(int fd, Destination& dest) noexcept;
   void keep_writing() noexcept;
   Destination& destination(FileObject* object) noexcept;
 
-  void write_use_plain_writev(Destination& dest) noexcept;
-  void write_use_direct_pwrite(Destination& dest) noexcept;
+  void write_use_plain_writev(Destination& dest, int fd) noexcept;
 
   Queue _queue {1024};
   PageAllocator* _page_allocator {&SystemPageAllocator::instance()};
   ::std::thread _write_thread;
   size_t _backoff_us {0};
   ::std::vector<Destination> _destinations;
-
-  DirectBuffer::Ptr _direct_buffer;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// AsyncFileAppender::DirectBuffer begin
-inline char* AsyncFileAppender::DirectBuffer::data() noexcept {
-  return reinterpret_cast<char*>(this);
-}
-
-inline constexpr size_t AsyncFileAppender::DirectBuffer::size() noexcept {
-  // return 2UL << 20;
-  return 2048;
-}
-
-inline constexpr ::std::align_val_t
-AsyncFileAppender::DirectBuffer::alignment() noexcept {
-  // return ::std::align_val_t(2UL << 20);
-  return ::std::align_val_t(2048);
-}
-// AsyncFileAppender::DirectBuffer end
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // AsyncFileAppender begin

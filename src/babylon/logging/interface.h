@@ -1,8 +1,8 @@
 #pragma once
 
-#include "babylon/logging/log_stream.h" // LogStream
-#include "babylon/logging/logger.h"     // LogStream
-#include "babylon/string_view.h"        // StringView
+#include "babylon/logging/log_severity.h" // LogSeverity
+#include "babylon/logging/log_stream.h"   // LogStream
+#include "babylon/string_view.h"          // StringView
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -31,11 +31,12 @@ class LogStreamProvider {
 // 用于设置和访问日志系统的接口层
 class LogInterface {
  public:
-  static constexpr int SEVERITY_DEBUG = 0;
-  static constexpr int SEVERITY_INFO = 1;
-  static constexpr int SEVERITY_WARNING = 2;
-  static constexpr int SEVERITY_FATAL = 3;
-  static constexpr int SEVERITY_NUM = 4;
+  static constexpr int SEVERITY_DEBUG = static_cast<int>(LogSeverity::DEBUG);
+  static constexpr int SEVERITY_INFO = static_cast<int>(LogSeverity::INFO);
+  static constexpr int SEVERITY_WARNING =
+      static_cast<int>(LogSeverity::WARNING);
+  static constexpr int SEVERITY_FATAL = static_cast<int>(LogSeverity::FATAL);
+  static constexpr int SEVERITY_NUM = static_cast<int>(LogSeverity::NUM);
 
   // 设置最低日志等级，默认为>=INFO级别
   static void set_min_severity(int severity) noexcept;
@@ -51,19 +52,6 @@ class LogInterface {
   static int _s_min_severity;
   static LogStreamProvider* _s_provider;
 };
-
-// 供内部使用的日志宏
-// 可以通过设置LogStreamProvider对接到不同的日志系统
-#define BABYLON_LOG(severity)                                               \
-  ::babylon::LogInterface::min_severity() >                                 \
-          ::babylon::LogInterface::SEVERITY_##severity                      \
-      ? (void)0                                                             \
-      : ::babylon::Voidify() &                                              \
-            ::babylon::ScopedLogStream(                                     \
-                ::babylon::LogInterface::provider().stream(                 \
-                    ::babylon::LogInterface::SEVERITY_##severity, __FILE__, \
-                    __LINE__))                                              \
-                .stream()
 
 ////////////////////////////////////////////////////////////////////////////////
 // LogInterface begin

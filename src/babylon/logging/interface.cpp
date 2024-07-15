@@ -1,5 +1,7 @@
 #include "babylon/logging/interface.h"
 
+#include "babylon/logging/logger.h"
+
 #include <iostream> // std::cerr
 #include <mutex>    // std::mutex
 
@@ -25,32 +27,11 @@ class DefaultLogStreamProvider : public LogStreamProvider {
  public:
   virtual LogStream& stream(int severity, StringView file,
                             int line) noexcept override {
-    struct S : public LogStream {
-#if __clang__ || BABYLON_GCC_VERSION >= 50000
-      inline S() noexcept : LogStream {*::std::cerr.rdbuf()} {}
-#else  // !__clang__ && BABYLON_GCC_VERSION < 50000
-      inline S() noexcept : LogStream(*::std::cerr.rdbuf()) {}
-#endif // !__clang__ && BABYLON_GCC_VERSION < 50000
-      virtual void do_begin() noexcept override {
-        mutex.lock();
-        operator<<(SEVERITY_NAME[severity])
-            << '[' << file << ':' << line << "] ";
-      }
-      virtual void do_end() noexcept override {
-        operator<<('\n');
-        mutex.unlock();
-      }
-
-      ::std::mutex mutex;
-      int severity;
-      StringView file;
-      int line;
-    };
-    static thread_local S s_stream;
-    s_stream.severity = severity;
-    s_stream.file = file;
-    s_stream.line = line;
-    return s_stream;
+    static thread_local DefaultLogStream stream;
+    stream.set_severity(static_cast<LogSeverity>(severity));
+    stream.set_file(file);
+    stream.set_line(line);
+    return stream;
   }
 };
 #if __cplusplus < 201703L
@@ -64,6 +45,8 @@ static DefaultLogStreamProvider s_default_provider;
 // LogInterface begin
 void LogInterface::set_min_severity(int severity) noexcept {
   _s_min_severity = severity;
+  LoggerManager::instance().get_root_logger().set_min_severity(
+      static_cast<LogSeverity>(severity));
 }
 
 void LogInterface::set_provider(

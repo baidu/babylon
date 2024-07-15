@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ctime>
 #include "babylon/logging/log_severity.h" // LogSeverity
 #include "babylon/type_traits.h"          // BABYLON_DECLARE_MEMBER_INVOCABLE
 
@@ -16,17 +15,17 @@ BABYLON_NAMESPACE_BEGIN
 
 // 典型的日志前端接口，用于流式格式化一行日志，并发送给日志框架
 // 通过如下方式使用
-// ls.begin(args...);       // 开启一个日志行，args作为日志头依次预先写入
-// ls << ...;               // 增量写入其他内容
-// ls.end();                // 整体发送给日志框架
+// ls.begin(args...); // 开启一个日志行，args作为日志头依次预先写入
+// ls << ...;         // 增量写入其他内容
+// ls.end();          // 整体发送给日志框架
 //
 // 中途可以使用noflush挂起即
 // ls.begin(args...);
-// ls << ... << noflush;    // 挂起
-// ls.end();                // 此时不发送给日志框架
-// ls.begin(args...);       // 恢复挂起，且不再次打印日志头
-// ls << ...;               // 继续增量写入其他内容
-// ls.end();                // 作为一条日志发送给日志框架
+// ls << ... << ::babylon::noflush; // 挂起
+// ls.end();                        // 此时不发送给日志框架
+// ls.begin(args...);               // 恢复挂起，且不再次打印日志头
+// ls << ...;                       // 继续增量写入其他内容
+// ls.end();                        // 作为一条日志发送给日志框架
 //
 // 除流式输出，也通过集成absl::Format，支持printf语法
 // ls.begin(args...);
@@ -82,6 +81,10 @@ class LogStream : protected ::std::ostream {
   // 支持基于std::ostream的流操作符
   inline LogStream& operator<<(
       ::std::ostream& (*function)(::std::ostream&)) noexcept;
+  inline LogStream& operator<<(LogStream& (*function)(LogStream&)) noexcept;
+  inline LogStream& operator<<(LogStream& (&function)(LogStream&)) noexcept {
+    return function(*this);
+  }
 
  private:
   // 支持absl::Format
@@ -172,8 +175,178 @@ class DefaultLogStream : public LogStream {
 class NullLogStream : public LogStream {
  public:
   NullLogStream() noexcept;
+
+ private:
+  class Buffer;
+  static Buffer s_buffer;
 };
 
-BABYLON_NAMESPACE_END
+////////////////////////////////////////////////////////////////////////////////
+// LogStream begin
+inline void LogStream::set_severity(LogSeverity severity) noexcept {
+  _severity = severity;
+}
 
-#include "babylon/logging/log_stream.hpp"
+inline LogSeverity LogStream::severity() const noexcept {
+  return _severity;
+}
+
+inline void LogStream::set_file(StringView file) noexcept {
+  _file = file;
+}
+
+inline StringView LogStream::file() const noexcept {
+  return _file;
+}
+
+inline void LogStream::set_line(int line) noexcept {
+  _line = line;
+}
+
+inline int LogStream::line() const noexcept {
+  return _line;
+}
+
+template <typename... Args>
+inline LogStream& LogStream::begin(const Args&... args) noexcept {
+  if (ABSL_PREDICT_FALSE(++_depth != 1)) {
+    return *this;
+  }
+  if (!_noflush) {
+    do_begin();
+    write_objects(args...);
+  } else {
+    _noflush = false;
+  }
+  return *this;
+}
+
+inline LogStream& LogStream::noflush() noexcept {
+  if (ABSL_PREDICT_FALSE(_depth != 1)) {
+    return *this;
+  }
+  _noflush = true;
+  return *this;
+}
+
+inline LogStream& LogStream::end() noexcept {
+  if (ABSL_PREDICT_FALSE(--_depth > 0)) {
+    return *this;
+  }
+  if (!_noflush) {
+    do_end();
+    clear();
+  }
+  return *this;
+}
+
+inline LogStream& LogStream::write(const char* data, size_t size) noexcept {
+  rdbuf()->sputn(data, size);
+  return *this;
+}
+
+inline LogStream& LogStream::write(char c) noexcept {
+  rdbuf()->sputc(c);
+  return *this;
+}
+
+template <typename... Args>
+inline LogStream& LogStream::format(const ::absl::FormatSpec<Args...>& format,
+                                    const Args&... args) noexcept {
+  return do_absl_format(this, format, args...);
+}
+
+template <
+    typename T, typename... Args,
+    typename ::std::enable_if<
+        ::std::is_convertible<T*, ::absl::FormatRawSink>::value, int>::type>
+inline LogStream& LogStream::do_absl_format(
+    T* ls, const ::absl::FormatSpec<Args...>& format,
+    const Args&... args) noexcept {
+  ::absl::Format(ls, format, args...);
+  return *ls;
+}
+
+template <
+    typename T, typename... Args,
+    typename ::std::enable_if<
+        !::std::is_convertible<T*, ::absl::FormatRawSink>::value, int>::type>
+inline LogStream& LogStream::do_absl_format(
+    T* ls, const ::absl::FormatSpec<Args...>& format,
+    const Args&... args) noexcept {
+  ::absl::Format(static_cast<::std::ostream*>(ls), format, args...);
+  return *ls;
+}
+
+template <typename T,
+          typename ::std::enable_if<
+              LogStream::IsDirectWritable<LogStream, T>::value, int>::type>
+inline LogStream& LogStream::operator<<(const T& object) noexcept {
+  return write_object(object);
+}
+
+template <typename T,
+          typename ::std::enable_if<
+              !LogStream::IsDirectWritable<LogStream, T>::value, int>::type>
+inline LogStream& LogStream::operator<<(const T& object) noexcept {
+  *static_cast<::std::ostream*>(this) << object;
+  return *this;
+}
+
+inline LogStream& LogStream::operator<<(
+    ::std::ostream& (*function)(::std::ostream&)) noexcept {
+  function(*this);
+  return *this;
+}
+
+inline LogStream& LogStream::operator<<(
+    LogStream& (*function)(LogStream&)) noexcept {
+  return function(*this);
+}
+
+inline LogStream::LogStream(::std::streambuf& streambuf) noexcept
+    : ::std::ostream(&streambuf) {}
+
+template <typename T, typename... Args>
+inline void LogStream::write_objects(const T& object,
+                                     const Args&... args) noexcept {
+  *this << object;
+  write_objects(args...);
+}
+
+inline void LogStream::write_objects() noexcept {}
+
+inline LogStream& LogStream::write_object(StringView sv) noexcept {
+  return write(sv.data(), sv.size());
+}
+
+inline LogStream& LogStream::write_object(char c) noexcept {
+  return write(c);
+}
+// LogStream end
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// ScopedLogStream begin
+inline ScopedLogStream::~ScopedLogStream() noexcept {
+  _stream.end();
+}
+
+template <typename... Args>
+inline ScopedLogStream::ScopedLogStream(LogStream& stream,
+                                        Args&&... args) noexcept
+    : _stream {stream} {
+  _stream.begin(::std::forward<Args>(args)...);
+}
+
+inline LogStream& ScopedLogStream::stream() noexcept {
+  return _stream;
+}
+// ScopedLogStream end
+////////////////////////////////////////////////////////////////////////////////
+
+inline LogStream& noflush(LogStream& stream) noexcept {
+  return stream.noflush();
+}
+
+BABYLON_NAMESPACE_END

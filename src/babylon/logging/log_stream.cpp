@@ -2,11 +2,22 @@
 
 #include "babylon/time.h"
 
-#include "absl/time/clock.h" // absl::GetCurrentTimeNanos
+#include "absl/time/clock.h" // absl::Now
 
 #include <iostream> // std::cerr
 
 BABYLON_NAMESPACE_BEGIN
+
+class NullLogStream::Buffer : public ::std::streambuf {
+ private:
+  virtual int overflow(int ch) noexcept override {
+    return ch;
+  }
+  virtual ::std::streamsize xsputn(const char*,
+                                   ::std::streamsize count) noexcept override {
+    return count;
+  }
+};
 
 void LogStream::do_begin() noexcept {}
 void LogStream::do_end() noexcept {}
@@ -27,17 +38,17 @@ DefaultLogStream::DefaultLogStream() noexcept
 }
 
 void DefaultLogStream::do_begin() noexcept {
-  auto now_ns = ::absl::GetCurrentTimeNanos();
-  time_t now = now_ns / 1000000000L;
-  time_t ms = now_ns % 1000000000L / 1000;
+  auto now_us = ::absl::ToUnixMicros(::absl::Now());
+  time_t now_s = now_us / 1000 / 1000;
+  time_t us = now_us % (1000 * 1000);
   struct ::tm time_struct;
-  ::babylon::localtime(&now, &time_struct);
+  ::babylon::localtime(&now_s, &time_struct);
   mutex().lock();
   (*this) << severity();
   format(" %d-%02d-%02d %02d:%02d:%02d.%06d %.*s:%d] ",
          time_struct.tm_year + 1900, time_struct.tm_mon + 1,
          time_struct.tm_mday, time_struct.tm_hour, time_struct.tm_min,
-         time_struct.tm_sec, ms, file().size(), file().data(), line());
+         time_struct.tm_sec, us, file().size(), file().data(), line());
 }
 
 void DefaultLogStream::do_end() noexcept {
@@ -50,12 +61,14 @@ void DefaultLogStream::do_end() noexcept {
 NullLogStream::NullLogStream() noexcept
     :
 #if __clang__ || BABYLON_GCC_VERSION >= 50000
-      LogStream {*static_cast<::std::streambuf*>(nullptr)} {
+      LogStream {s_buffer} {
 }
 #else  // !__clang__ && BABYLON_GCC_VERSION < 50000
-      LogStream(*static_cast<::std::streambuf*>(nullptr)) {
+      LogStream(s_buffer) {
 }
 #endif // !__clang__ && BABYLON_GCC_VERSION < 50000
+
+NullLogStream::Buffer NullLogStream::s_buffer;
 // NullLogStream end
 ////////////////////////////////////////////////////////////////////////////////
 

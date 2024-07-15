@@ -79,6 +79,8 @@ class LogStreamBuffer : public ::std::streambuf {
   char* _sync_point;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// LogStreamBuffer begin
 inline void LogStreamBuffer::set_page_allocator(
     PageAllocator& page_allocator) noexcept {
   _page_allocator = &page_allocator;
@@ -96,5 +98,7 @@ inline LogEntry& LogStreamBuffer::end() noexcept {
   sync();
   return _log;
 }
+// LogStreamBuffer end
+////////////////////////////////////////////////////////////////////////////////
 
 BABYLON_NAMESPACE_END

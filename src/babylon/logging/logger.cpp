@@ -1,5 +1,7 @@
 #include "babylon/logging/logger.h"
 
+#include "babylon/logging/interface.h"
+
 BABYLON_NAMESPACE_BEGIN
 
 Logger::Logger() noexcept
@@ -35,8 +37,18 @@ Logger& Logger::operator=(const Logger& other) noexcept {
 
 LogStream& Logger::stream(LogSeverity severity, StringView file,
                           int line) noexcept {
+  static NullLogStream nls;
+
+  // TODO(oathdruid): remove this after remove LogStreamProvider in interface.h
+  if (ABSL_PREDICT_FALSE(!_initialized)) {
+    if (static_cast<int>(severity) >= LogInterface::min_severity()) {
+      return LogInterface::provider().stream(static_cast<int>(severity), file,
+                                             line);
+    }
+    return nls;
+  }
+
   if (ABSL_PREDICT_FALSE(severity < min_severity())) {
-    static NullLogStream nls;
     return nls;
   }
 

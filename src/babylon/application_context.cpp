@@ -1,6 +1,6 @@
 #include "babylon/application_context.h"
 
-#include "babylon/logging/interface.h" // BABYLON_LOG
+#include "babylon/logging/logger.h" // BABYLON_LOG
 
 BABYLON_NAMESPACE_BEGIN
 
