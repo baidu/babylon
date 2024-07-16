@@ -14,17 +14,15 @@ namespace {
 struct StaticFileObject : public FileObject {
   virtual ::std::tuple<int, int> check_and_get_file_descriptor() noexcept
       override {
-    return ::std::tuple<int, int> {fd, old_fd};
+    return ::std::tuple<int, int> {fd, -1};
   }
   int fd;
-  int old_fd;
 };
 } // namespace
 
 struct AsyncLogStreamTest : public ::testing::Test {
   virtual void SetUp() override {
     file_object.fd = STDERR_FILENO;
-    file_object.old_fd = -1;
     ASSERT_EQ(0, appender.initialize());
   }
 

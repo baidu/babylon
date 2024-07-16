@@ -11,14 +11,15 @@ using ::babylon::LogEntry;
 using ::babylon::LogStreamBuffer;
 using ::babylon::PageAllocator;
 
+namespace {
 struct StaticFileObject : public FileObject {
   virtual ::std::tuple<int, int> check_and_get_file_descriptor() noexcept
       override {
-    return ::std::tuple<int, int> {fd, old_fd};
+    return ::std::tuple<int, int> {fd, -1};
   }
   int fd;
-  int old_fd;
 };
+} // namespace
 
 struct LogStream : public ::std::ostream {
   LogStream(PageAllocator& page_allocator) noexcept : ::std::ostream(&buffer) {
@@ -36,16 +37,13 @@ struct LogStream : public ::std::ostream {
 struct AsyncFileAppenderTest : public ::testing::Test {
   virtual void SetUp() override {
     ASSERT_EQ(0, ::pipe(pipefd));
-    int ret = ::fcntl(pipefd[1], F_GETPIPE_SZ);
-    fprintf(stderr, "pipe buffer size %d\n", ret);
-    ret = ::fcntl(pipefd[1], F_SETPIPE_SZ, 16384);
-    fprintf(stderr, "set pipe buffer size ret %d\n", ret);
+    ASSERT_GT(65536, ::fcntl(pipefd[1], F_SETPIPE_SZ, 16384));
     file_object.fd = pipefd[1];
   }
 
   virtual void TearDown() override {
-    close(pipefd[1]);
-    close(pipefd[0]);
+    ASSERT_EQ(0, close(pipefd[1]));
+    ASSERT_EQ(0, close(pipefd[0]));
   }
 
   void read_pipe(char* data, size_t size) {
@@ -91,6 +89,7 @@ TEST_F(AsyncFileAppenderTest, write_happen_async) {
     ASSERT_EQ(expected, s);
   }
   ASSERT_EQ(0, appender.pending_size());
+  appender.close();
 }
 
 TEST_F(AsyncFileAppenderTest, can_discard_log) {
@@ -129,4 +128,5 @@ TEST_F(AsyncFileAppenderTest, write_different_size_level_correct) {
     read_pipe(&rs[0], rs.size());
     ASSERT_EQ(s.substr(0, i), rs);
   }
+  appender.close();
 }
