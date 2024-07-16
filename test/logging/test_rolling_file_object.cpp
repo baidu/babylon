@@ -1,11 +1,11 @@
 #include "babylon/logging/rolling_file_object.h"
 
+#if __cplusplus >= 201703L
 #include "gtest/gtest.h"
 
 #include <filesystem>
 #include <fstream>
 
-#if __cplusplus >= 201703L
 using ::babylon::FileObject;
 using ::babylon::RollingFileObject;
 

@@ -7,9 +7,8 @@ load('//:copts.bzl', 'BABYLON_COPTS')
 cc_library(
   name = 'logging',
   deps = [
-    'async_file_appender',
+    'async_log_stream',
     'logger',
-    'log_stream',
     'rolling_file_object',
   ]
 )
