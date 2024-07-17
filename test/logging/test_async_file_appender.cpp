@@ -7,24 +7,27 @@
 
 using ::babylon::AsyncFileAppender;
 using ::babylon::FileObject;
-using ::babylon::Log;
+using ::babylon::LogEntry;
 using ::babylon::LogStreamBuffer;
 using ::babylon::PageAllocator;
-using ::babylon::PageHeap;
 
+namespace {
 struct StaticFileObject : public FileObject {
-  virtual int check_and_get_file_descriptor() noexcept override {
-    return fd;
+  virtual ::std::tuple<int, int> check_and_get_file_descriptor() noexcept
+      override {
+    return ::std::tuple<int, int> {fd, -1};
   }
   int fd;
 };
+} // namespace
 
 struct LogStream : public ::std::ostream {
   LogStream(PageAllocator& page_allocator) noexcept : ::std::ostream(&buffer) {
-    buffer.begin(page_allocator);
+    buffer.set_page_allocator(page_allocator);
+    buffer.begin();
   }
 
-  inline Log& end() noexcept {
+  inline LogEntry& end() noexcept {
     return buffer.end();
   }
 
@@ -34,16 +37,13 @@ struct LogStream : public ::std::ostream {
 struct AsyncFileAppenderTest : public ::testing::Test {
   virtual void SetUp() override {
     ASSERT_EQ(0, ::pipe(pipefd));
-    int ret = ::fcntl(pipefd[1], F_GETPIPE_SZ);
-    fprintf(stderr, "pipe buffer size %d\n", ret);
-    ret = ::fcntl(pipefd[1], F_SETPIPE_SZ, 16384);
-    fprintf(stderr, "set pipe buffer size ret %d\n", ret);
+    ASSERT_GT(65536, ::fcntl(pipefd[1], F_SETPIPE_SZ, 16384));
     file_object.fd = pipefd[1];
   }
 
   virtual void TearDown() override {
-    close(pipefd[1]);
-    close(pipefd[0]);
+    ASSERT_EQ(0, close(pipefd[1]));
+    ASSERT_EQ(0, close(pipefd[0]));
   }
 
   void read_pipe(char* data, size_t size) {
@@ -56,23 +56,14 @@ struct AsyncFileAppenderTest : public ::testing::Test {
 
   int pipefd[2];
   StaticFileObject file_object;
-  PageHeap page_heap;
   AsyncFileAppender appender;
 };
 
-TEST_F(AsyncFileAppenderTest, default_write_to_stderr) {
-  ASSERT_EQ(0, appender.initialize());
-  LogStream ls(appender.page_allocator());
-  ls << "this line should appear in stderr with num " << 10086 << ::std::endl;
-  appender.write(ls.end());
-}
-
 TEST_F(AsyncFileAppenderTest, write_to_file_object) {
-  appender.set_file_object(file_object);
   ASSERT_EQ(0, appender.initialize());
   LogStream ls(appender.page_allocator());
   ls << "this line should appear in pipe with num " << 10010 << ::std::endl;
-  appender.write(ls.end());
+  appender.write(ls.end(), &file_object);
 
   ::std::string expected = "this line should appear in pipe with num 10010\n";
   ::std::string s;
@@ -82,12 +73,11 @@ TEST_F(AsyncFileAppenderTest, write_to_file_object) {
 }
 
 TEST_F(AsyncFileAppenderTest, write_happen_async) {
-  appender.set_file_object(file_object);
   ASSERT_EQ(0, appender.initialize());
   for (size_t i = 0; i < 1000; ++i) {
     LogStream ls(appender.page_allocator());
     ls << "this line should appear in pipe with num " << i << ::std::endl;
-    appender.write(ls.end());
+    appender.write(ls.end(), &file_object);
   }
   ASSERT_LT(0, appender.pending_size());
   for (size_t i = 0; i < 1000; ++i) {
@@ -99,10 +89,10 @@ TEST_F(AsyncFileAppenderTest, write_happen_async) {
     ASSERT_EQ(expected, s);
   }
   ASSERT_EQ(0, appender.pending_size());
+  appender.close();
 }
 
 TEST_F(AsyncFileAppenderTest, can_discard_log) {
-  appender.set_file_object(file_object);
   ASSERT_EQ(0, appender.initialize());
   for (size_t i = 0; i < 100; ++i) {
     LogStream ls(appender.page_allocator());
@@ -122,20 +112,21 @@ TEST_F(AsyncFileAppenderTest, write_different_size_level_correct) {
     s.push_back(gen());
   }
 
-  page_heap.set_page_size(page_size);
-  appender.set_page_allocator(page_heap);
-  appender.set_file_object(file_object);
+  ::babylon::NewDeletePageAllocator page_allocator;
+  page_allocator.set_page_size(page_size);
+  appender.set_page_allocator(page_allocator);
   appender.set_queue_capacity(64);
   ASSERT_EQ(0, appender.initialize());
 
   for (size_t i = page_size / 2; i < max_log_size; i += page_size / 2) {
     LogStream ls(appender.page_allocator());
     ls << s.substr(0, i);
-    appender.write(ls.end());
+    appender.write(ls.end(), &file_object);
 
     ::std::string rs;
     rs.resize(i);
     read_pipe(&rs[0], rs.size());
     ASSERT_EQ(s.substr(0, i), rs);
   }
+  appender.close();
 }

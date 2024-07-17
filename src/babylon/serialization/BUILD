@@ -12,7 +12,7 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     '//src/babylon:any',
-    '//src/babylon/logging:interface',
+    '//src/babylon/logging:logger',
     '@com_google_protobuf//:protobuf',
     '//:boost.preprocessor',
     '@com_google_absl//absl/container:flat_hash_map',

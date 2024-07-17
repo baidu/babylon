@@ -204,3 +204,13 @@ TEST_F(LogStreamTest, noflushable_after_reenter) {
   ASSERT_EQ(1, ss.end_times);
   ASSERT_EQ("hello +10086 world 0.66 10010", ss.stringbuf.str());
 }
+
+TEST_F(LogStreamTest, default_log_stream_log_to_stderr) {
+  ::babylon::DefaultLogStream dls;
+  ::testing::internal::CaptureStderr();
+  dls.begin();
+  dls << "this should apper in stderr";
+  dls.end();
+  auto text = ::testing::internal::GetCapturedStderr();
+  ASSERT_NE(text.npos, text.find("this should apper in stderr"));
+}

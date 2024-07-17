@@ -112,7 +112,7 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     ':string_view',
-    '//src/babylon/logging:interface',
+    '//src/babylon/logging:logger',
     '@com_google_absl//absl/strings',
   ],
 )

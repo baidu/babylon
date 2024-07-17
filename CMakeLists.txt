@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(babylon VERSION 1.2.3)
+project(babylon VERSION 1.3.0)
 
 include(CTest)                      # for BUILD_TESTING option
 include(CMakePackageConfigHelpers)  # for write_basic_package_version_file
@@ -99,6 +99,10 @@ if(BUILD_TESTING AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     IMPORT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/proto"
     PROTOC_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
   target_include_directories(babylon_test_proto PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+  set_source_files_properties(
+    "${CMAKE_CURRENT_SOURCE_DIR}/test/logging/test_logger.cpp"
+    PROPERTIES COMPILE_FLAGS "-fno-access-control")
+
   foreach(SRC ${BABYLON_TEST_SRCS})
     string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}" "" TARGET_NAME ${SRC})
     string(REPLACE "/" "_" TARGET_NAME ${TARGET_NAME})

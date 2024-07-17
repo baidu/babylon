@@ -1,6 +1,6 @@
 #include "babylon/mlock.h"
 
-#include "babylon/logging/interface.h" // BABYLON_LOG
+#include "babylon/logging/logger.h" // BABYLON_LOG
 
 // clang-format off
 #include BABYLON_EXTERNAL(absl/strings/str_split.h) // absl::StrSplit

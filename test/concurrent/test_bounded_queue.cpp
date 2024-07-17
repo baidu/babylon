@@ -1,5 +1,5 @@
 #include "babylon/concurrent/bounded_queue.h"
-#include "babylon/logging/interface.h" // BABYLON_LOG
+#include "babylon/logging/logger.h" // BABYLON_LOG
 
 #include "gtest/gtest.h"
 

@@ -28,7 +28,7 @@ cc_library(
     '//src/babylon:any',
     '//src/babylon/concurrent:transient_topic',
     '//src/babylon:executor',
-    '//src/babylon/logging:interface',
+    '//src/babylon/logging:logger',
     '//src/babylon:move_only_function',
     '//src/babylon/reusable:manager',
     '//:boost.preprocessor',

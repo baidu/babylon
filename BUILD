@@ -131,13 +131,33 @@ alias(
 )
 
 alias(
+  name = 'logging_async_log_stream',
+  actual = '//src/babylon/logging:async_log_stream',
+)
+
+alias(
   name = 'logging_interface',
-  actual = '//src/babylon/logging:interface',
+  actual = '//src/babylon/logging:logger',
+)
+
+alias(
+  name = 'logging_log_entry',
+  actual = '//src/babylon/logging:log_entry',
 )
 
 alias(
   name = 'logging_log_stream',
   actual = '//src/babylon/logging:log_stream',
+)
+
+alias(
+  name = 'logging_logger',
+  actual = '//src/babylon/logging:logger',
+)
+
+alias(
+  name = 'logging_rolling_file_object',
+  actual = '//src/babylon/logging:rolling_file_object',
 )
 
 alias(
