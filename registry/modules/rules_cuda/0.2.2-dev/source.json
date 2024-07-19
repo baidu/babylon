@@ -1,5 +1,0 @@
-{
-  "url": "https://github.com/bazel-contrib/rules_cuda/archive/3482c70dc60d9ab1ad26b768c117fcd61ee12494.tar.gz",
-  "strip_prefix": "rules_cuda-3482c70dc60d9ab1ad26b768c117fcd61ee12494",
-  "integrity": "sha256-x78dpBtaMUgKBHf0ztSe7QirHLOv93xwTjc8+cUmlPU="
-}
