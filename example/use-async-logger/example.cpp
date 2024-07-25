@@ -3,7 +3,6 @@
 
 #include "brpc/server.h"
 #include "gflags/gflags.h"
-
 #include "spdlog/async.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/spdlog.h"
@@ -73,10 +72,14 @@ void setup_babylon() {
       return ::bvar::Stat {summary.sum, static_cast<ssize_t>(summary.num)};
     }
   };
-  static ::bvar::PassiveStatus<size_t> pending_size {"test-babylon-pending", S::get_pending_size, nullptr};
-  static ::bvar::PassiveStatus<size_t> free_page_num {"test-babylon-free", S::get_free_page_num, nullptr};
-  static ::bvar::PassiveStatus<::bvar::Stat> hit_summary {S::get_hit_summary, nullptr};
-  static ::bvar::Window<::bvar::PassiveStatus<::bvar::Stat>> hit_summary_win {"test-babylon-hit", &hit_summary, -1};
+  static ::bvar::PassiveStatus<size_t> pending_size {
+      "test-babylon-pending", S::get_pending_size, nullptr};
+  static ::bvar::PassiveStatus<size_t> free_page_num {
+      "test-babylon-free", S::get_free_page_num, nullptr};
+  static ::bvar::PassiveStatus<::bvar::Stat> hit_summary {S::get_hit_summary,
+                                                          nullptr};
+  static ::bvar::Window<::bvar::PassiveStatus<::bvar::Stat>> hit_summary_win {
+      "test-babylon-hit", &hit_summary, -1};
 }
 
 void setup_brpc() {
@@ -94,7 +97,8 @@ void setup_brpc() {
 void setup_spdlog() {
   ::spdlog::set_pattern("%l %Y-%m-%d %H:%M:%S.%f %t %s:%#] %v");
   ::spdlog::init_thread_pool(262144, 1);
-  auto async_file = ::spdlog::basic_logger_mt<::spdlog::async_factory>("async_file_logger", FLAGS_benchmark ? "/dev/null" : "log/name.log");
+  auto async_file = ::spdlog::basic_logger_mt<::spdlog::async_factory>(
+      "async_file_logger", FLAGS_benchmark ? "/dev/null" : "log/name.log");
   ::spdlog::set_default_logger(async_file);
 }
 
@@ -115,14 +119,15 @@ void run_once_spdlog(size_t round) {
 void run_loop() {
   ::bvar::LatencyRecorder latency {"test-" + FLAGS_mode};
 
-  int64_t expect_us = 1000.0 * 1000 / FLAGS_qps * FLAGS_batch * FLAGS_concurrency;
+  int64_t expect_us =
+      1000.0 * 1000 / FLAGS_qps * FLAGS_batch * FLAGS_concurrency;
 
   void (*run_once)(size_t);
   if (FLAGS_mode == "babylon") {
     run_once = run_once_babylon;
-  } else if  (FLAGS_mode == "brpc") {
+  } else if (FLAGS_mode == "brpc") {
     run_once = run_once_brpc;
-  } else if  (FLAGS_mode == "spdlog") {
+  } else if (FLAGS_mode == "spdlog") {
     run_once = run_once_spdlog;
   }
   ::std::vector<::std::thread> threads;

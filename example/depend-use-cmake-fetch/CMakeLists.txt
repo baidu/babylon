@@ -5,8 +5,8 @@ set(BUILD_DEPS ON)
 include(FetchContent)
 FetchContent_Declare(
   babylon
-  URL "https://github.com/baidu/babylon/archive/refs/tags/v1.2.2.tar.gz"
-  URL_HASH SHA256=241d0d3e8bf89c9b47765c794aa5153f73b32a7f419c48d8aeeeb4461cf8aec7
+  URL "https://github.com/baidu/babylon/archive/refs/tags/v1.3.0.tar.gz"
+  URL_HASH SHA256=4a8582db91e1931942555400096371586d0cf06ecaac0841aca652ef6d77aef0
 )
 FetchContent_MakeAvailable(babylon)
 
