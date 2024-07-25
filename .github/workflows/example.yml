@@ -67,3 +67,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: cd example/use-with-bthread && ./build.sh
+
+  use-with-glog:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: cd example/use-with-glog && ./build.sh
