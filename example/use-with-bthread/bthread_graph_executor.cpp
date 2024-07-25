@@ -1,6 +1,6 @@
 #include "bthread_graph_executor.h"
 
-#include "babylon/logging/interface.h"
+#include "babylon/logging/logger.h"
 
 #include "butex_interface.h"
 

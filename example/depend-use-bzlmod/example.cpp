@@ -1,5 +1,5 @@
 #include "babylon/future.h"
-#include "babylon/logging/interface.h"
+#include "babylon/logging/logger.h"
 
 #include <thread>
 #include <vector>
