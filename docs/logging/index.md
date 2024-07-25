@@ -30,3 +30,8 @@
 
 - [logger](logger.md)
 - [async_file_appender](async_file_appender.md)
+
+## 典型用例
+
+- [Use async logger](example/use-async-logger)
+- [Use with glog](example/use-with-glog)
