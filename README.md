@@ -56,6 +56,7 @@ Babylon也支持使用[CMake](https://cmake.org)进行构建，并支持通过[f
 - [:executor](docs/executor.md)
 - [:future](docs/future.md)
 - [:logging](docs/logging/index.md)
+  - [Use async logger](example/use-async-logger)
 - [:reusable](docs/reusable/index.md)
 - [:serialization](docs/serialization.md)
 - [:time](docs/time.md)

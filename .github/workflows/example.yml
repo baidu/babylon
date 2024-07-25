@@ -50,6 +50,12 @@ jobs:
     - uses: actions/checkout@v4
     - run: cd example/use-arena-with-brpc && ./build.sh
 
+  use-async-logger:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: cd example/use-async-logger && ./build.sh
+
   use-counter-with-bvar:
     runs-on: ubuntu-latest
     steps:
