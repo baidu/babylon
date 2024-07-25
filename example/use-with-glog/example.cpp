@@ -1,13 +1,14 @@
 #include "babylon/logging/logger.h"
+
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
 class BabylonLogSink : public ::google::LogSink {
  public:
   virtual void send(::google::LogSeverity glog_severity,
-                    const char* full_filename, const char*,
-                    int line, const ::google::LogMessageTime&,
-                    const char* message, size_t message_len) noexcept override {
+                    const char* full_filename, const char*, int line,
+                    const ::google::LogMessageTime&, const char* message,
+                    size_t message_len) noexcept override {
     // severity mapping
     static ::babylon::LogSeverity mapping[] = {
         [::google::INFO] = ::babylon::LogSeverity::INFO,
@@ -46,7 +47,8 @@ class GLogStream : public ::babylon::LogStream {
 
     // get underlying std::streambuf from glog. set to babylon::LogStream
     auto& message = reinterpret_cast<::google::LogMessage&>(_message_storage);
-    new (&message) ::google::LogMessage(file().data(), line(), mapping[severity()]);
+    new (&message)::google::LogMessage(file().data(), line(),
+                                       mapping[severity()]);
     rdbuf(message.stream().rdbuf());
   }
 
@@ -56,7 +58,8 @@ class GLogStream : public ::babylon::LogStream {
     message.~LogMessage();
   }
 
-  ::std::aligned_storage<sizeof(::google::LogMessage), alignof(::google::LogMessage)>::type _message_storage;
+  ::std::aligned_storage<sizeof(::google::LogMessage),
+                         alignof(::google::LogMessage)>::type _message_storage;
 };
 
 int main(int argc, char* argv[]) {
@@ -73,7 +76,7 @@ int main(int argc, char* argv[]) {
   LOG(INFO) << "1 glog to babylon";
   LOG(WARNING) << "2 glog to babylon";
   LOG(ERROR) << "3 glog to babylon";
-  //LOG(FATAL) << "4 glog to babylon";
+  // LOG(FATAL) << "4 glog to babylon";
 
   ::google::RemoveLogSink(&sink);
 
@@ -90,7 +93,7 @@ int main(int argc, char* argv[]) {
   BABYLON_LOG(DEBUG) << "1 babylon to glog";
   BABYLON_LOG(INFO) << "2 babylon to glog";
   BABYLON_LOG(WARNING) << "3 babylon to glog";
-  //BABYLON_LOG(FATAL) << "4 babylon to glog";
+  // BABYLON_LOG(FATAL) << "4 babylon to glog";
 
   return 0;
 }
