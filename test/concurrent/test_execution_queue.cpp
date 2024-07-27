@@ -2,6 +2,8 @@
 
 #include "gtest/gtest.h"
 
+#include <future>
+
 using ::babylon::AlwaysUseNewThreadExecutor;
 using ::babylon::ConcurrentExecutionQueue;
 using ::babylon::Executor;
@@ -29,16 +31,21 @@ TEST(concurrent_execution_queue, initialize_reserve_queue_capacity) {
 TEST(concurrent_execution_queue, execute_submit_execute_async_but_serially) {
   ConcurrentExecutionQueue<::std::string> queue;
   ::std::vector<::std::string> vector;
+  ::std::promise<void> promise;
+  auto future = promise.get_future();
   auto ret =
       queue.initialize(4, AlwaysUseNewThreadExecutor::instance(),
                        [&](Iterator begin, Iterator end) {
-                         usleep(100000);
+                         if (future.valid()) {
+                           future.get();
+                         }
                          ::std::copy(begin, end, ::std::back_inserter(vector));
                        });
   ASSERT_EQ(0, ret);
   ASSERT_EQ(0, queue.execute("10086"));
   ASSERT_EQ(0, queue.execute("10010"));
   ASSERT_NE(2, vector.size());
+  promise.set_value();
   queue.join();
   ASSERT_EQ(2, vector.size());
   ASSERT_EQ("10086", vector[0]);
@@ -62,7 +69,7 @@ TEST(concurrent_execution_queue, execute_inplace) {
 
 TEST(concurrent_execution_queue, execute_fail_when_launch_consumer_error) {
   struct E : public Executor {
-    virtual int32_t invoke(
+    virtual int invoke(
         MoveOnlyFunction<void(void)>&& function) noexcept override {
       if (times++ == 0) {
         return -1;
