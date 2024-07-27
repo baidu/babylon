@@ -76,6 +76,11 @@ alias(
 )
 
 alias(
+  name = 'concurrent_execution_queue',
+  actual = '//src/babylon/concurrent:execution_queue',
+)
+
+alias(
   name = 'concurrent_id_allocator',
   actual = '//src/babylon/concurrent:id_allocator',
 )
