@@ -1,0 +1,49 @@
+module(
+  name = 'babylon',
+  version = '1.3.1',
+  compatibility_level = 1,
+)
+
+################################################################################
+# LOWER BOUND dependency versions.
+# Bzlmod follows MVS:
+# https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
+# Thus the highest version in their module graph is resolved.
+
+# --registry=https://bcr.bazel.build
+bazel_dep(name = 'abseil-cpp', version = '20211102.0', repo_name = 'com_google_absl')
+bazel_dep(name = 'bazel_skylib', version = '1.0.3')
+bazel_dep(name = 'protobuf', version = '3.19.6', repo_name = 'com_google_protobuf')
+
+# --registry=https://raw.githubusercontent.com/bazelboost/registry/main
+bazel_dep(name = 'boost.preprocessor', version = '1.83.0.bzl.1')
+bazel_dep(name = 'boost.spirit', version = '1.83.0.bzl.1')
+################################################################################
+
+################################################################################
+# test only dependency
+
+# --registry=https://bcr.bazel.build
+single_version_override(module_name = 'abseil-cpp', version = '20240116.2')
+single_version_override(module_name = 'protobuf', version = '27.3')
+bazel_dep(name = 'googletest', version = '1.14.0', repo_name = 'com_google_googletest', dev_dependency = True)
+bazel_dep(name = 'platforms', version = '0.0.10', dev_dependency = True)
+bazel_dep(name = 'rules_cc', version = '0.0.9', dev_dependency = True)
+
+# rules_cuda latest release 0.2.1 is too old and do not have auto detect feature
+bazel_dep(name = 'rules_cuda', version = '0.2.1', dev_dependency = True)
+archive_override(
+  module_name = 'rules_cuda',
+  urls = ['https://github.com/bazel-contrib/rules_cuda/archive/3482c70dc60d9ab1ad26b768c117fcd61ee12494.tar.gz'],
+  strip_prefix = 'rules_cuda-3482c70dc60d9ab1ad26b768c117fcd61ee12494',
+  integrity = 'sha256-x78dpBtaMUgKBHf0ztSe7QirHLOv93xwTjc8+cUmlPU=',
+)
+
+cuda = use_extension('@rules_cuda//cuda:extensions.bzl', 'toolchain', dev_dependency = True)
+cuda.local_toolchain()
+
+# cross compile toolchain
+cross_config = use_extension('//:bazel/cross_toolchain.bzl', 'cross_config', dev_dependency = True)
+use_repo(cross_config, 'cross_config_toolchain')
+register_toolchains('@cross_config_toolchain//:cross-toolchain', dev_dependency = True)
+################################################################################
