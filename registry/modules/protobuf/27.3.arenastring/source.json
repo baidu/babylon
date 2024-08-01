@@ -1,0 +1,9 @@
+{
+  "url": "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v27.3.tar.gz",
+  "strip_prefix": "protobuf-27.3",
+  "integrity": "sha256-FTUVHvvHiT84sFeOg8rFhPKBmXTwZWmJdpiexxwa+Eo=",
+  "patch_strip": 1,
+  "patches": {
+    "arenastring.patch": "sha256-QVfzFLrTLobynRHv9gLqmOHIXG/uE7t5ECapQTAifMA="
+  }
+}

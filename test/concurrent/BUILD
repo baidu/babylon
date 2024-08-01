@@ -37,6 +37,16 @@ cc_test(
 )
 
 cc_test(
+  name = 'test_execution_queue',
+  srcs = ['test_execution_queue.cpp'],
+  copts = BABYLON_COPTS,
+  deps = [
+    '//:concurrent_execution_queue',
+    '@com_google_googletest//:gtest_main',
+  ]
+)
+
+cc_test(
   name = 'test_id_allocator',
   srcs = ['test_id_allocator.cpp'],
   copts = BABYLON_COPTS,
