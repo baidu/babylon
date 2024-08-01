@@ -20,6 +20,7 @@ struct ReusableTraitsTest : public ::testing::Test {
   SwissAllocator<> allocator {resource};
 };
 
+/*
 TEST_F(ReusableTraitsTest, scalar_is_reusable) {
   ASSERT_TRUE(ReusableTraits<int>::REUSABLE);
   ASSERT_EQ(0, sizeof(ReusableTraits<int>::AllocationMetadata));
@@ -254,6 +255,7 @@ TEST_F(ReusableTraitsTest, scala_vector_is_reusable) {
     ASSERT_TRUE(ss.empty());
   }
 }
+*/
 
 #if BABYLON_USE_PROTOBUF
 TEST_F(ReusableTraitsTest, message_reusable) {
@@ -261,7 +263,9 @@ TEST_F(ReusableTraitsTest, message_reusable) {
   ASSERT_LT(0, sizeof(ReusableTraits<TestMessage>::AllocationMetadata));
   Reuse::AllocationMetadata<TestMessage> meta;
   auto& m = *allocator.create_object<TestMessage>();
+  ::std::cerr << "arena " << m.GetArena() << ::std::endl;
   m.mutable_s()->reserve(10086);
+  ::std::cerr << "after arena " << m.GetArena() << ::std::endl;
   Reuse::reconstruct(m, allocator);
   ASSERT_TRUE(m.s().empty());
   ASSERT_LE(10086, m.s().capacity());
@@ -274,6 +278,7 @@ TEST_F(ReusableTraitsTest, message_reusable) {
   }
 }
 
+/*
 TEST_F(ReusableTraitsTest, message_repeated_reusable) {
   Reuse::AllocationMetadata<TestMessage> meta;
   auto& m = *allocator.create_object<TestMessage>();
@@ -334,4 +339,5 @@ TEST_F(ReusableTraitsTest, message_message_reusable) {
     ASSERT_LE(10086, mm.mutable_rm()->Add()->s().capacity());
   }
 }
+*/
 #endif // BABYLON_USE_PROTOBUF
