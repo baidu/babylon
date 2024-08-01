@@ -2,74 +2,31 @@ name: example
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
 
 jobs:
-  anyflow:
+  basic:
+    strategy:
+      matrix:
+        name:
+        - anyflow
+        - depend-use-bzlmod
+        - depend-use-cmake-fetch
+        - depend-use-cmake-find
+        - depend-use-cmake-subdir
+        - depend-use-workspace
+        - use-arena-with-brpc
+        - use-async-logger
+        - use-counter-with-bvar
+        - use-with-bthread
+        - use-with-glog
     runs-on: ubuntu-latest
+    name: ${{matrix.name}}
     steps:
     - uses: actions/checkout@v4
-    - run: cd example/anyflow && ./build.sh
-
-  depend-use-bzlmod:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - run: cd example/depend-use-bzlmod && ./build.sh
-
-  depend-use-cmake-fetch:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - run: cd example/depend-use-cmake-fetch && ./build.sh
-
-  depend-use-cmake-find:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - run: sudo apt install libabsl-dev
-    - run: sudo apt install libboost-all-dev
-    - run: sudo apt install libprotobuf-dev
-    - run: cd example/depend-use-cmake-find && ./build.sh
-
-  depend-use-cmake-subdir:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - run: cd example/depend-use-cmake-subdir && ./build.sh
-
-  depend-use-workspace:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - run: cd example/depend-use-workspace && ./build.sh
-
-  use-arena-with-brpc:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - run: cd example/use-arena-with-brpc && ./build.sh
-
-  use-async-logger:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - run: cd example/use-async-logger && ./build.sh
-
-  use-counter-with-bvar:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - run: cd example/use-counter-with-bvar && ./build.sh
-
-  use-with-bthread:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - run: cd example/use-with-bthread && ./build.sh
-
-  use-with-glog:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - run: cd example/use-with-glog && ./build.sh
+    - if: ${{matrix.name == 'depend-use-cmake-find'}}
+      run: |
+        sudo apt install libabsl-dev
+        sudo apt install libboost-all-dev
+        sudo apt install libprotobuf-dev
+    - run: cd example/${{matrix.name}} && ./build.sh

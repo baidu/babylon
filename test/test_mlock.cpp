@@ -84,7 +84,7 @@ TEST_F(MemoryLockerTest, lock_regions_after_start) {
   ASSERT_EQ(0, MemoryLocker::instance().stop());
 }
 
-#if __x86_64__ 
+#if __x86_64__
 TEST_F(MemoryLockerTest, unlock_regions_after_stop) {
   ASSERT_EQ(0, MemoryLocker::instance().start());
   next_round();
