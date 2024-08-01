@@ -12,7 +12,7 @@
 - 消费者通过[Executor](../executor.md)接口提交，支持使用自定义线程/协程机制
 - 保持生产者wait-free提交的同时，不会在竞争时引起消费者阻塞
 
-![](images/bthread_execution_queue.md)
+![](images/bthread_execution_queue.png)
 
 ## 用法示例
 
