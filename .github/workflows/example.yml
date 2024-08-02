@@ -18,6 +18,7 @@ jobs:
         - use-arena-with-brpc
         - use-async-logger
         - use-counter-with-bvar
+        - use-execution-queue
         - use-with-bthread
         - use-with-glog
     runs-on: ubuntu-latest
