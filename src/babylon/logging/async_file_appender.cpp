@@ -130,7 +130,8 @@ void AsyncFileAppender::write_use_plain_writev(Destination& dest,
     for (size_t i = 0; i < size; ++i) {
       pages.emplace_back(piov[i].iov_base);
     }
-    ::writev(fd, piov, size);
+    auto written = ::writev(fd, piov, size);
+    (void) written;
     iter += size;
   }
 
