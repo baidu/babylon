@@ -4,6 +4,6 @@
   "integrity": "sha256-FTUVHvvHiT84sFeOg8rFhPKBmXTwZWmJdpiexxwa+Eo=",
   "patch_strip": 1,
   "patches": {
-    "arenastring.patch": "sha256-QVfzFLrTLobynRHv9gLqmOHIXG/uE7t5ECapQTAifMA="
+    "arenastring.patch": "sha256-8dbDqnk1FKUqY/94bs9M6Mw/dvk6WiWUJiDuhbtRNY4="
   }
 }

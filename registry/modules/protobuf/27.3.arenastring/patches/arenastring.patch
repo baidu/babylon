@@ -34,19 +34,24 @@ index d5b60ea11..e8170bbb9 100644
 +    patch_strip = 1,
 +)
 diff --git a/build_defs/cpp_opts.bzl b/build_defs/cpp_opts.bzl
-index 46b60252f..4fb1582d4 100644
+index 46b60252f..0fe2f0b2f 100644
 --- a/build_defs/cpp_opts.bzl
 +++ b/build_defs/cpp_opts.bzl
-@@ -21,6 +21,9 @@ COPTS = select({
+@@ -21,7 +21,13 @@ COPTS = select({
          "-Woverloaded-virtual",
          "-Wno-sign-compare",
          "-Wno-nonnull",
-+        # ARENASTRING PATCH: gcc-12 has more warning
+-        "-Werror",
++        # ARENASTRING PATCH: ignore more warning with -Werror
++        "-Wno-array-bounds",
 +        "-Wno-dangling-else",
 +        "-Wno-deprecated-declarations",
-         "-Werror",
++        "-Wno-maybe-uninitialized",
++        # ARENASTRING PATCH: more save to disable -Werror when using as a dependency
++        #"-Werror",
      ],
  })
+ 
 diff --git a/src/file_lists.cmake b/src/file_lists.cmake
 index 4488f3596..b44cbcb4d 100644
 --- a/src/file_lists.cmake
