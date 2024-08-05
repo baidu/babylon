@@ -85,6 +85,8 @@ TEST(type_traits, report_real_copyable_for_stl_containers) {
   };
   using NUS =
       ::std::unordered_set<::std::unordered_set<::std::unique_ptr<int>>, NUSH>;
+  US {};
+  NUS {};
   ASSERT_TRUE(::babylon::IsCopyConstructible<US>::value);
   ASSERT_FALSE(::babylon::IsCopyConstructible<NUS>::value);
 
@@ -108,11 +110,13 @@ TEST(type_traits, report_real_copyable_for_stl_containers) {
   using NUMK = ::std::unordered_map<::std::unique_ptr<int>, int>;
   using NUMT = ::std::unordered_map<int, ::std::unique_ptr<int>>;
   struct NUMH {
-    size_t operator()(const NUMK&) {
+    size_t operator()(const NUMK&) const {
       return 0;
     }
   };
-  using NUM = ::std::map<NUMK, NUMT, NUMH>;
+  using NUM = ::std::unordered_map<NUMK, NUMT, NUMH>;
+  UM {};
+  NUM {};
   ASSERT_TRUE(::babylon::IsCopyConstructible<UM>::value);
   ASSERT_FALSE(::babylon::IsCopyConstructible<NUM>::value);
 }
