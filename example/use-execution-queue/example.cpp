@@ -1,8 +1,8 @@
 #include "babylon/concurrent/execution_queue.h"
 
 #include "brpc/server.h"
-#include "bthread_executor.h"
 #include "bthread/execution_queue.h"
+#include "bthread_executor.h"
 #include "gflags/gflags.h"
 
 DEFINE_int32(dummy_port, 8000, "TCP Port of this dummy server");
@@ -46,7 +46,9 @@ int bthread_queue_consume(void*, ::bthread::TaskIterator<Task>& iter) {
   return 0;
 }
 
-void babylon_queue_consume(::babylon::ConcurrentExecutionQueue<Task>::Iterator iter, ::babylon::ConcurrentExecutionQueue<Task>::Iterator end) {
+void babylon_queue_consume(
+    ::babylon::ConcurrentExecutionQueue<Task>::Iterator iter,
+    ::babylon::ConcurrentExecutionQueue<Task>::Iterator end) {
   for (; iter != end; ++iter) {
     latency << ::butil::monotonic_time_ns() - iter->begin;
     pending << -1;
@@ -102,10 +104,12 @@ int main(int argc, char* argv[]) {
   latency.expose("test_" + FLAGS_mode);
 
   if (FLAGS_mode == "babylon") {
-    babylon_queue.initialize(1L << 18, ::babylon::BthreadExecutor::instance(), babylon_queue_consume);
+    babylon_queue.initialize(1L << 18, ::babylon::BthreadExecutor::instance(),
+                             babylon_queue_consume);
   } else if (FLAGS_mode == "bthread") {
     ::bthread::ExecutionQueueOptions options;
-    ::bthread::execution_queue_start(&bthread_queue_id, &options, bthread_queue_consume, nullptr);
+    ::bthread::execution_queue_start(&bthread_queue_id, &options,
+                                     bthread_queue_consume, nullptr);
   } else {
     return 0;
   }

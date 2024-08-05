@@ -165,18 +165,12 @@ TEST(fixed_swiss_table, support_normal_emplace) {
     bool operator==(const ::std::string& os) const {
       return s == os;
     }
-    // bool operator==(const S& os) const {
-    //     return s == os.s;
-    // }
     ::std::string s;
   };
   struct HS {
     size_t operator()(const ::std::string& s) {
       return ::std::hash<::std::string>()(s);
     }
-    // size_t operator()(const S& s) {
-    //     return ::std::hash<::std::string>()(s.s);
-    // }
   };
   ConcurrentFixedSwissTable<S, HS> table {16};
   auto result = table.emplace("10086");
