@@ -13,7 +13,7 @@ jobs:
         compiler: [{name: gcc, flag: --action_env=CC=gcc-12}, {name: clang, flag: --action_env=CC=clang-14}]
         std: [{name: c++17}, {name: c++14, flag: --cxxopt=-std=c++14 --cxxopt=-faligned-new}]
         stdlib: [{name: stdlibc++}, {name: libc++, flag: --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++}]
-        feature: [{name: asan, flag: --features=asan}, {name: tsan, flag: --features=tsan}]
+        feature: [{name: asan, flag: --config=asan}, {name: tsan, flag: --features=tsan}]
         exclude:
         - compiler: {name: gcc}
           stdlib: {name: libc++}
@@ -29,7 +29,7 @@ jobs:
         key: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-${{github.sha}}
         restore-keys: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-
         save-always: true
-    - run: bazel test --disk_cache=bazel-disk --verbose_failures ${{matrix.compiler.flag}} ${{matrix.std.flag}} ${{matrix.stdlib.flag}} ${{matrix.feature.flag}} test/...
+    - run: bazel test --compilation_mode=opt --disk_cache=bazel-disk --verbose_failures ${{matrix.compiler.flag}} ${{matrix.std.flag}} ${{matrix.stdlib.flag}} ${{matrix.feature.flag}} test/...
 
   arenastring:
     strategy:
@@ -55,7 +55,7 @@ jobs:
         restore-keys: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-
         save-always: true
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '27.3.arenastring'/" MODULE.bazel
-    - run: bazel test --disk_cache=bazel-disk --verbose_failures --features=asan ${{matrix.compiler.flag}} ${{matrix.stdlib.flag}} ${{matrix.mutable.flag}} test/...
+    - run: bazel test --compilation_mode=opt --disk_cache=bazel-disk --verbose_failures --config=asan ${{matrix.compiler.flag}} ${{matrix.stdlib.flag}} ${{matrix.mutable.flag}} test/...
 
   aarch64:
     runs-on: ubuntu-latest
