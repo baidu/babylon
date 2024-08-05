@@ -37,7 +37,7 @@ struct LogStream : public ::std::ostream {
 struct AsyncFileAppenderTest : public ::testing::Test {
   virtual void SetUp() override {
     ASSERT_EQ(0, ::pipe(pipefd));
-    ASSERT_GT(65536, ::fcntl(pipefd[1], F_SETPIPE_SZ, 16384));
+    ASSERT_EQ(16 * 4096, ::fcntl(pipefd[1], F_SETPIPE_SZ, 16 * 4096));
     file_object.fd = pipefd[1];
   }
 
