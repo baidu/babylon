@@ -37,12 +37,12 @@ Any::Meta Any::TypeDescriptor<T, E>::meta_for_inplace_non_trivial {
 #if __cplusplus < 201703L
 template <typename T>
 constexpr Any::Descriptor Any::TypeDescriptor<
-    T, typename ::std::enable_if<
-           ::std::is_copy_constructible<T>::value>::type>::descriptor;
+    T,
+    typename ::std::enable_if<IsCopyConstructible<T>::value>::type>::descriptor;
 template <typename T>
 constexpr Any::Descriptor Any::TypeDescriptor<
-    T, typename ::std::enable_if<
-           !::std::is_copy_constructible<T>::value>::type>::descriptor;
+    T, typename ::std::enable_if<!IsCopyConstructible<T>::value>::type>::
+    descriptor;
 #endif // __cplusplus < 201703L
 
 template <typename T, typename E>
@@ -56,31 +56,31 @@ void Any::TypeDescriptor<T, E>::deleter(void* object) noexcept {
 }
 
 template <typename T>
-void Any::TypeDescriptor<T, typename ::std::enable_if<
-                                ::std::is_copy_constructible<T>::value>::type>::
+void Any::TypeDescriptor<
+    T, typename ::std::enable_if<IsCopyConstructible<T>::value>::type>::
     copy_constructor(void* ptr, const void* object) noexcept {
   new (ptr) T(*reinterpret_cast<const T*>(object));
 }
 
 template <typename T>
 void Any::TypeDescriptor<
-    T, typename ::std::enable_if<!::std::is_copy_constructible<T>::value>::
-           type>::copy_constructor(void*, const void*) noexcept {
+    T, typename ::std::enable_if<!IsCopyConstructible<T>::value>::type>::
+    copy_constructor(void*, const void*) noexcept {
   assert(false &&
          "try copy non-copyable instance by copy an babylon::Any instance");
 }
 
 template <typename T>
 void* Any::TypeDescriptor<
-    T, typename ::std::enable_if< ::std::is_copy_constructible<T>::value>::
-           type>::copy_creater(const void* object) noexcept {
+    T, typename ::std::enable_if<IsCopyConstructible<T>::value>::type>::
+    copy_creater(const void* object) noexcept {
   return new T(*reinterpret_cast<const T*>(object));
 }
 
 template <typename T>
 void* Any::TypeDescriptor<
-    T, typename ::std::enable_if<!::std::is_copy_constructible<T>::value>::
-           type>::copy_creater(const void*) noexcept {
+    T, typename ::std::enable_if<!IsCopyConstructible<T>::value>::type>::
+    copy_creater(const void*) noexcept {
   assert(false &&
          "try copy non-copyable instance by copy an babylon::Any instance");
   return nullptr;

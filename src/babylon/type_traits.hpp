@@ -6,6 +6,13 @@
 #include "babylon/protect.h"
 // clang-format on
 
+#include <list>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
 BABYLON_NAMESPACE_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,6 +100,54 @@ constexpr Id TypeId<T>::ID;
 #endif // __cplusplus < 201703L && (__clang__ || BABYLON_GCC_VERSION >= 90300)
 
 // TypeId end
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+// IsCopyConstructible begin
+template <typename T, typename A>
+struct IsCopyConstructible<::std::vector<T, A>>
+    : public ::std::integral_constant<bool, IsCopyConstructible<T>::value &&
+                                                IsCopyConstructible<A>::value> {
+};
+
+template <typename T, typename A>
+struct IsCopyConstructible<::std::list<T, A>>
+    : public ::std::integral_constant<bool, IsCopyConstructible<T>::value &&
+                                                IsCopyConstructible<A>::value> {
+};
+
+template <typename K, typename C, typename A>
+struct IsCopyConstructible<::std::set<K, C, A>>
+    : public ::std::integral_constant<bool, IsCopyConstructible<K>::value &&
+                                                IsCopyConstructible<C>::value &&
+                                                IsCopyConstructible<A>::value> {
+};
+
+template <typename K, typename H, typename E, typename A>
+struct IsCopyConstructible<::std::unordered_set<K, H, E, A>>
+    : public ::std::integral_constant<bool, IsCopyConstructible<K>::value &&
+                                                IsCopyConstructible<H>::value &&
+                                                IsCopyConstructible<E>::value &&
+                                                IsCopyConstructible<A>::value> {
+};
+
+template <typename K, typename T, typename C, typename A>
+struct IsCopyConstructible<::std::map<K, T, C, A>>
+    : public ::std::integral_constant<bool, IsCopyConstructible<K>::value &&
+                                                IsCopyConstructible<T>::value &&
+                                                IsCopyConstructible<C>::value &&
+                                                IsCopyConstructible<A>::value> {
+};
+
+template <typename K, typename T, typename H, typename E, typename A>
+struct IsCopyConstructible<::std::unordered_map<K, T, H, E, A>>
+    : public ::std::integral_constant<bool, IsCopyConstructible<K>::value &&
+                                                IsCopyConstructible<T>::value &&
+                                                IsCopyConstructible<H>::value &&
+                                                IsCopyConstructible<E>::value &&
+                                                IsCopyConstructible<A>::value> {
+};
+// IsCopyConstructible end
 ///////////////////////////////////////////////////////////////////////////////
 
 BABYLON_NAMESPACE_END

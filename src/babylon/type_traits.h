@@ -209,6 +209,14 @@ struct IsEqualityComparable {
             0))>::type;                                                     \
   };
 
+// Standard contrainers always define a copy constructor, even when element is
+// not copyable. That makes std::is_copy_constructible always true for them, but
+// a compiler error will be triggered if someone really do a copy.
+// babylon::IsCopyConstructible do some specialization for them to make this
+// trait more useful.
+template <typename T>
+struct IsCopyConstructible : public ::std::is_copy_constructible<T> {};
+
 ////////////////////////////////////////////////////////////////////////////////
 // ParameterPack begin
 // 用于处理parameter pack，即typename... Args

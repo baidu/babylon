@@ -54,3 +54,69 @@ TEST(type_traits, id_is_readable) {
   ASSERT_EQ(type_name, "F()::<lambda(int)>");
 #endif // !__clang__
 }
+
+TEST(type_traits, report_real_copyable_for_stl_containers) {
+  using V = ::std::vector<::std::vector<int>>;
+  using NV = ::std::vector<::std::vector<::std::unique_ptr<int>>>;
+  ASSERT_TRUE(::babylon::IsCopyConstructible<V>::value);
+  ASSERT_FALSE(::babylon::IsCopyConstructible<NV>::value);
+
+  using L = ::std::list<::std::list<int>>;
+  using NL = ::std::list<::std::list<::std::unique_ptr<int>>>;
+  ASSERT_TRUE(::babylon::IsCopyConstructible<L>::value);
+  ASSERT_FALSE(::babylon::IsCopyConstructible<NL>::value);
+
+  using S = ::std::set<::std::set<int>>;
+  using NS = ::std::set<::std::set<::std::unique_ptr<int>>>;
+  ASSERT_TRUE(::babylon::IsCopyConstructible<S>::value);
+  ASSERT_FALSE(::babylon::IsCopyConstructible<NS>::value);
+
+  struct USH {
+    size_t operator()(const ::std::unordered_set<int>&) const {
+      return 0;
+    }
+  };
+  using US = ::std::unordered_set<::std::unordered_set<int>, USH>;
+  struct NUSH {
+    size_t operator()(
+        const ::std::unordered_set<::std::unique_ptr<int>>&) const {
+      return 0;
+    }
+  };
+  using NUS =
+      ::std::unordered_set<::std::unordered_set<::std::unique_ptr<int>>, NUSH>;
+  US {};
+  NUS {};
+  ASSERT_TRUE(::babylon::IsCopyConstructible<US>::value);
+  ASSERT_FALSE(::babylon::IsCopyConstructible<NUS>::value);
+
+  using MK = ::std::map<int, int>;
+  using MT = ::std::map<int, int>;
+  using M = ::std::map<MK, MT>;
+  using NMK = ::std::map<::std::unique_ptr<int>, int>;
+  using NMT = ::std::map<int, ::std::unique_ptr<int>>;
+  using NM = ::std::map<NMK, NMT>;
+  ASSERT_TRUE(::babylon::IsCopyConstructible<M>::value);
+  ASSERT_FALSE(::babylon::IsCopyConstructible<NM>::value);
+
+  using UMK = ::std::unordered_map<int, int>;
+  using UMT = ::std::unordered_map<int, int>;
+  struct UMH {
+    size_t operator()(const UMK&) const {
+      return 0;
+    }
+  };
+  using UM = ::std::unordered_map<UMK, UMT, UMH>;
+  using NUMK = ::std::unordered_map<::std::unique_ptr<int>, int>;
+  using NUMT = ::std::unordered_map<int, ::std::unique_ptr<int>>;
+  struct NUMH {
+    size_t operator()(const NUMK&) const {
+      return 0;
+    }
+  };
+  using NUM = ::std::unordered_map<NUMK, NUMT, NUMH>;
+  UM {};
+  NUM {};
+  ASSERT_TRUE(::babylon::IsCopyConstructible<UM>::value);
+  ASSERT_FALSE(::babylon::IsCopyConstructible<NUM>::value);
+}
