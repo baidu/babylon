@@ -12,7 +12,7 @@ test --test_env=ASAN_OPTIONS=detect_odr_violation=1
 
 # There are bugs about -fsanitize=address and -Wuninitialized
 # as mentioned in https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105616
-test:asan --features=asan --copt=-Wno-uninitialized
+test:asan --features=asan --copt=-Wno-maybe-uninitialized
 
 test:arenastring --//test/proto:arenastring
 test:mutable-donated-string --config=arenastring --copt=-DGOOGLE_PROTOBUF_MUTABLE_DONATED_STRING=1
