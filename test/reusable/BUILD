@@ -10,7 +10,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:reusable_allocator',
-    '//proto',
+    '//test/proto',
     '@com_google_googletest//:gtest_main',
   ]
 )
@@ -32,7 +32,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:reusable_memory_resource',
-    '//proto',
+    '//test/proto',
     '@com_google_googletest//:gtest_main',
   ]
 )
@@ -44,7 +44,7 @@ cc_test(
   deps = [
     '//:reusable_manager',
     '//:reusable_string',
-    '//proto',
+    '//test/proto',
     '@com_google_googletest//:gtest_main',
   ]
 )
@@ -75,7 +75,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:reusable_traits',
-    '//proto',
+    '//test/proto',
     '@com_google_googletest//:gtest_main',
   ]
 )

@@ -10,7 +10,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:serialization',
-    '//proto',
+    '//test/proto',
     '@com_google_googletest//:gtest_main',
   ]
 )
@@ -31,7 +31,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:serialization',
-    '//proto',
+    '//test/proto',
     '@com_google_googletest//:gtest_main',
   ]
 )
@@ -62,7 +62,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:serialization',
-    '//proto',
+    '//test/proto',
     '@com_google_googletest//:gtest_main',
   ]
 )

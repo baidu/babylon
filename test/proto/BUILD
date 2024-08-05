@@ -26,8 +26,8 @@ proto_library(
     '//conditions:default': ['arena_example.proto'],
   }),
   strip_import_prefix = select({
-    ':use-arenastring': '/proto/mutable',
-    '//conditions:default': '/proto',
+    ':use-arenastring': '/test/proto/mutable',
+    '//conditions:default': '/test/proto',
   }),
 )
 
