@@ -146,7 +146,7 @@ int RollingFileObject::open() noexcept {
   ::mkdir(_directory.c_str(), 0755);
 
   char full_file_name[_directory.size() + _file_pattern.size() + 64];
-  ::memcpy(full_file_name, _directory.c_str(), _directory.size());
+  __builtin_memcpy(full_file_name, _directory.c_str(), _directory.size());
   full_file_name[_directory.size()] = '/';
   auto bytes = format_file_name(full_file_name + _directory.size() + 1,
                                 _file_pattern.size() + 63);
