@@ -123,7 +123,7 @@ if(BUILD_TESTING AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   target_link_libraries(test_string_view GTest::gtest_main)
   gtest_discover_tests(test_string_view)
 
-  add_executable(test_log "${CMAKE_CURRENT_SOURCE_DIR}/test/logging/test_custom_default_provider.cpp")
+  add_executable(test_log "${CMAKE_CURRENT_SOURCE_DIR}/test/logging/test_statically_initialize.cpp")
   target_link_libraries(test_log babylon)
   target_link_libraries(test_log GTest::gtest_main)
   gtest_discover_tests(test_log)

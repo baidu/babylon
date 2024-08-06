@@ -7,7 +7,7 @@ using ::babylon::LogStream;
 using ::babylon::LogStreamProvider;
 using ::babylon::StringView;
 
-::std::stringbuf buffer;
+static ::std::stringbuf buffer;
 
 BABYLON_NAMESPACE_BEGIN
 void DefaultLoggerManagerInitializer::initialize(
