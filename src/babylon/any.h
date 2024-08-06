@@ -2,9 +2,11 @@
 
 #include "babylon/type_traits.h"
 
-#include <memory> // std::unique_ptr
-
+// clang-format off
 #include "babylon/protect.h"
+// clang-format on
+
+#include <memory> // std::unique_ptr
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -227,8 +229,8 @@ class Any {
   };
 
   template <typename T>
-  struct TypeDescriptor<
-      T, typename ::std::enable_if<::std::is_copy_constructible<T>::value>::type>
+  struct TypeDescriptor<T, typename ::std::enable_if<
+                               ::std::is_copy_constructible<T>::value>::type>
       : public TypeDescriptor<T, int> {
     static void copy_constructor(void* ptr, const void* object) noexcept;
     static void* copy_creater(const void* object) noexcept;
@@ -243,8 +245,8 @@ class Any {
   };
 
   template <typename T>
-  struct TypeDescriptor<
-      T, typename ::std::enable_if<!::std::is_copy_constructible<T>::value>::type>
+  struct TypeDescriptor<T, typename ::std::enable_if<
+                               !::std::is_copy_constructible<T>::value>::type>
       : public TypeDescriptor<T, int> {
     static void copy_constructor(void* ptr, const void* object) noexcept;
     static void* copy_creater(const void* object) noexcept;
@@ -305,6 +307,8 @@ class Any {
 
 BABYLON_NAMESPACE_END
 
+// clang-format off
 #include "babylon/unprotect.h"
+// clang-format on
 
 #include "babylon/any.hpp"

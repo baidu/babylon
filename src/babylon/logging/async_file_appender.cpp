@@ -1,10 +1,10 @@
 #include "babylon/logging/async_file_appender.h"
 
+#include "babylon/protect.h"
+
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-
-#include "babylon/protect.h"
 
 BABYLON_NAMESPACE_BEGIN
 

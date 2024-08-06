@@ -1,6 +1,5 @@
-#include "babylon/mlock.h"
-
 #include "babylon/logging/logger.h"
+#include "babylon/mlock.h"
 
 // clang-format off
 #include BABYLON_EXTERNAL(absl/base/config.h)

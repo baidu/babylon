@@ -2,7 +2,9 @@
 
 #include "babylon/string_view.h" // StringView
 
+// clang-format off
 #include "babylon/protect.h"
+// clang-format on
 
 BABYLON_NAMESPACE_BEGIN
 

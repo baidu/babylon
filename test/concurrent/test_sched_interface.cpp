@@ -1,10 +1,12 @@
-#include <babylon/concurrent/sched_interface.h>
+#include "babylon/concurrent/sched_interface.h"
 
-#include <gtest/gtest.h>
+// clang-format off
+#include "babylon/protect.h"
+// clang-format on
+
+#include "gtest/gtest.h"
 
 #include <future> // ::std::async
-
-#include "babylon/protect.h"
 
 using ::babylon::Futex;
 using ::babylon::SchedInterface;
