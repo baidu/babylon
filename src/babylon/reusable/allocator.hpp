@@ -660,7 +660,6 @@ ABSL_ATTRIBUTE_ALWAYS_INLINE inline void* SwissAllocator<T>::allocate_bytes(
 template <typename T>
 template <typename U, typename>
 inline void SwissAllocator<T>::construct(U* ptr) {
-  fprintf(stderr, "SwissAllocator::construct 1\n");
   ::google::protobuf::Arena& arena = *this->resource();
   ::google::protobuf::internal::GenericTypeHandler<NeverUsed>::construct(
       ptr, &arena);
@@ -669,7 +668,6 @@ inline void SwissAllocator<T>::construct(U* ptr) {
 template <typename T>
 template <typename U, typename V, typename>
 inline void SwissAllocator<T>::construct(U* ptr, V&& other) {
-  fprintf(stderr, "SwissAllocator::construct 2\n");
   ::google::protobuf::Arena& arena = *this->resource();
   ::google::protobuf::internal::GenericTypeHandler<NeverUsed>::construct(
       ptr, &arena);
