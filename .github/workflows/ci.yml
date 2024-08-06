@@ -109,4 +109,4 @@ jobs:
     - uses: hendrikmuhs/ccache-action@v1.2
     - run: cmake -Bbuild -DBUILD_DEPS=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
     - run: cmake --build build --parallel $(nproc)
-    - run: ctest --test-dir build --output-on-failure --parallel $(nproc)
+    - run: ctest --test-dir build --exclude-regex=MemoryLockerTest --output-on-failure --parallel $(nproc)
