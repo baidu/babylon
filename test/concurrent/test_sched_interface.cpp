@@ -4,6 +4,9 @@
 
 #include <future> // ::std::async
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++20-designator"
+
 using ::babylon::Futex;
 using ::babylon::SchedInterface;
 
@@ -195,3 +198,5 @@ TEST(futex_interface, futex_value_read_write_as_atomic) {
     ASSERT_EQ(10087, futex.value().load());
   }
 }
+
+#pragma clang diagnostic pop

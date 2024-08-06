@@ -1,5 +1,8 @@
 #include "babylon/any.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++20-designator"
+
 BABYLON_NAMESPACE_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -65,3 +68,5 @@ Any& Any::ref(const Descriptor* descriptor, void* instance) noexcept {
 }
 
 BABYLON_NAMESPACE_END
+
+#pragma clang diagnostic pop

@@ -8,6 +8,9 @@
 
 #include <cassert> // ::assert
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++20-designator"
+
 BABYLON_NAMESPACE_BEGIN
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -470,3 +473,5 @@ inline ::std::unique_ptr<void, void (*)(void*)> Any::release() noexcept {
 ///////////////////////////////////////////////////////////////////////////////
 
 BABYLON_NAMESPACE_END
+
+#pragma clang diagnostic pop

@@ -4,6 +4,9 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++20-designator"
+
 BABYLON_NAMESPACE_BEGIN
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -143,3 +146,5 @@ void AsyncFileAppender::write_use_plain_writev(Destination& dest,
 ////////////////////////////////////////////////////////////////////////////////
 
 BABYLON_NAMESPACE_END
+
+#pragma clang diagnostic pop

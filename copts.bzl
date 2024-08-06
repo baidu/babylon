@@ -1,7 +1,7 @@
 BABYLON_GCC_COPTS = ['-Wall', '-Wextra']
 BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-option',
                        # 不保持老版本c++语法兼容
-                       '-Wno-c++98-compat-pedantic', '-Wno-c99-designator',
+                       '-Wno-c++98-compat-pedantic',
                        # Boost Preprocessor中大量使用
                        '-Wno-disabled-macro-expansion',
                        # 未定义宏默认为0作为一个惯例特性保留使用

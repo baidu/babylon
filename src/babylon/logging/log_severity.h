@@ -33,12 +33,15 @@ class LogSeverity {
  private:
   int8_t _value {DEBUG};
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc99-designator"
   static constexpr StringView names[NUM] = {
       [DEBUG] = "DEBUG",
       [INFO] = "INFO",
       [WARNING] = "WARNING",
       [FATAL] = "FATAL",
   };
+#pragma clang diagnostic pop
 };
 
 inline constexpr LogSeverity::LogSeverity(int8_t value) noexcept

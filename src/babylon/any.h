@@ -4,6 +4,9 @@
 
 #include <memory> // std::unique_ptr
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++20-designator"
+
 BABYLON_NAMESPACE_BEGIN
 
 // 类似std::any可以用于存放任何对象，并支持按原类型取回
@@ -302,5 +305,7 @@ class Any {
 };
 
 BABYLON_NAMESPACE_END
+
+#pragma clang diagnostic pop
 
 #include "babylon/any.hpp"
