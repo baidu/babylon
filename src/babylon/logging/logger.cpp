@@ -172,6 +172,10 @@ Logger& LoggerManager::get_logger(StringView name) noexcept {
   return result.first->second;
 }
 
+LoggerManager::LoggerManager() noexcept {
+  DefaultLoggerManagerInitializer::initialize(*this);
+}
+
 void LoggerManager::apply_to(StringView name, Logger& logger) noexcept {
   auto builder = find_nearest_builder(name);
   if (builder != nullptr) {
@@ -198,5 +202,8 @@ LoggerBuilder* LoggerManager::find_nearest_builder(StringView name) noexcept {
 }
 // LoggerManager end
 ////////////////////////////////////////////////////////////////////////////////
+
+ABSL_ATTRIBUTE_WEAK void DefaultLoggerManagerInitializer::initialize(
+    LoggerManager&) noexcept {}
 
 BABYLON_NAMESPACE_END

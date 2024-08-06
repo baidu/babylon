@@ -18,9 +18,10 @@ class LogSeverity {
   inline constexpr LogSeverity() noexcept = default;
   inline constexpr LogSeverity(LogSeverity&&) noexcept = default;
   inline constexpr LogSeverity(const LogSeverity&) noexcept = default;
-  inline CONSTEXPR_SINCE_CXX14 LogSeverity& operator=(LogSeverity&&) noexcept = default;
-  inline CONSTEXPR_SINCE_CXX14 LogSeverity& operator=(const LogSeverity&) noexcept =
+  inline CONSTEXPR_SINCE_CXX14 LogSeverity& operator=(LogSeverity&&) noexcept =
       default;
+  inline CONSTEXPR_SINCE_CXX14 LogSeverity& operator=(
+      const LogSeverity&) noexcept = default;
   inline ~LogSeverity() noexcept = default;
 
   inline constexpr LogSeverity(int8_t value) noexcept;

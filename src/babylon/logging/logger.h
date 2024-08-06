@@ -85,7 +85,7 @@ class LoggerManager final {
   Logger& get_logger(StringView name) noexcept;
 
  private:
-  LoggerManager() = default;
+  LoggerManager() noexcept;
   ~LoggerManager() noexcept = default;
 
   void apply_to(StringView name, Logger& logger) noexcept;
@@ -100,6 +100,11 @@ class LoggerManager final {
   ConcurrentTransientHashMap<::std::string, LoggerBuilder,
                              ::std::hash<StringView>>
       _builders;
+};
+
+class DefaultLoggerManagerInitializer {
+ public:
+  static void initialize(LoggerManager& manager) noexcept;
 };
 
 // 通过&操作符将返回值转为void的工具类

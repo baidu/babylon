@@ -25,11 +25,11 @@ cc_test(
 )
 
 cc_test(
-  name = 'test_custom_default_provider',
-  srcs = ['test_custom_default_provider.cpp'],
+  name = 'test_statically_initialize',
+  srcs = ['test_statically_initialize.cpp'],
   copts = BABYLON_COPTS,
   deps = [
-    '//:logging_interface',
+    '//:logging_logger',
     '@com_google_googletest//:gtest_main',
   ]
 )
