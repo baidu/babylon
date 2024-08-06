@@ -26,4 +26,6 @@
 // 例如baidu/feed-mlarch/feature-extract-framework中定义了F
 #pragma pop_macro("F")
 
+#pragma GCC diagnostic pop
+
 #endif // BABYLON_UNPROTECT_H

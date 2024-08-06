@@ -4,10 +4,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-#pragma clang diagnostic push
-#if __clang__
-#pragma clang diagnostic ignored "-Wc++20-designator"
-#endif // __clang__
+#include "babylon/protect.h"
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -149,4 +146,4 @@ void AsyncFileAppender::write_use_plain_writev(Destination& dest,
 
 BABYLON_NAMESPACE_END
 
-#pragma clang diagnostic pop
+#include "babylon/unprotect.h"

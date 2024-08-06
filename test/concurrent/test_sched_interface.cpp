@@ -4,8 +4,7 @@
 
 #include <future> // ::std::async
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++20-designator"
+#include "babylon/protect.h"
 
 using ::babylon::Futex;
 using ::babylon::SchedInterface;
@@ -199,4 +198,4 @@ TEST(futex_interface, futex_value_read_write_as_atomic) {
   }
 }
 
-#pragma clang diagnostic pop
+#include "babylon/unprotect.h"

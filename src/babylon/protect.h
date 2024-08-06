@@ -23,6 +23,11 @@
 #pragma push_macro("F")
 #undef F
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wc99-designator"
+
 #else // BAIDU_PROTECT_H
 #error("protect.h without unprotect.h")
 #endif // BAIDU_PROTECT_H

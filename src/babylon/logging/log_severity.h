@@ -2,6 +2,8 @@
 
 #include "babylon/string_view.h" // StringView
 
+#include "babylon/protect.h"
+
 BABYLON_NAMESPACE_BEGIN
 
 class LogSeverity {
@@ -33,17 +35,12 @@ class LogSeverity {
  private:
   int8_t _value {DEBUG};
 
-#pragma clang diagnostic push
-#if __clang__
-#pragma clang diagnostic ignored "-Wc99-designator"
-#endif // __clang__
   static constexpr StringView names[NUM] = {
       [DEBUG] = "DEBUG",
       [INFO] = "INFO",
       [WARNING] = "WARNING",
       [FATAL] = "FATAL",
   };
-#pragma clang diagnostic pop
 };
 
 inline constexpr LogSeverity::LogSeverity(int8_t value) noexcept
@@ -64,3 +61,5 @@ inline ::std::basic_ostream<C, T>& operator<<(::std::basic_ostream<C, T>& os,
 }
 
 BABYLON_NAMESPACE_END
+
+#include "babylon/unprotect.h"
