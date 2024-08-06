@@ -74,6 +74,7 @@ TEST_F(RollingFileObjectTest, fd_refer_to_latest_file) {
   ASSERT_LT(0, ::dprintf(last_fd, "this should appear in file\n"));
   ::std::filesystem::directory_iterator dir {"log"};
   auto entry = *begin(dir);
+  ::usleep(100 * 1000);
   ::std::ifstream ifs {entry.path()};
   ASSERT_TRUE(ifs);
   ::std::string line;
