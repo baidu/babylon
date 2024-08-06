@@ -5,7 +5,9 @@
 #include <sys/stat.h>
 
 #pragma clang diagnostic push
+#if __clang__
 #pragma clang diagnostic ignored "-Wc++20-designator"
+#endif // __clang__
 
 BABYLON_NAMESPACE_BEGIN
 

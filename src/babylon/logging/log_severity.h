@@ -34,7 +34,9 @@ class LogSeverity {
   int8_t _value {DEBUG};
 
 #pragma clang diagnostic push
+#if __clang__
 #pragma clang diagnostic ignored "-Wc99-designator"
+#endif // __clang__
   static constexpr StringView names[NUM] = {
       [DEBUG] = "DEBUG",
       [INFO] = "INFO",
