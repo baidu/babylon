@@ -226,7 +226,7 @@ class Any {
 
   template <typename T>
   struct TypeDescriptor<
-      T, typename ::std::enable_if<IsCopyConstructible<T>::value>::type>
+      T, typename ::std::enable_if<::std::is_copy_constructible<T>::value>::type>
       : public TypeDescriptor<T, int> {
     static void copy_constructor(void* ptr, const void* object) noexcept;
     static void* copy_creater(const void* object) noexcept;
@@ -242,7 +242,7 @@ class Any {
 
   template <typename T>
   struct TypeDescriptor<
-      T, typename ::std::enable_if<!IsCopyConstructible<T>::value>::type>
+      T, typename ::std::enable_if<!::std::is_copy_constructible<T>::value>::type>
       : public TypeDescriptor<T, int> {
     static void copy_constructor(void* ptr, const void* object) noexcept;
     static void* copy_creater(const void* object) noexcept;

@@ -102,54 +102,6 @@ constexpr Id TypeId<T>::ID;
 // TypeId end
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// IsCopyConstructible begin
-template <typename T, typename A>
-struct IsCopyConstructible<::std::vector<T, A>>
-    : public ::std::integral_constant<bool, IsCopyConstructible<T>::value &&
-                                                IsCopyConstructible<A>::value> {
-};
-
-template <typename T, typename A>
-struct IsCopyConstructible<::std::list<T, A>>
-    : public ::std::integral_constant<bool, IsCopyConstructible<T>::value &&
-                                                IsCopyConstructible<A>::value> {
-};
-
-template <typename K, typename C, typename A>
-struct IsCopyConstructible<::std::set<K, C, A>>
-    : public ::std::integral_constant<bool, IsCopyConstructible<K>::value &&
-                                                IsCopyConstructible<C>::value &&
-                                                IsCopyConstructible<A>::value> {
-};
-
-template <typename K, typename H, typename E, typename A>
-struct IsCopyConstructible<::std::unordered_set<K, H, E, A>>
-    : public ::std::integral_constant<bool, IsCopyConstructible<K>::value &&
-                                                IsCopyConstructible<H>::value &&
-                                                IsCopyConstructible<E>::value &&
-                                                IsCopyConstructible<A>::value> {
-};
-
-template <typename K, typename T, typename C, typename A>
-struct IsCopyConstructible<::std::map<K, T, C, A>>
-    : public ::std::integral_constant<bool, IsCopyConstructible<K>::value &&
-                                                IsCopyConstructible<T>::value &&
-                                                IsCopyConstructible<C>::value &&
-                                                IsCopyConstructible<A>::value> {
-};
-
-template <typename K, typename T, typename H, typename E, typename A>
-struct IsCopyConstructible<::std::unordered_map<K, T, H, E, A>>
-    : public ::std::integral_constant<bool, IsCopyConstructible<K>::value &&
-                                                IsCopyConstructible<T>::value &&
-                                                IsCopyConstructible<H>::value &&
-                                                IsCopyConstructible<E>::value &&
-                                                IsCopyConstructible<A>::value> {
-};
-// IsCopyConstructible end
-///////////////////////////////////////////////////////////////////////////////
-
 BABYLON_NAMESPACE_END
 
 // clang-format off
