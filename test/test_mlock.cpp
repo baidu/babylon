@@ -65,6 +65,7 @@ TEST_F(MemoryLockerTest, lock_regions_before_start) {
   ASSERT_EQ(0, MemoryLocker::instance().start());
   next_round();
   ::usleep(1000 * 1000);
+  BABYLON_LOG(INFO) << "before check region_in_memory";
   ASSERT_TRUE(region_in_memory());
   ASSERT_EQ(CEILED_REGION_SIZE, MemoryLocker::instance().locked_bytes());
   ASSERT_EQ(0, MemoryLocker::instance().last_errno());
