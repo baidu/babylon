@@ -175,7 +175,8 @@ class NullLogStream : public LogStream {
 
  private:
   class Buffer;
-  static Buffer s_buffer;
+
+  static Buffer& buffer() noexcept;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

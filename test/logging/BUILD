@@ -75,6 +75,17 @@ cc_test(
 )
 
 cc_test(
+  name = 'test_log_statically',
+  srcs = ['test_log_statically.cpp'],
+  copts = BABYLON_COPTS,
+  linkstatic = True,
+  deps = [
+    '//:logging_logger',
+    '@com_google_googletest//:gtest_main',
+  ]
+)
+
+cc_test(
   name = 'test_rolling_file_object',
   srcs = ['test_rolling_file_object.cpp'],
   copts = BABYLON_COPTS,

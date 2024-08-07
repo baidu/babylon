@@ -25,12 +25,15 @@ void LogStream::do_end() noexcept {}
 DefaultLogStream::DefaultLogStream() noexcept
     :
 #if __clang__ || BABYLON_GCC_VERSION >= 50000
-      LogStream {*::std::cerr.rdbuf()} {
-}
+      LogStream {*::std::cerr.rdbuf()}
 #else  // !__clang__ && BABYLON_GCC_VERSION < 50000
-      LogStream(*::std::cerr.rdbuf()) {
-}
+      LogStream(*::std::cerr.rdbuf())
 #endif // !__clang__ && BABYLON_GCC_VERSION < 50000
+{
+  // Ensure std::cerr is initialized
+  ::std::ios_base::Init();
+  rdbuf(::std::cerr.rdbuf());
+}
 
 ::std::mutex& DefaultLogStream::mutex() noexcept {
   static ::std::mutex mutex;
@@ -61,14 +64,17 @@ void DefaultLogStream::do_end() noexcept {
 NullLogStream::NullLogStream() noexcept
     :
 #if __clang__ || BABYLON_GCC_VERSION >= 50000
-      LogStream {s_buffer} {
+      LogStream {buffer()} {
 }
 #else  // !__clang__ && BABYLON_GCC_VERSION < 50000
-      LogStream(s_buffer) {
+      LogStream(buffer()) {
 }
 #endif // !__clang__ && BABYLON_GCC_VERSION < 50000
 
-NullLogStream::Buffer NullLogStream::s_buffer;
+NullLogStream::Buffer& NullLogStream::buffer() noexcept {
+  static Buffer static_buffer;
+  return static_buffer;
+}
 // NullLogStream end
 ////////////////////////////////////////////////////////////////////////////////
 
