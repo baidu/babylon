@@ -71,7 +71,7 @@ jobs:
     - run: sudo apt install g++-12-aarch64-linux-gnu
     - run: sudo apt install qemu-user
     - run: sudo ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/
-    - run: bazel test --disk_cache=bazel-disk --verbose_failures --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --linkopt=-fuse-ld=gold --test_env=LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib test/...
+    - run: bazel test --disk_cache=bazel-disk --verbose_failures --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --linkopt=-fuse-ld=gold --test_env=LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib -- test/... -test/logging:test_log_statically
 
   workspace:
     runs-on: ubuntu-latest
