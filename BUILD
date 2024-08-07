@@ -126,6 +126,11 @@ alias(
 )
 
 alias(
+  name = 'garbage_collector',
+  actual = '//src/babylon:garbage_collector',
+)
+
+alias(
   name = 'logging',
   actual = '//src/babylon/logging',
 )

@@ -104,6 +104,18 @@ cc_library(
 )
 
 cc_library(
+  name = 'garbage_collector',
+  srcs = ['garbage_collector.cpp'],
+  hdrs = ['garbage_collector.h'],
+  copts = BABYLON_COPTS,
+  includes = ['//src'],
+  strip_include_prefix = '//src',
+  deps = [
+    '//src/babylon/concurrent:vector',
+  ],
+)
+
+cc_library(
   name = 'mlock',
   srcs = ['mlock.cpp'],
   hdrs = ['mlock.h'],
