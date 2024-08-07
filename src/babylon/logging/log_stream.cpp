@@ -24,11 +24,16 @@ void LogStream::do_end() noexcept {}
 
 DefaultLogStream::DefaultLogStream() noexcept
     :
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wnull-dereference"
 #if __clang__ || BABYLON_GCC_VERSION >= 50000
-      LogStream {*::std::cerr.rdbuf()}
+      LogStream {*reinterpret_cast<::std::streambuf*>(0)}
 #else  // !__clang__ && BABYLON_GCC_VERSION < 50000
-      LogStream(*::std::cerr.rdbuf())
+      LogStream(*reinterpret_cast<::std::streambuf*>(0))
 #endif // !__clang__ && BABYLON_GCC_VERSION < 50000
+#pragma GCC diagnostic pop
 {
   // Ensure std::cerr is initialized
   ::std::ios_base::Init();
