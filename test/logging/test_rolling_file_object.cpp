@@ -11,12 +11,18 @@ using ::babylon::RollingFileObject;
 
 struct RollingFileObjectTest : public ::testing::Test {
   virtual void SetUp() override {
-    ::std::filesystem::remove_all("log");
-    rolling_object.set_directory("log");
+    directory = "log_" + ::std::to_string(getpid());
+    ::std::filesystem::remove_all(directory);
+    rolling_object.set_directory(directory);
     rolling_object.set_file_pattern("name.%Y%m%d-%H%M%S");
     object = &rolling_object;
   }
 
+  virtual void TearDown() override {
+    ::std::filesystem::remove_all(directory);
+  }
+
+  ::std::string directory;
   RollingFileObject rolling_object;
   FileObject* object;
 };
@@ -24,14 +30,14 @@ struct RollingFileObjectTest : public ::testing::Test {
 TEST_F(RollingFileObjectTest, file_first_create_when_get_trigger) {
   object->check_and_get_file_descriptor();
   {
-    ::std::filesystem::directory_iterator dir {"log"};
+    ::std::filesystem::directory_iterator dir {directory};
     ASSERT_EQ(1, ::std::distance(begin(dir), end(dir)));
   }
 }
 
 TEST_F(RollingFileObjectTest, keep_file_dont_exceed_num) {
-  ::std::filesystem::create_directory("log");
-  ::std::ofstream {"log/name.00000000-000000"};
+  ::std::filesystem::create_directory(directory);
+  ::std::ofstream {directory + "/name.00000000-000000"};
 
   ::std::vector<int> old_fds;
   rolling_object.set_max_file_number(3);
@@ -42,11 +48,10 @@ TEST_F(RollingFileObjectTest, keep_file_dont_exceed_num) {
       old_fds.emplace_back(old_fd);
     }
     rolling_object.delete_expire_files();
-    ::usleep(100 * 1000);
   }
 
   {
-    ::std::filesystem::directory_iterator dir {"log"};
+    ::std::filesystem::directory_iterator dir {directory};
     ASSERT_EQ(3, ::std::distance(begin(dir), end(dir)));
   }
 
@@ -66,15 +71,13 @@ TEST_F(RollingFileObjectTest, fd_refer_to_latest_file) {
       old_fds.emplace_back(old_fd);
     }
     rolling_object.delete_expire_files();
-    ::usleep(100 * 1000);
     last_fd = fd;
   }
 
   ASSERT_NE(-1, last_fd);
   ASSERT_LT(0, ::dprintf(last_fd, "this should appear in file\n"));
-  ::std::filesystem::directory_iterator dir {"log"};
+  ::std::filesystem::directory_iterator dir {directory};
   auto entry = *begin(dir);
-  ::usleep(100 * 1000);
   ::std::ifstream ifs {entry.path()};
   ASSERT_TRUE(ifs);
   ::std::string line;
