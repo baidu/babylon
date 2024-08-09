@@ -48,6 +48,7 @@ TEST_F(RollingFileObjectTest, keep_file_dont_exceed_num) {
       old_fds.emplace_back(old_fd);
     }
     rolling_object.delete_expire_files();
+    ::usleep(100 * 1000);
   }
 
   {
@@ -72,6 +73,7 @@ TEST_F(RollingFileObjectTest, fd_refer_to_latest_file) {
     }
     rolling_object.delete_expire_files();
     last_fd = fd;
+    ::usleep(100 * 1000);
   }
 
   ASSERT_NE(-1, last_fd);
