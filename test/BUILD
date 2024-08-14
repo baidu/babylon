@@ -46,16 +46,6 @@ cc_test(
 )
 
 cc_test(
-  name = 'test_garbage_collector',
-  srcs = ['test_garbage_collector.cpp'],
-  copts = BABYLON_COPTS,
-  deps = [
-    '//:garbage_collector',
-    '@com_google_googletest//:gtest_main',
-  ]
-)
-
-cc_test(
   name = 'test_mlock',
   srcs = ['test_mlock.cpp'],
   copts = BABYLON_COPTS,

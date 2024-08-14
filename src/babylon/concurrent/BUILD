@@ -43,6 +43,18 @@ cc_library(
 )
 
 cc_library(
+  name = 'epoch',
+  srcs = ['epoch.cpp'],
+  hdrs = ['epoch.h'],
+  copts = BABYLON_COPTS,
+  includes = ['//src'],
+  strip_include_prefix = '//src',
+  deps = [
+    ':id_allocator',
+  ],
+)
+
+cc_library(
   name = 'execution_queue',
   hdrs = ['execution_queue.h'],
   copts = BABYLON_COPTS,

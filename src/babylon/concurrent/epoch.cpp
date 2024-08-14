@@ -1,4 +1,4 @@
-#include "babylon/garbage_collector.h"
+#include "babylon/concurrent/epoch.h"
 
 BABYLON_NAMESPACE_BEGIN
 

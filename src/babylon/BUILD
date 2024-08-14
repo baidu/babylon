@@ -111,7 +111,8 @@ cc_library(
   includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
-    '//src/babylon/concurrent:vector',
+    '//src/babylon/concurrent:bounded_queue',
+    '//src/babylon/concurrent:id_allocator',
   ],
 )
 
