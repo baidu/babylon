@@ -3,6 +3,11 @@
 #include "babylon/concurrent/id_allocator.h"
 #include "babylon/concurrent/vector.h"
 
+#pragma GCC diagnostic push
+#if GCC_VERSION >= 120000
+#pragma GCC diagnostic ignored "-Wtsan"
+#endif // GCC_VERSION >= 120000
+
 BABYLON_NAMESPACE_BEGIN
 
 // Standalone epoch implementation as a part of EBR (Epoch-Based Reclamation)
@@ -226,3 +231,5 @@ inline void Epoch::Accessor::release() noexcept {
 ////////////////////////////////////////////////////////////////////////////////
 
 BABYLON_NAMESPACE_END
+
+#pragma GCC diagnostic pop
