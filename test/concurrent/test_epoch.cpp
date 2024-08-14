@@ -1,4 +1,5 @@
 #include "babylon/concurrent/epoch.h"
+#include "babylon/logging/logger.h"
 
 #include "gtest/gtest.h"
 
@@ -85,15 +86,15 @@ TEST_F(EpochTest, low_water_mark_count_lowest_accessor_locked) {
 TEST_F(EpochTest, concurrent_works_fine) {
   ::std::atomic<::std::string*> ptr {nullptr};
   ::std::random_device rd;
-  
+
   ::std::vector<::std::thread> threads;
-  for (size_t i = 0; i < 32; ++i) {
+  for (size_t i = 0; i < 128; ++i) {
     threads.emplace_back([&] {
       ::std::mt19937 gen {rd()};
       size_t sum = 0;
-      for (size_t i = 0; i < 100; ++i) {
-        auto accessor = epoch.create_accessor();
+      for (size_t i = 0; i < 10000; ++i) {
         if (gen() % 2 == 0) {
+          auto accessor = epoch.create_accessor();
           ::std::lock_guard<Accessor> lock {accessor};
           auto s = ptr.load(::std::memory_order_acquire);
           sum += s != nullptr ? ::std::stol(*s) : 0;
@@ -108,7 +109,43 @@ TEST_F(EpochTest, concurrent_works_fine) {
           delete old_s;
         }
       }
-      ::std::cerr << "sum = " << sum << ::std::endl;
+      BABYLON_LOG(INFO) << "sum = " << sum;
+    });
+  }
+
+  for (auto& thread : threads) {
+    thread.join();
+  }
+
+  delete ptr;
+}
+
+TEST_F(EpochTest, concurrent_works_fine_in_thread_local_style) {
+  ::std::atomic<::std::string*> ptr {nullptr};
+  ::std::random_device rd;
+
+  ::std::vector<::std::thread> threads;
+  for (size_t i = 0; i < 128; ++i) {
+    threads.emplace_back([&] {
+      ::std::mt19937 gen {rd()};
+      size_t sum = 0;
+      for (size_t i = 0; i < 10000; ++i) {
+        if (gen() % 2 == 0) {
+          ::std::lock_guard<Epoch> lock {epoch};
+          auto s = ptr.load(::std::memory_order_acquire);
+          sum += s != nullptr ? ::std::stol(*s) : 0;
+        } else {
+          auto s = new ::std::string(::std::to_string(gen()));
+          auto old_s = ptr.exchange(s, ::std::memory_order_acq_rel);
+          auto reclaim_version = epoch.tick();
+          sum += old_s != nullptr ? ::std::stol(*old_s) : 0;
+          while (reclaim_version > epoch.low_water_mark()) {
+            ::sched_yield();
+          }
+          delete old_s;
+        }
+      }
+      BABYLON_LOG(INFO) << "sum = " << sum;
     });
   }
 

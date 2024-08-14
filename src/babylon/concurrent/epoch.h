@@ -9,12 +9,13 @@ BABYLON_NAMESPACE_BEGIN
 // which described in https://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-579.pdf
 //
 // With modifications below:
-// - spilt epoch advance and local epoch check out of critical region
+// - spilt global epoch advance and local epoch check out of critical region
 // - support non-thread-local and long-term critical region
 //
 // This makes read-only access faster and decouple with reclaim operation.
-// Also, this makes it possible to amortize overhead of read / modify / reclaim operation,
-// like NEBR mentioned in https://sysweb.cs.toronto.edu/publication_files/0000/0159/jpdc07.pdf
+// Also, this makes it possible to amortize overhead of read / modify / reclaim
+// operation, like NEBR mentioned in
+// https://sysweb.cs.toronto.edu/publication_files/0000/0159/jpdc07.pdf
 class Epoch {
  public:
   // Accessor is an explicit handle for construct critical region.
@@ -25,7 +26,8 @@ class Epoch {
   inline Accessor create_accessor() noexcept;
 
   // Total num of Accessor created.
-  // Contain released accessors, which may be reused in subsequent create_accessor
+  // Contain released accessors, which may be reused in subsequent
+  // create_accessor
   inline size_t accessor_number() const noexcept;
 
   // Standard thread local style to construct critical region.
@@ -36,13 +38,15 @@ class Epoch {
   inline void unlock() noexcept;
 
   // Advance global epoch and get epoch after increase.
-  // This epoch value is used to check whether previous retired objects can be safely reclaimed, if that value <= low_water_mark.
+  // This epoch value is used to check whether previous retired objects can be
+  // safely reclaimed, if that value <= low_water_mark.
   inline uint64_t tick() noexcept;
 
-  // Collect observations of all thread local or Accessor, calculate low water mark
+  // Collect observations of all thread local or Accessor, calculate low water
+  // mark
   inline uint64_t low_water_mark() const noexcept;
 
-private:
+ private:
   class alignas(BABYLON_CACHELINE_SIZE) Slot {
    public:
     Slot() noexcept = default;
@@ -112,6 +116,17 @@ inline size_t Epoch::accessor_number() const noexcept {
   return _id_allocator.end();
 }
 
+inline void Epoch::lock() noexcept {
+  auto index = ThreadId::current_thread_id<Epoch>().value;
+  _slots.ensure(index);
+  lock(index);
+}
+
+inline void Epoch::unlock() noexcept {
+  auto index = ThreadId::current_thread_id<Epoch>().value;
+  unlock(index);
+}
+
 inline void Epoch::unregister_accessor(size_t index) noexcept {
   _id_allocator.deallocate(index);
 }
@@ -137,7 +152,7 @@ inline void Epoch::unlock(size_t index) noexcept {
 inline uint64_t Epoch::tick() noexcept {
 #if __x86_64__
   auto version = 1 + _version.fetch_add(1, ::std::memory_order_seq_cst);
-#else // !__x86_64__
+#else  // !__x86_64__
   auto version = 1 + _version.fetch_add(1, ::std::memory_order_relaxed);
   ::std::atomic_thread_fence(::std::memory_order_seq_cst);
 #endif // !__x86_64__
@@ -146,14 +161,21 @@ inline uint64_t Epoch::tick() noexcept {
 
 inline uint64_t Epoch::low_water_mark() const noexcept {
   auto min_verison = UINT64_MAX;
-  _slots.for_each(0, accessor_number(), [&] (const Slot* iter, const Slot* end) {
-    while (iter != end) {
-      auto local_version = (iter++)->version.load(::std::memory_order_acquire);
-      if (min_verison > local_version) {
-        min_verison = local_version;
-      }
-    }
-  });
+  auto slots = _slots.snapshot();
+  auto number = accessor_number();
+  if (number == 0) {
+    number = ThreadId::end<Epoch>();
+  }
+  slots.for_each(0, ::std::min(number, slots.size()),
+                 [&](const Slot* iter, const Slot* end) {
+                   while (iter != end) {
+                     auto local_version =
+                         (iter++)->version.load(::std::memory_order_acquire);
+                     if (min_verison > local_version) {
+                       min_verison = local_version;
+                     }
+                   }
+                 });
   return min_verison;
 }
 // Epoch end
@@ -178,8 +200,8 @@ inline Epoch::Accessor::operator bool() const noexcept {
   return _epoch != nullptr;
 }
 
-inline Epoch::Accessor::Accessor(Epoch* epoch, size_t index) noexcept :
-  _epoch {epoch}, _index {index} {}
+inline Epoch::Accessor::Accessor(Epoch* epoch, size_t index) noexcept
+    : _epoch {epoch}, _index {index} {}
 
 inline void Epoch::Accessor::swap(Accessor& other) noexcept {
   ::std::swap(_epoch, other._epoch);

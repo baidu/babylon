@@ -42,6 +42,7 @@ cc_test(
   copts = BABYLON_COPTS,
   deps = [
     '//:concurrent_epoch',
+    '//:logging_logger',
     '@com_google_googletest//:gtest_main',
   ]
 )
