@@ -166,8 +166,8 @@ class ReusableTraits<::google::protobuf::Message>
 
   static Message* create_with_allocation_metadata(
       SwissAllocator<> allocator, const AllocationMetadata& metadata) {
-    auto instance =
-        metadata.default_instance->New(&(Arena&)*allocator.resource());
+    auto instance = metadata.default_instance->New(
+        &static_cast<Arena&>(*allocator.resource()));
     metadata.metadata.reserve(*instance);
     return instance;
   }

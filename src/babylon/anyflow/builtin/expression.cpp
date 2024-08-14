@@ -284,7 +284,7 @@ class BinaryOperator : public Operator {
           if (ABSL_PREDICT_TRUE(value != nullptr)) {             \
             result = op !value->empty();                         \
           } else {                                               \
-            result = op(bool) operand;                           \
+            result = op static_cast<bool>(operand);              \
           }                                                      \
           break;                                                 \
       }                                                          \

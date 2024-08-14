@@ -117,8 +117,10 @@ TEST(any, small_object_keep_inplace) {
     size_t value;
   };
   Any any((S()));
-  ASSERT_LT((uint64_t)&any, (uint64_t)any.get<S>());
-  ASSERT_GT((uint64_t)&any + sizeof(any), (uint64_t)any.get<S>());
+  ASSERT_LT(reinterpret_cast<intptr_t>(&any),
+            reinterpret_cast<intptr_t>(any.get<S>()));
+  ASSERT_GT(reinterpret_cast<intptr_t>(&any) + sizeof(any),
+            reinterpret_cast<intptr_t>(any.get<S>()));
 }
 
 TEST(any, inplace_object_copy_right) {
@@ -198,7 +200,7 @@ TEST(any, get_only_support_exact_type_matching) {
     ASSERT_EQ(obj, dynamic_cast<Sub1<>*>(any.get<Normal<>>()));
   }
   {
-    Any any((int32_t)1);
+    Any any(static_cast<int32_t>(1));
     ASSERT_EQ(nullptr, any.get<int64_t>());
     ASSERT_NE(nullptr, any.get<int32_t>());
   }
@@ -215,7 +217,7 @@ TEST(any, non_virtual_object_is_ok) {
 TEST(any, instance_type_same_means_identical) {
   Any any0(Normal<>(0));
   Any any1(Normal<>(1));
-  Any any2((int32_t)1);
+  Any any2(static_cast<int32_t>(1));
   ASSERT_TRUE(any0.instance_type() == any1.instance_type());
   ASSERT_TRUE(&any0.instance_type() == &any1.instance_type());
   ASSERT_FALSE(any0.instance_type() == any2.instance_type());
@@ -250,7 +252,7 @@ TEST(any, copyable_when_object_is_copyable) {
   {
     // const copy赋值
     Any any2;
-    any2 = (const Any&)any;
+    any2 = const_cast<const Any&>(any);
     ASSERT_NE(nullptr, any2.get<Normal<2>>());
     ASSERT_EQ(5, Normal<2>::construct_num);
     ASSERT_EQ(3, Normal<2>::copy_num);
@@ -379,7 +381,7 @@ TEST(any, any_can_ref_to_other_contain_primitive) {
 TEST(any, primitive_value_handle_separately) {
   {
     int64_t value = 0xFEFEFEFEFEFEFEFEL;
-    Any any((int64_t)0xFEFEFEFEFEFEFEFEL);
+    Any any(static_cast<int64_t>(0xFEFEFEFEFEFEFEFEL));
     ASSERT_TRUE(any);
     ASSERT_EQ(Any::Type::INT64, any.type());
     ASSERT_NE(nullptr, any.get<int64_t>());
@@ -422,34 +424,34 @@ TEST(any, primitive_value_handle_separately) {
   {
     int64_t value = 0xFEFEFEFEFEFEFEFEL;
     Any any;
-    any = (int32_t)value;
+    any = static_cast<int32_t>(value);
     ASSERT_EQ(Any::Type::INT32, any.type());
     ASSERT_NE(nullptr, any.get<int32_t>());
-    any = (int16_t)value;
+    any = static_cast<int16_t>(value);
     ASSERT_EQ(Any::Type::INT16, any.type());
     ASSERT_NE(nullptr, any.get<int16_t>());
-    any = (int8_t)value;
+    any = static_cast<int8_t>(value);
     ASSERT_EQ(Any::Type::INT8, any.type());
     ASSERT_NE(nullptr, any.get<int8_t>());
-    any = (uint64_t)value;
+    any = static_cast<uint64_t>(value);
     ASSERT_EQ(Any::Type::UINT64, any.type());
     ASSERT_NE(nullptr, any.get<uint64_t>());
-    any = (uint32_t)value;
+    any = static_cast<uint32_t>(value);
     ASSERT_EQ(Any::Type::UINT32, any.type());
     ASSERT_NE(nullptr, any.get<uint32_t>());
-    any = (uint16_t)value;
+    any = static_cast<uint16_t>(value);
     ASSERT_EQ(Any::Type::UINT16, any.type());
     ASSERT_NE(nullptr, any.get<uint16_t>());
-    any = (uint8_t)value;
+    any = static_cast<uint8_t>(value);
     ASSERT_EQ(Any::Type::UINT8, any.type());
     ASSERT_NE(nullptr, any.get<uint8_t>());
-    any = (bool)value;
+    any = static_cast<bool>(value);
     ASSERT_EQ(Any::Type::BOOLEAN, any.type());
     ASSERT_NE(nullptr, any.get<bool>());
-    any = (double)value;
+    any = static_cast<double>(value);
     ASSERT_EQ(Any::Type::DOUBLE, any.type());
     ASSERT_NE(nullptr, any.get<double>());
-    any = (float)value;
+    any = static_cast<float>(value);
     ASSERT_EQ(Any::Type::FLOAT, any.type());
     ASSERT_NE(nullptr, any.get<float>());
   }

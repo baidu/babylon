@@ -19,7 +19,7 @@ BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-op
                        # 零长度数组用来做可变长结构是一种常用手段
                        '-Wno-zero-length-array',
                        # TODO(lijiang01): 逐步梳理清除
-                       '-Wno-old-style-cast', '-Wno-shadow-field',
+                       '-Wno-shadow-field',
                        '-Wno-exit-time-destructors', '-Wno-sign-conversion',
                        '-Wno-shadow-field-in-constructor', '-Wno-gnu-anonymous-struct', '-Wno-nested-anon-types',
                        '-Wno-shadow-uncaptured-local', '-Wno-weak-vtables', '-Wno-float-conversion', '-Wno-switch-enum',
