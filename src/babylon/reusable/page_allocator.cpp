@@ -57,12 +57,17 @@ void SystemPageAllocator::deallocate(void** pages, size_t num) noexcept {
 }
 
 SystemPageAllocator& SystemPageAllocator::instance() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static SystemPageAllocator object;
+#pragma GCC diagnostic pop
   return object;
 }
 
 SystemPageAllocator::SystemPageAllocator() noexcept {
-  _allocator.set_page_size(::sysconf(_SC_PAGE_SIZE));
+  _allocator.set_page_size(static_cast<size_t>(::sysconf(_SC_PAGE_SIZE)));
 }
 // SystemPageAllocator end
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,8 +98,8 @@ size_t CachedPageAllocator::page_size() const noexcept {
 
 void CachedPageAllocator::allocate(void** pages, size_t num) noexcept {
   auto pages_end = pages + num;
-  auto need_pop_num = ::std::min<size_t>(num, _free_pages.capacity());
-  ssize_t hit_num = need_pop_num;
+  auto need_pop_num = ::std::min(num, _free_pages.capacity());
+  ssize_t hit_num = static_cast<ssize_t>(need_pop_num);
   // 优先从缓存队列中申请，穿透时从上游申请作为补偿
   _free_pages.pop_n(
       [&](Iterator begin, Iterator end) {
@@ -120,7 +125,7 @@ void CachedPageAllocator::deallocate(void** pages, size_t num) noexcept {
   // 优先释放到缓存队列中，溢出时释放给上游作为补偿
   _free_pages.push_n(
       [&](Iterator begin, Iterator end) {
-        size_t n = end - begin;
+        auto n = static_cast<size_t>(end - begin);
         ::std::copy_n(pages, n, begin);
         pages += n;
       },
@@ -158,8 +163,9 @@ BatchPageAllocator::~BatchPageAllocator() noexcept {
     while (iter != end) {
       auto& local = *iter++;
       if (local.next_page < local.buffer.end()) {
-        _upstream->deallocate(&*local.next_page,
-                              local.buffer.end() - local.next_page);
+        _upstream->deallocate(
+            &*local.next_page,
+            static_cast<size_t>(local.buffer.end() - local.next_page));
       }
     }
   });
@@ -211,7 +217,8 @@ void CountingPageAllocator::set_upstream(PageAllocator& upstream) noexcept {
 }
 
 size_t CountingPageAllocator::allocated_page_num() noexcept {
-  return ::std::max<ssize_t>(0, _allocate_page_num.value());
+  return static_cast<size_t>(
+      ::std::max<ssize_t>(0, _allocate_page_num.value()));
 }
 
 size_t CountingPageAllocator::page_size() const noexcept {
@@ -274,7 +281,8 @@ void PageHeap::deallocate(void** pages, size_t num) noexcept {
 }
 
 size_t PageHeap::allocate_page_num() const noexcept {
-  return ::std::max<ssize_t>(0, _allocate_page_num.value());
+  return static_cast<size_t>(
+      ::std::max<ssize_t>(0, _allocate_page_num.value()));
 }
 
 size_t PageHeap::free_page_num() const noexcept {
@@ -291,7 +299,12 @@ typename ConcurrentSummer::Summary PageHeap::cache_hit_summary()
 }
 
 PageHeap& PageHeap::system_page_heap() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static PageHeap object;
+#pragma GCC diagnostic pop
   return object;
 }
 

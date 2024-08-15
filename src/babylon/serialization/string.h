@@ -31,7 +31,8 @@ class SerializeTraits<::std::basic_string<char, CT, A>>
     int size;
     value.clear();
     while (is.GetDirectBufferPointer(&data, &size)) {
-      value.append(reinterpret_cast<const char*>(data), size);
+      value.append(reinterpret_cast<const char*>(data),
+                   static_cast<size_t>(size));
       is.Skip(size);
     }
     return true;

@@ -148,7 +148,7 @@ ssize_t GraphVertexBuilder::index_for_named_dependency(
   if (ABSL_PREDICT_FALSE(iter == _dependency_index_by_name.end())) {
     return -1;
   }
-  return iter->second;
+  return static_cast<ssize_t>(iter->second);
 }
 
 ssize_t GraphVertexBuilder::index_for_named_emit(
@@ -157,7 +157,7 @@ ssize_t GraphVertexBuilder::index_for_named_emit(
   if (ABSL_PREDICT_FALSE(iter == _emit_index_by_name.end())) {
     return -1;
   }
-  return iter->second;
+  return static_cast<ssize_t>(iter->second);
 }
 
 void GraphVertexBuilder::set_graph(GraphBuilder& graph) noexcept {

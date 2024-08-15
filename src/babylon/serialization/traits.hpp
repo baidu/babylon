@@ -198,7 +198,8 @@ struct SerializationHelper {
     if CONSTEXPR_SINCE_CXX17 (SerializeTraits<T>::WIRE_TYPE ==
                               WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
       uint32_t length;
-      auto saved_limit = is.PushLimit(is.ReadVarint32(&length) ? length : 0);
+      auto saved_limit =
+          is.PushLimit(is.ReadVarint32(&length) ? static_cast<int>(length) : 0);
       auto success = SerializeTraits<T>::deserialize(is, value);
       is.PopLimit(saved_limit);
       return success;
@@ -275,7 +276,8 @@ struct SerializationHelper {
     if CONSTEXPR_SINCE_CXX17 (SerializeTraits<T>::WIRE_TYPE ==
                               WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
       uint32_t length;
-      auto saved_limit = is.PushLimit(is.ReadVarint32(&length) ? length : 0);
+      auto saved_limit =
+          is.PushLimit(is.ReadVarint32(&length) ? static_cast<int>(length) : 0);
       auto success = SerializeTraits<T>::deserialize(is, value);
       is.PopLimit(saved_limit);
       return success;

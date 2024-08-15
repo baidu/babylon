@@ -31,7 +31,8 @@ class ConcurrentAdder {
   ~ConcurrentAdder() noexcept = default;
 
   // 分散计数接口
-  inline ConcurrentAdder& operator<<(ssize_t value) noexcept;
+  template <typename T>
+  inline ConcurrentAdder& operator<<(const T& value) noexcept;
 
   // 汇聚读取接口
   ssize_t value() const noexcept;
@@ -40,6 +41,8 @@ class ConcurrentAdder {
   void reset() noexcept;
 
  private:
+  inline void count(ssize_t value) noexcept;
+
   CompactEnumerableThreadLocal<ssize_t, 64> _storage;
 };
 
@@ -203,13 +206,19 @@ class ConcurrentSampler {
   ::std::atomic<uint32_t> _version {0};
 };
 
+template <typename T>
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE ConcurrentAdder&
-ConcurrentAdder::operator<<(ssize_t value) noexcept {
+ConcurrentAdder::operator<<(const T& value) noexcept {
+  count(static_cast<ssize_t>(value));
+  return *this;
+}
+
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE void ConcurrentAdder::count(
+    ssize_t value) noexcept {
   auto& local = _storage.local();
   // local的唯一修改者是自己，所以这里不需要使用原子加法
   // 正确对齐的数值类型赋值本身是原子发生的
   local = local + value;
-  return *this;
 }
 
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE ConcurrentMaxer&
@@ -276,7 +285,7 @@ ConcurrentSampler::bucket_index(uint32_t value) noexcept {
   if (ABSL_PREDICT_FALSE(value == 0)) {
     return 0;
   } else {
-    return 32 - __builtin_clz(value);
+    return 32 - static_cast<size_t>(__builtin_clz(value));
   }
 }
 

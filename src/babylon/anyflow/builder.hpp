@@ -78,10 +78,10 @@ template <typename C>
 inline void GraphVertexBuilder::for_each_dependency(
     C&& callback) const noexcept {
   for (auto& dependency : _named_dependencies) {
-    callback(static_cast<const GraphDependencyBuilder&>(*dependency));
+    callback(const_cast<const GraphDependencyBuilder&>(*dependency));
   }
   for (auto& dependency : _anonymous_dependencies) {
-    callback(static_cast<const GraphDependencyBuilder&>(*dependency));
+    callback(const_cast<const GraphDependencyBuilder&>(*dependency));
   }
 }
 
@@ -98,10 +98,10 @@ inline void GraphVertexBuilder::for_each_emit(C&& callback) noexcept {
 template <typename C>
 inline void GraphVertexBuilder::for_each_emit(C&& callback) const noexcept {
   for (auto& emit : _named_emits) {
-    callback(static_cast<const GraphEmitBuilder&>(*emit));
+    callback(const_cast<const GraphEmitBuilder&>(*emit));
   }
   for (auto& emit : _anonymous_emits) {
-    callback(static_cast<const GraphEmitBuilder&>(*emit));
+    callback(const_cast<const GraphEmitBuilder&>(*emit));
   }
 }
 

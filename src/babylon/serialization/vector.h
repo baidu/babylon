@@ -43,7 +43,7 @@ class SerializeTraits<::std::vector<T, A>>
   static bool deserialize(CodedInputStream& is, Value& value) noexcept {
     if CONSTEXPR_SINCE_CXX17 (::std::is_same<float, T>::value ||
                               ::std::is_same<double, T>::value) {
-      auto num = is.BytesUntilLimit() / sizeof(T);
+      auto num = static_cast<size_t>(is.BytesUntilLimit()) / sizeof(T);
       value.reserve(value.size() + num);
     }
 

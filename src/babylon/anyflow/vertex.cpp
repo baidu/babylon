@@ -177,12 +177,13 @@ int GraphVertex::activate(DataStack& activating_data,
   _closure = closure;
 
   // 无依赖直接记入可执行列表
-  int64_t waiting_num = _dependencies.size();
+  auto waiting_num = _dependencies.size();
   if (waiting_num == 0) {
     runnable_vertexes.emplace_back(this);
     return 0;
   }
-  _waiting_num.store(waiting_num, ::std::memory_order_relaxed);
+  _waiting_num.store(static_cast<int64_t>(waiting_num),
+                     ::std::memory_order_relaxed);
 
   if (0 != _processor->on_activate()) {
     return -1;
@@ -200,9 +201,9 @@ int GraphVertex::activate(DataStack& activating_data,
 
   // 去掉已经就绪的数目，如果全部就绪，节点加入待运行集合
   if (finished > 0) {
-    waiting_num =
+    waiting_num = static_cast<size_t>(
         _waiting_num.fetch_sub(finished, ::std::memory_order_acq_rel) -
-        finished;
+        finished);
     if (waiting_num == 0) {
       runnable_vertexes.emplace_back(this);
       return 0;
@@ -241,8 +242,6 @@ void GraphVertex::invoke(VertexStack& runnable_vertexes) noexcept {
     flush_emits();
   }
 }
-
-GraphProcessor GraphVertex::DEFAULT_EMPTY_PROCESSOR;
 
 } // namespace anyflow
 BABYLON_NAMESPACE_END

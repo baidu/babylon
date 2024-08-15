@@ -334,28 +334,21 @@ inline bool Any::is_reference() const noexcept {
 template <typename T>
 inline T Any::as() const noexcept {
   switch (_meta.m.type) {
-    case Type::INT64:
-      return *reinterpret_cast<const int64_t*>(const_raw_pointer());
-    case Type::INT32:
-      return *reinterpret_cast<const int32_t*>(const_raw_pointer());
-    case Type::INT16:
-      return *reinterpret_cast<const int16_t*>(const_raw_pointer());
-    case Type::INT8:
-      return *reinterpret_cast<const int8_t*>(const_raw_pointer());
-    case Type::BOOLEAN:
-      return *reinterpret_cast<const bool*>(const_raw_pointer());
-    case Type::UINT64:
-      return *reinterpret_cast<const uint64_t*>(const_raw_pointer());
-    case Type::UINT32:
-      return *reinterpret_cast<const uint32_t*>(const_raw_pointer());
-    case Type::UINT16:
-      return *reinterpret_cast<const uint16_t*>(const_raw_pointer());
-    case Type::UINT8:
-      return *reinterpret_cast<const uint8_t*>(const_raw_pointer());
-    case Type::DOUBLE:
-      return *reinterpret_cast<const double*>(const_raw_pointer());
-    case Type::FLOAT:
-      return *reinterpret_cast<const float*>(const_raw_pointer());
+#define __BABYLON_TMP_GEN(etype, ctype) \
+  case Type::etype:                     \
+    return static_cast<T>(*reinterpret_cast<const ctype*>(const_raw_pointer()));
+    __BABYLON_TMP_GEN(INT64, int64_t)
+    __BABYLON_TMP_GEN(INT32, int32_t)
+    __BABYLON_TMP_GEN(INT16, int16_t)
+    __BABYLON_TMP_GEN(INT8, int8_t)
+    __BABYLON_TMP_GEN(BOOLEAN, bool)
+    __BABYLON_TMP_GEN(UINT64, uint64_t)
+    __BABYLON_TMP_GEN(UINT32, uint32_t)
+    __BABYLON_TMP_GEN(UINT16, uint16_t)
+    __BABYLON_TMP_GEN(UINT8, uint8_t)
+    __BABYLON_TMP_GEN(DOUBLE, double)
+    __BABYLON_TMP_GEN(FLOAT, float)
+#undef __BABYLON_TMP_GEN
     default:
       return 0;
   }

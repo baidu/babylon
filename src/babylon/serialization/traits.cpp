@@ -26,10 +26,15 @@ Serialization::Serializer* Serialization::serializer_for_name(
                       ::std::unique_ptr<Serialization::Serializer>,
                       ::std::hash<StringView>, ::std::equal_to<StringView>>&
 Serialization::serializers() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static ::absl::flat_hash_map<::std::string, ::std::unique_ptr<Serializer>,
                                ::std::hash<StringView>,
                                ::std::equal_to<StringView>>
       instance;
+#pragma GCC diagnostic pop
   return instance;
 }
 // Serialization end
@@ -90,7 +95,7 @@ bool Serialization::PrintStream::print_raw(const char* data,
       return false;
     }
     _buffer = static_cast<char*>(buffer);
-    _buffer_size = buffer_size;
+    _buffer_size = static_cast<size_t>(buffer_size);
   }
   ::memcpy(_buffer, data, size);
   _buffer += size;
@@ -135,7 +140,7 @@ bool Serialization::PrintStream::print_blank(size_t size) noexcept {
       return false;
     }
     _buffer = static_cast<char*>(buffer);
-    _buffer_size = buffer_size;
+    _buffer_size = static_cast<size_t>(buffer_size);
   }
   ::memset(_buffer, ' ', size);
   _buffer += size;

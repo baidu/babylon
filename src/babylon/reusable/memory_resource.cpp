@@ -62,7 +62,7 @@ bool MonotonicBufferResource::do_is_equal(
 ////////////////////////////////////////////////////////////////////////////////
 // ExclusiveMonotonicBufferResource begin
 size_t ExclusiveMonotonicBufferResource::allocate_oversize_page_num() noexcept {
-  return oversize_page_concurrent_adder().value();
+  return static_cast<size_t>(oversize_page_concurrent_adder().value());
 }
 
 ExclusiveMonotonicBufferResource::ExclusiveMonotonicBufferResource(
@@ -239,13 +239,13 @@ void ExclusiveMonotonicBufferResource::release() noexcept {
   char* tmp_pages[PAGE_ARRAY_CAPACITY];
   while (_last_page_array != nullptr) {
     SanitizerHelper::unpoison(_last_page_array);
-    auto size =
-        _last_page_array->pages + PAGE_ARRAY_CAPACITY - _last_page_pointer;
+    auto size = static_cast<size_t>(_last_page_array->pages +
+                                    PAGE_ARRAY_CAPACITY - _last_page_pointer);
     _last_page_array = _last_page_array->next;
 
     //将pages的地址提前拷一份存起来，
     //避免当page_rray持有自己时，page_rray所在的page被提前释放后_last_page_pointer失效
-    for (auto i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i) {
       tmp_pages[i] = SanitizerHelper::unpoison(_last_page_pointer[i],
                                                _page_allocator->page_size());
     }
@@ -308,7 +308,12 @@ bool ExclusiveMonotonicBufferResource::contains(const void* ptr) noexcept {
 
 ConcurrentAdder&
 ExclusiveMonotonicBufferResource::oversize_page_concurrent_adder() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static ConcurrentAdder _oversize_page_concurrent_adder;
+#pragma GCC diagnostic pop
   return _oversize_page_concurrent_adder;
 }
 // ExclusiveMonotonicBufferResource end

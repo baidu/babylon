@@ -81,7 +81,12 @@ NullLogStream::NullLogStream() noexcept
 #endif // !__clang__ && BABYLON_GCC_VERSION < 50000
 
 NullLogStream::Buffer& NullLogStream::buffer() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static Buffer static_buffer;
+#pragma GCC diagnostic pop
   return static_buffer;
 }
 // NullLogStream end

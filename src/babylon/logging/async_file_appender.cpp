@@ -36,8 +36,13 @@ void AsyncFileAppender::write(LogEntry& entry, FileObject* file) noexcept {
 }
 
 void AsyncFileAppender::discard(LogEntry& entry) noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static thread_local ::std::vector<struct ::iovec> iov;
   static thread_local ::std::vector<void*> pages;
+#pragma GCC diagnostic pop
 
   entry.append_to_iovec(_page_allocator->page_size(), iov);
   for (auto& one_iov : iov) {
@@ -123,13 +128,18 @@ AsyncFileAppender::Destination& AsyncFileAppender::destination(
 
 void AsyncFileAppender::write_use_plain_writev(Destination& dest,
                                                int fd) noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static thread_local ::std::vector<void*> pages;
+#pragma GCC diagnostic pop
 
   auto& iov = dest.iov;
   for (auto iter = iov.begin(); iter < iov.end();) {
     auto piov = &*iter;
-    auto size = ::std::min<size_t>(IOV_MAX, iov.end() - iter);
-    for (size_t i = 0; i < size; ++i) {
+    auto size = ::std::min<ssize_t>(IOV_MAX, iov.end() - iter);
+    for (ssize_t i = 0; i < size; ++i) {
       pages.emplace_back(piov[i].iov_base);
     }
     auto written = ::writev(fd, piov, size);

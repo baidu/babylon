@@ -25,7 +25,12 @@ int InplaceGraphExecutor::run(ClosureContext* closure,
 }
 
 InplaceGraphExecutor& InplaceGraphExecutor::instance() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static InplaceGraphExecutor instance;
+#pragma GCC diagnostic pop
   return instance;
 }
 ////////////////////////////////////////////////////////////////////////////////

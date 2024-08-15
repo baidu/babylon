@@ -28,14 +28,14 @@ class LogSeverity {
       const LogSeverity&) noexcept = default;
   inline ~LogSeverity() noexcept = default;
 
-  inline constexpr LogSeverity(int8_t value) noexcept;
+  inline constexpr LogSeverity(uint8_t value) noexcept;
 
-  inline constexpr operator int8_t() const noexcept;
+  inline constexpr operator uint8_t() const noexcept;
 
   inline constexpr operator StringView() const noexcept;
 
  private:
-  int8_t _value {DEBUG};
+  uint8_t _value {DEBUG};
 
   static constexpr StringView names[NUM] = {
       [DEBUG] = "DEBUG",
@@ -45,10 +45,10 @@ class LogSeverity {
   };
 };
 
-inline constexpr LogSeverity::LogSeverity(int8_t value) noexcept
+inline constexpr LogSeverity::LogSeverity(uint8_t value) noexcept
     : _value {value} {}
 
-inline constexpr LogSeverity::operator int8_t() const noexcept {
+inline constexpr LogSeverity::operator uint8_t() const noexcept {
   return _value;
 }
 
