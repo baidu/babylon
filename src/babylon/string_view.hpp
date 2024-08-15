@@ -419,7 +419,7 @@ inline BABYLON_CONSTEXPR bool operator>=(BasicStringView<C, T> left,
 template <typename C, typename T>
 inline ::std::basic_ostream<C, T>& operator<<(
     ::std::basic_ostream<C, T>& os, BasicStringView<C, T> view) noexcept {
-  os.write(view.data(), view.size());
+  os.write(view.data(), static_cast<ssize_t>(view.size()));
   return os;
 }
 

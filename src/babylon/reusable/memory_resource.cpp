@@ -26,7 +26,12 @@ memory_resource* new_delete_resource() noexcept {
     }
   };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static R resource;
+#pragma GCC diagnostic pop
   return &resource;
 }
 
