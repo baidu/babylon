@@ -200,7 +200,8 @@ void MessageAllocationMetadata::FieldAllocationMetadata::reserve_repeated_field(
       for (size_t i = static_cast<size_t>(repeated_field->size());
            i < repeated_reserved; ++i) {
 #if GOOGLE_PROTOBUF_HAS_DONATED_STRING
-        repeated_field->AddAccessor()->reserve(string_reserved);
+        repeated_field->AddAccessor()->reserve(
+                      static_cast<size_t>(string_reserved));
 #else  // !GOOGLE_PROTOBUF_HAS_DONATED_STRING
         stable_reserve(*repeated_field->Add(),
                        static_cast<size_t>(string_reserved));

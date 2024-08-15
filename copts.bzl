@@ -22,7 +22,6 @@ BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-op
                        # 但是这个场景下的隐藏本身是无害的，目前也还没有很好的方法做命名区分
                        '-Wno-shadow-field',
                        # TODO(lijiang01): 逐步梳理清除
-                       #'-Wno-sign-conversion',
                        '-Wno-shadow-field-in-constructor', '-Wno-gnu-anonymous-struct', '-Wno-nested-anon-types',
                        '-Wno-shadow-uncaptured-local', '-Wno-weak-vtables', '-Wno-float-conversion', '-Wno-switch-enum',
                        '-Wno-shadow', '-Wno-array-bounds-pointer-arithmetic', '-Wno-cast-align', '-Wno-vla-extension',
