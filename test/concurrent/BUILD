@@ -58,6 +58,16 @@ cc_test(
 )
 
 cc_test(
+  name = 'test_garbage_collector',
+  srcs = ['test_garbage_collector.cpp'],
+  copts = BABYLON_TEST_COPTS,
+  deps = [
+    '//:concurrent_garbage_collector',
+    '@com_google_googletest//:gtest_main',
+  ]
+)
+
+cc_test(
   name = 'test_id_allocator',
   srcs = ['test_id_allocator.cpp'],
   copts = BABYLON_TEST_COPTS,

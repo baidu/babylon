@@ -103,7 +103,6 @@ void AsyncFileAppender::keep_writing() noexcept {
     // 当一轮日志量过低时，拉长下一轮写入的周期
     // 尝试进行有效的批量写入
     if (poped < 100) {
-      _backoff_us += 10;
       _backoff_us = ::std::min<size_t>(_backoff_us + 10, 100000);
       ::usleep(_backoff_us);
     } else if (poped >= batch) {

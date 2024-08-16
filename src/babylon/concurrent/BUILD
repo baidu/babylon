@@ -44,7 +44,6 @@ cc_library(
 
 cc_library(
   name = 'epoch',
-  srcs = ['epoch.cpp'],
   hdrs = ['epoch.h'],
   copts = BABYLON_COPTS,
   includes = ['//src'],
@@ -64,6 +63,19 @@ cc_library(
     ':bounded_queue',
     ':thread_local',
     '//src/babylon:executor',
+  ],
+)
+
+cc_library(
+  name = 'garbage_collector',
+  srcs = ['garbage_collector.cpp'],
+  hdrs = ['garbage_collector.h'],
+  copts = BABYLON_COPTS,
+  includes = ['//src'],
+  strip_include_prefix = '//src',
+  deps = [
+    ':bounded_queue',
+    ':epoch',
   ],
 )
 

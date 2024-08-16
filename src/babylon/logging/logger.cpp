@@ -52,8 +52,7 @@ LogStream& Logger::stream(LogSeverity severity, StringView file,
   // TODO(oathdruid): remove this after remove LogStreamProvider in interface.h
   if (ABSL_PREDICT_FALSE(!_initialized)) {
     if (severity >= LogInterface::min_severity()) {
-      return LogInterface::provider().stream(severity, file,
-                                             line);
+      return LogInterface::provider().stream(severity, file, line);
     }
     return nls;
   }
@@ -62,9 +61,8 @@ LogStream& Logger::stream(LogSeverity severity, StringView file,
     return nls;
   }
 
-  auto& stream = *_log_streams[severity]
-                      .load(::std::memory_order_acquire)
-                      ->local();
+  auto& stream =
+      *_log_streams[severity].load(::std::memory_order_acquire)->local();
   stream.set_severity(severity);
   stream.set_file(file);
   stream.set_line(line);

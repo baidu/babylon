@@ -86,6 +86,11 @@ alias(
 )
 
 alias(
+  name = 'concurrent_garbage_collector',
+  actual = '//src/babylon/concurrent:garbage_collector',
+)
+
+alias(
   name = 'concurrent_id_allocator',
   actual = '//src/babylon/concurrent:id_allocator',
 )

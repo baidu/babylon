@@ -26,7 +26,10 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wc99-designator"
+#pragma GCC diagnostic ignored \
+    "-Wc99-designator" // Things like T[] {[0] = value0, [1] = value1}
+#pragma GCC diagnostic ignored \
+    "-Wc++20-compat" // Things like T {.field1 = value1, .field2 = value2}
 
 #else // BAIDU_PROTECT_H
 #error("protect.h without unprotect.h")

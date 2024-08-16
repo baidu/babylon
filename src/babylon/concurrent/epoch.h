@@ -14,8 +14,8 @@ BABYLON_NAMESPACE_BEGIN
 // which described in https://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-579.pdf
 //
 // With modifications below:
-// - spilt global epoch advance and local epoch check out of critical region
-// - support non-thread-local and long-term critical region
+// - Spilt global epoch advance and local epoch check out of critical region
+// - Support non-thread-local and long-term critical region
 //
 // This makes read-only access faster and decouple with reclaim operation.
 // Also, this makes it possible to amortize overhead of read / modify / reclaim
