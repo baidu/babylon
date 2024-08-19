@@ -27,6 +27,7 @@ BABYLON_NAMESPACE_BEGIN
 template <typename R>
 class GarbageCollector {
  public:
+  // Capture this in gc thread. So no copy nor move is allowed
   GarbageCollector() noexcept = default;
   GarbageCollector(GarbageCollector&&) noexcept = delete;
   GarbageCollector(const GarbageCollector&) noexcept = delete;
@@ -88,9 +89,9 @@ ABSL_ATTRIBUTE_NOINLINE GarbageCollector<R>::~GarbageCollector() noexcept {
 }
 
 template <typename R>
-ABSL_ATTRIBUTE_ALWAYS_INLINE inline Epoch&
-GarbageCollector<R>::epoch() noexcept {
-  return _epoch;
+ABSL_ATTRIBUTE_NOINLINE void GarbageCollector<R>::set_queue_capacity(
+    size_t min_capacity) noexcept {
+  _queue.reserve_and_clear(min_capacity);
 }
 
 template <typename R>
@@ -102,9 +103,22 @@ ABSL_ATTRIBUTE_NOINLINE int GarbageCollector<R>::start() noexcept {
 }
 
 template <typename R>
-inline void GarbageCollector<R>::retire(R&& reclaimer) noexcept {
+ABSL_ATTRIBUTE_ALWAYS_INLINE inline Epoch&
+GarbageCollector<R>::epoch() noexcept {
+  return _epoch;
+}
+
+template <typename R>
+ABSL_ATTRIBUTE_ALWAYS_INLINE inline void GarbageCollector<R>::retire(
+    R&& reclaimer) noexcept {
+  retire(::std::move(reclaimer), _epoch.tick());
+}
+
+template <typename R>
+ABSL_ATTRIBUTE_ALWAYS_INLINE inline void GarbageCollector<R>::retire(
+    R&& reclaimer, uint64_t lowest_epoch) noexcept {
   _queue.template push<true, false, false>(ReclaimTask {
-      .reclaimer = ::std::move(reclaimer), .lowest_epoch = _epoch.tick()});
+      .reclaimer = ::std::move(reclaimer), .lowest_epoch = lowest_epoch});
 }
 
 template <typename R>
@@ -118,7 +132,7 @@ ABSL_ATTRIBUTE_NOINLINE void GarbageCollector<R>::stop() noexcept {
 template <typename R>
 ABSL_ATTRIBUTE_NOINLINE void GarbageCollector<R>::keep_reclaim() noexcept {
   bool running = true;
-  size_t batch = 1024;
+  size_t batch = ::std::min<size_t>(1024, _queue.capacity());
   size_t index = 0;
   ::std::vector<ReclaimTask> tasks;
   size_t backoff_us = 1000;
@@ -173,7 +187,10 @@ ABSL_ATTRIBUTE_NOINLINE size_t GarbageCollector<R>::reclaim_start_from(
     if (task.lowest_epoch > low_water_mark) {
       break;
     }
-    task.reclaimer();
+    {
+      ReclaimTask t = ::std::move(task);
+      t.reclaimer();
+    }
     reclaimed++;
   }
   return reclaimed;

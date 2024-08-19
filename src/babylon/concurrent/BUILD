@@ -8,9 +8,9 @@ load('//:copts.bzl', 'BABYLON_COPTS')
 cc_library(
   name = 'concurrent',
   deps = [
-    ':bounded_queue', ':counter', ':execution_queue',
-    ':id_allocator', ':object_pool', ':sched_interface',
-    ':thread_local', ':transient_hash_table',
+    ':bounded_queue', ':counter', ':epoch', ':execution_queue',
+    ':garbage_collector', ':id_allocator', ':object_pool',
+    ':sched_interface', ':thread_local', ':transient_hash_table',
     ':transient_topic', ':vector',
   ]
 )
@@ -68,7 +68,6 @@ cc_library(
 
 cc_library(
   name = 'garbage_collector',
-  srcs = ['garbage_collector.cpp'],
   hdrs = ['garbage_collector.h'],
   copts = BABYLON_COPTS,
   includes = ['//src'],
