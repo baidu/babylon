@@ -14,6 +14,10 @@ BABYLON_NAMESPACE_BEGIN
 
 ////////////////////////////////////////////////////////////////////////////////
 // Any::TypeDescriptor begin
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
 template <typename T, typename E>
 __attribute__((init_priority(101)))
 Any::Meta Any::TypeDescriptor<T, E>::meta_for_instance {
@@ -35,6 +39,7 @@ Any::Meta Any::TypeDescriptor<T, E>::meta_for_inplace_non_trivial {
              &TypeDescriptor<typename ::std::decay<T>::type>().descriptor) |
          static_cast<uint64_t>(HolderType::INPLACE_NON_TRIVIAL) << 56 |
          static_cast<uint64_t>(Type::INSTANCE) << 48};
+#pragma GCC diagnostic pop
 
 #if __cplusplus < 201703L
 template <typename T>

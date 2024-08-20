@@ -182,6 +182,7 @@ void ApplicationContext::ComponentHolder::create_singleton(
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
 ApplicationContext::EmptyComponentHolder
     ApplicationContext::EMPTY_COMPONENT_HOLDER;
 #pragma GCC diagnostic pop

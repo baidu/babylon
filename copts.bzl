@@ -10,8 +10,6 @@ BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-op
                        '-Wno-padded',
                        # 常规的隐式转换一般是可控的
                        '-Wno-implicit-int-conversion', '-Wno-implicit-float-conversion', '-Wno-double-promotion', '-Wno-shorten-64-to-32',
-                       # 静态初始化是注册器模式和Google Test使用的典型方案
-                       '-Wno-global-constructors',
                        # 采用前置下划线方案表达内部宏是一个典型实践方案
                        '-Wno-reserved-id-macro', '-Wno-reserved-identifier',
                        # __VA_ARGS__扩展作为c++20之前的通用方案继续保留使用
@@ -38,6 +36,15 @@ BABYLON_COPTS = select({
 
 BABYLON_TEST_COPTS = BABYLON_COPTS + select({
     '//:compiler_gcc': [],
-    '//:compiler_clang': ['-Wno-exit-time-destructors', '-Wno-sign-conversion'],
+    '//:compiler_clang': [
+      # 静态初始化是注册器模式和Google Test使用的典型方案
+      '-Wno-global-constructors',
+      # 静态变量的析构顺序可能引起的问题对于单测本身并无大碍，且可以简化单测实现
+      '-Wno-exit-time-destructors',
+      # 跨符号转换对单测自身并无大碍，且可以简化单测实现
+      '-Wno-sign-conversion',
+      # googletest-1.15开始使用了c++17属性
+      '-Wno-c++17-attribute-extensions'
+    ],
     '//conditions:default': [],
 })

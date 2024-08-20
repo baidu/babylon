@@ -126,6 +126,7 @@ class UnaryOperator : public Operator {
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
 ::std::unordered_map<::std::string, ::std::function<::std::unique_ptr<Operator>(
                                         const Operator::ValueIndex&,
                                         const Operator::ValueIndex&)>>
@@ -234,6 +235,7 @@ class BinaryOperator : public Operator {
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
 ::std::vector<::std::tuple<size_t, Any::Type>> BinaryOperator::TYPE_LEVEL =
     BinaryOperator::generate_type_level();
 ::std::unordered_map<
@@ -377,6 +379,7 @@ class BinaryOperator : public Operator {
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
 // 定义这些运算符
 __BABYLON_DEFINE_UNARY_OPERATOR(Not, !);
 __BABYLON_DEFINE_UNARY_OPERATOR(Neg, -);
@@ -429,6 +432,7 @@ struct Option {
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
 static struct QuotedString : public grammar<const char*, ::std::string()> {
   QuotedString() noexcept : base_type(start, "quoted_string") {
     start = '"' >> *(escaped_slash | escaped_quote | common_char) >> '"';
