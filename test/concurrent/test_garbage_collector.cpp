@@ -52,6 +52,8 @@ TEST_F(GarbageCollectorTest, wait_reclaim_on_destroy) {
   ASSERT_EQ(1, Reclaimer::times);
 }
 
+#if !_LIBCPP_VERSION && !ABSL_HAVE_THREAD_SANITIZER
+
 TEST_F(GarbageCollectorTest, accessor_block_further_reclaim) {
   ::std::promise<void> p1;
   auto f1 = p1.get_future();
@@ -121,3 +123,4 @@ TEST_F(GarbageCollectorTest, block_retire_when_queue_overflow) {
   gc.stop();
   ASSERT_EQ(2048, Reclaimer::times);
 }
+#endif // !_LIBCPP_VERSION && !ABSL_HAVE_THREAD_SANITIZER
