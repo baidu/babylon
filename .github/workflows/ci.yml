@@ -29,7 +29,7 @@ jobs:
         key: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-${{github.sha}}
         restore-keys: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-
         save-always: true
-    - run: bazel test --compilation_mode=opt --disk_cache=bazel-disk --verbose_failures ${{matrix.compiler.flag}} ${{matrix.std.flag}} ${{matrix.stdlib.flag}} ${{matrix.feature.flag}} test/...
+    - run: bazel test --compilation_mode=opt --disk_cache=bazel-disk --verbose_failures --test_output=errors ${{matrix.compiler.flag}} ${{matrix.std.flag}} ${{matrix.stdlib.flag}} ${{matrix.feature.flag}} test/...
 
   arenastring:
     strategy:
@@ -55,7 +55,7 @@ jobs:
         restore-keys: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-
         save-always: true
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '27.3.arenastring'/" MODULE.bazel
-    - run: bazel test --compilation_mode=opt --disk_cache=bazel-disk --verbose_failures --config=asan ${{matrix.compiler.flag}} ${{matrix.stdlib.flag}} ${{matrix.mutable.flag}} test/...
+    - run: bazel test --compilation_mode=opt --disk_cache=bazel-disk --verbose_failures --test_output=errors --config=asan ${{matrix.compiler.flag}} ${{matrix.stdlib.flag}} ${{matrix.mutable.flag}} test/...
 
   aarch64:
     runs-on: ubuntu-latest
@@ -71,7 +71,7 @@ jobs:
     - run: sudo apt install g++-12-aarch64-linux-gnu
     - run: sudo apt install qemu-user
     - run: sudo ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/
-    - run: bazel test --disk_cache=bazel-disk --verbose_failures --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --test_env=LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib -- test/... -test/logging:test_log_statically
+    - run: bazel test --disk_cache=bazel-disk --verbose_failures --test_output=errors --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --test_env=LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib -- test/... -test/logging:test_log_statically
 
   workspace:
     runs-on: ubuntu-latest
@@ -83,7 +83,7 @@ jobs:
         key: bazel-disk-workspace-${{github.sha}}
         restore-keys: bazel-disk-workspace-
         save-always: true
-    - run: bazel test --disk_cache=bazel-disk --enable_bzlmod=false test/...
+    - run: bazel test --disk_cache=bazel-disk --verbose_failures --test_output=errors --enable_bzlmod=false test/...
 
   coverage:
     runs-on: ubuntu-latest
@@ -95,7 +95,7 @@ jobs:
         key: bazel-disk-coverage-${{github.sha}}
         restore-keys: bazel-disk-coverage-
         save-always: true
-    - run: bazel coverage --disk_cache=bazel-disk --verbose_failures --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test/...
+    - run: bazel coverage --disk_cache=bazel-disk --verbose_failures --test_output=errors --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test/...
     - run: .github/workflows/filter_lcov.sh
     - uses: coverallsapp/github-action@v2
       with:
