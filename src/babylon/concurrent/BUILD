@@ -8,9 +8,9 @@ load('//:copts.bzl', 'BABYLON_COPTS')
 cc_library(
   name = 'concurrent',
   deps = [
-    ':bounded_queue', ':counter', ':execution_queue',
-    ':id_allocator', ':object_pool', ':sched_interface',
-    ':thread_local', ':transient_hash_table',
+    ':bounded_queue', ':counter', ':epoch', ':execution_queue',
+    ':garbage_collector', ':id_allocator', ':object_pool',
+    ':sched_interface', ':thread_local', ':transient_hash_table',
     ':transient_topic', ':vector',
   ]
 )
@@ -43,6 +43,17 @@ cc_library(
 )
 
 cc_library(
+  name = 'epoch',
+  hdrs = ['epoch.h'],
+  copts = BABYLON_COPTS,
+  includes = ['//src'],
+  strip_include_prefix = '//src',
+  deps = [
+    ':id_allocator',
+  ],
+)
+
+cc_library(
   name = 'execution_queue',
   hdrs = ['execution_queue.h'],
   copts = BABYLON_COPTS,
@@ -52,6 +63,18 @@ cc_library(
     ':bounded_queue',
     ':thread_local',
     '//src/babylon:executor',
+  ],
+)
+
+cc_library(
+  name = 'garbage_collector',
+  hdrs = ['garbage_collector.h'],
+  copts = BABYLON_COPTS,
+  includes = ['//src'],
+  strip_include_prefix = '//src',
+  deps = [
+    ':bounded_queue',
+    ':epoch',
   ],
 )
 

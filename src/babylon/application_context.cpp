@@ -18,7 +18,12 @@ void ApplicationContext::OffsetDeleter::operator()(void* ptr) noexcept {
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationContext begin
 ApplicationContext& ApplicationContext::instance() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static ApplicationContext singleton;
+#pragma GCC diagnostic pop
   return singleton;
 }
 
@@ -173,8 +178,13 @@ void ApplicationContext::ComponentHolder::create_singleton(
   }
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
 ApplicationContext::EmptyComponentHolder
     ApplicationContext::EMPTY_COMPONENT_HOLDER;
+#pragma GCC diagnostic pop
 
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationContext::EmptyComponentHolder begin

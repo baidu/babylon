@@ -132,10 +132,10 @@ TEST(ExclusiveMonotonicBufferResource, check_address_inside_resource) {
 TEST(ExclusiveMonotonicBufferResource, moveable) {
   ExclusiveMonotonicBufferResource resource;
   for (size_t i = 0; i < 10; ++i) {
-    ASSERT_EQ(0, (size_t)resource.allocate(1, 32) % 32);
+    ASSERT_EQ(0, reinterpret_cast<intptr_t>(resource.allocate(1, 32)) % 32);
   }
   for (size_t i = 0; i < 10; ++i) {
-    ASSERT_EQ(0, (size_t)resource.allocate(8000, 32) % 32);
+    ASSERT_EQ(0, reinterpret_cast<intptr_t>(resource.allocate(8000, 32)) % 32);
   }
   for (size_t i = 0; i < 10; ++i) {
     auto s = reinterpret_cast<::std::string*>(
@@ -200,8 +200,8 @@ TEST(ExclusiveMonotonicBufferResource, can_work_with_monotonic) {
   ExclusiveMonotonicBufferResource resource;
   MonotonicBufferResource& mono_resource = resource;
   mono_resource.allocate(8, 32);
-  auto ptr = (::std::string*)mono_resource.allocate<alignof(::std::string)>(
-      sizeof(std::string));
+  auto ptr = reinterpret_cast<::std::string*>(
+      mono_resource.allocate<alignof(::std::string)>(sizeof(std::string)));
   new (ptr)::std::string(1024, 'x');
   mono_resource.register_destructor(ptr);
 }
@@ -425,7 +425,7 @@ TEST(memory_resource, construct_with_or_without_page_heap) {
 TEST(memory_resource, can_use_as_arena_with_protobuf) {
   SwissMemoryResource resource;
   resource.allocate<1>(128);
-  auto* ptr_in_resource = (char*)resource.allocate<1>(128);
+  auto* ptr_in_resource = reinterpret_cast<char*>(resource.allocate<1>(128));
   Arena& arena = resource;
 #if GOOGLE_PROTOBUF_VERSION >= 5026000
   auto message = Arena::Create<ArenaExample>(&arena);
@@ -438,8 +438,8 @@ TEST(memory_resource, can_use_as_arena_with_protobuf) {
   }
   ASSERT_EQ(&arena, message->GetArena());
   ASSERT_EQ(&arena, message->mutable_m()->GetArena());
-  ASSERT_LE(ptr_in_resource + 128, (char*)message);
-  ASSERT_GT(ptr_in_resource + 1024, (char*)message);
+  ASSERT_LE(ptr_in_resource + 128, reinterpret_cast<char*>(message));
+  ASSERT_GT(ptr_in_resource + 1024, reinterpret_cast<char*>(message));
   ASSERT_EQ(0, arena.SpaceUsed());
 }
 #endif // BABYLON_USE_PROTOBUF
@@ -482,7 +482,7 @@ TEST(memory_resource, release_also_clear_arena) {
   SwissMemoryResource resource;
   {
     resource.allocate<1>(128);
-    auto* ptr_in_resource = (char*)resource.allocate<1>(128);
+    auto* ptr_in_resource = reinterpret_cast<char*>(resource.allocate<1>(128));
     Arena& arena = resource;
 #if GOOGLE_PROTOBUF_VERSION >= 5026000
     auto message = Arena::Create<ArenaExample>(&arena);
@@ -491,14 +491,14 @@ TEST(memory_resource, release_also_clear_arena) {
 #endif // GOOGLE_PROTOBUF_VERSION < 5026000
     ASSERT_EQ(&arena, message->GetArena());
     ASSERT_EQ(&arena, message->mutable_m()->GetArena());
-    ASSERT_LE(ptr_in_resource + 128, (char*)message);
-    ASSERT_GT(ptr_in_resource + 1024, (char*)message);
+    ASSERT_LE(ptr_in_resource + 128, reinterpret_cast<char*>(message));
+    ASSERT_GT(ptr_in_resource + 1024, reinterpret_cast<char*>(message));
     Arena::Create<::std::string>(&arena);
   }
   resource.release();
   {
     resource.allocate<1>(128);
-    auto* ptr_in_resource = (char*)resource.allocate<1>(128);
+    auto* ptr_in_resource = reinterpret_cast<char*>(resource.allocate<1>(128));
     Arena& arena = resource;
 #if GOOGLE_PROTOBUF_VERSION >= 5026000
     auto message = Arena::Create<ArenaExample>(&arena);
@@ -507,8 +507,8 @@ TEST(memory_resource, release_also_clear_arena) {
 #endif // GOOGLE_PROTOBUF_VERSION < 5026000
     ASSERT_EQ(&arena, message->GetArena());
     ASSERT_EQ(&arena, message->mutable_m()->GetArena());
-    ASSERT_LE(ptr_in_resource + 128, (char*)message);
-    ASSERT_GT(ptr_in_resource + 1024, (char*)message);
+    ASSERT_LE(ptr_in_resource + 128, reinterpret_cast<char*>(message));
+    ASSERT_GT(ptr_in_resource + 1024, reinterpret_cast<char*>(message));
     Arena::Create<::std::string>(&arena);
   }
 }

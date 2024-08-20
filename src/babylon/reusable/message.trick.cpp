@@ -128,13 +128,13 @@ void MessageAllocationMetadata::FieldAllocationMetadata::reserve_string_field(
 #else  // GOOGLE_PROTOBUF_VERSION < 3020000
         ArenaStringPtr::EmptyDefault {}, arena, donated, donating_states, mask);
 #endif // GOOGLE_PROTOBUF_VERSION < 3020000
-    stable_reserve(string, string_reserved);
+    stable_reserve(string, static_cast<size_t>(string_reserved));
   } else
 #endif // GOOGLE_PROTOBUF_VERSION < 3018000
   {
     reserve_arena_string_ptr(*reinterpret_cast<ArenaStringPtr*>(ptr),
                              descriptor->has_default_value(), default_string,
-                             string_reserved, arena);
+                             static_cast<size_t>(string_reserved), arena);
   }
 }
 

@@ -76,8 +76,18 @@ alias(
 )
 
 alias(
+  name = 'concurrent_epoch',
+  actual = '//src/babylon/concurrent:epoch',
+)
+
+alias(
   name = 'concurrent_execution_queue',
   actual = '//src/babylon/concurrent:execution_queue',
+)
+
+alias(
+  name = 'concurrent_garbage_collector',
+  actual = '//src/babylon/concurrent:garbage_collector',
 )
 
 alias(

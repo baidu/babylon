@@ -19,7 +19,12 @@ size_t FileObject::index() const noexcept {
 ////////////////////////////////////////////////////////////////////////////////
 // StderrFileObject begin
 StderrFileObject& StderrFileObject::instance() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static StderrFileObject object;
+#pragma GCC diagnostic pop
   return object;
 }
 

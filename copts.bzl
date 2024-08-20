@@ -18,9 +18,10 @@ BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-op
                        '-Wno-gnu-zero-variadic-macro-arguments',
                        # 零长度数组用来做可变长结构是一种常用手段
                        '-Wno-zero-length-array',
+                       # BABYLON_SERIALIZABLE宏内部定义的一些辅助成员在继承场景下会发生同名隐藏
+                       # 但是这个场景下的隐藏本身是无害的，目前也还没有很好的方法做命名区分
+                       '-Wno-shadow-field',
                        # TODO(lijiang01): 逐步梳理清除
-                       '-Wno-old-style-cast', '-Wno-shadow-field',
-                       '-Wno-exit-time-destructors', '-Wno-sign-conversion',
                        '-Wno-shadow-field-in-constructor', '-Wno-gnu-anonymous-struct', '-Wno-nested-anon-types',
                        '-Wno-shadow-uncaptured-local', '-Wno-weak-vtables', '-Wno-float-conversion', '-Wno-switch-enum',
                        '-Wno-shadow', '-Wno-array-bounds-pointer-arithmetic', '-Wno-cast-align', '-Wno-vla-extension',
@@ -32,5 +33,11 @@ BABYLON_COPTS = select({
     '//conditions:default': BABYLON_GCC_COPTS,
 }) + select({
     '//:enable_werror': ['-Werror', '-DBABYLON_INCLUDE_EXTERNAL_AS_SYSTEM=1'],
+    '//conditions:default': [],
+})
+
+BABYLON_TEST_COPTS = BABYLON_COPTS + select({
+    '//:compiler_gcc': [],
+    '//:compiler_clang': ['-Wno-exit-time-destructors', '-Wno-sign-conversion'],
     '//conditions:default': [],
 })

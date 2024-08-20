@@ -217,7 +217,12 @@ CompactEnumerableThreadLocal<
 template <typename T, size_t CACHE_LINE_NUM>
 IdAllocator<uint32_t>&
 CompactEnumerableThreadLocal<T, CACHE_LINE_NUM>::id_allocator() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static IdAllocator<uint32_t> allocator;
+#pragma GCC diagnostic pop
   return allocator;
 }
 
@@ -225,7 +230,12 @@ template <typename T, size_t CACHE_LINE_NUM>
 typename CompactEnumerableThreadLocal<T, CACHE_LINE_NUM>::Storage&
 CompactEnumerableThreadLocal<T, CACHE_LINE_NUM>::storage(
     size_t slot_index) noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static StorageVector storage_vector;
+#pragma GCC diagnostic pop
   return storage_vector.ensure(slot_index);
 }
 

@@ -6,18 +6,23 @@ BABYLON_NAMESPACE_BEGIN
 
 Logger::Logger() noexcept
     : _min_severity {LogSeverity::DEBUG}, _initialized {false} {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static ThreadLocalLogStream default_log_stream {
       [](::std::unique_ptr<LogStream>* ptr) {
         new (ptr)::std::unique_ptr<LogStream> {new DefaultLogStream};
       }};
-  for (size_t i = 0; i < static_cast<int>(LogSeverity::NUM); ++i) {
+#pragma GCC diagnostic pop
+  for (size_t i = 0; i < LogSeverity::NUM; ++i) {
     _log_streams[i].store(&default_log_stream, ::std::memory_order_relaxed);
   }
 }
 
 Logger::Logger(const Logger& other) noexcept
     : _min_severity {other._min_severity}, _initialized {other._initialized} {
-  for (size_t i = 0; i < static_cast<int>(LogSeverity::NUM); ++i) {
+  for (size_t i = 0; i < LogSeverity::NUM; ++i) {
     _log_streams[i].store(
         other._log_streams[i].load(::std::memory_order_relaxed),
         ::std::memory_order_relaxed);
@@ -25,7 +30,7 @@ Logger::Logger(const Logger& other) noexcept
 }
 
 Logger& Logger::operator=(const Logger& other) noexcept {
-  for (size_t i = 0; i < static_cast<int>(LogSeverity::NUM); ++i) {
+  for (size_t i = 0; i < LogSeverity::NUM; ++i) {
     _log_streams[i].store(
         other._log_streams[i].load(::std::memory_order_relaxed),
         ::std::memory_order_relaxed);
@@ -37,13 +42,17 @@ Logger& Logger::operator=(const Logger& other) noexcept {
 
 LogStream& Logger::stream(LogSeverity severity, StringView file,
                           int line) noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static NullLogStream nls;
+#pragma GCC diagnostic pop
 
   // TODO(oathdruid): remove this after remove LogStreamProvider in interface.h
   if (ABSL_PREDICT_FALSE(!_initialized)) {
-    if (static_cast<int>(severity) >= LogInterface::min_severity()) {
-      return LogInterface::provider().stream(static_cast<int>(severity), file,
-                                             line);
+    if (severity >= LogInterface::min_severity()) {
+      return LogInterface::provider().stream(severity, file, line);
     }
     return nls;
   }
@@ -52,9 +61,8 @@ LogStream& Logger::stream(LogSeverity severity, StringView file,
     return nls;
   }
 
-  auto& stream = *_log_streams[static_cast<int>(severity)]
-                      .load(::std::memory_order_acquire)
-                      ->local();
+  auto& stream =
+      *_log_streams[severity].load(::std::memory_order_acquire)->local();
   stream.set_severity(severity);
   stream.set_file(file);
   stream.set_line(line);
@@ -71,14 +79,13 @@ void Logger::set_min_severity(LogSeverity min_severity) noexcept {
 
 void Logger::set_log_stream(LogSeverity severity,
                             ThreadLocalLogStream& log_stream) noexcept {
-  _log_streams[static_cast<int>(severity)].store(&log_stream,
-                                                 ::std::memory_order_release);
+  _log_streams[severity].store(&log_stream, ::std::memory_order_release);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoggerBuilder begin
 LoggerBuilder::LoggerBuilder() noexcept : _min_severity {LogSeverity::INFO} {
-  for (int i = 0; i < static_cast<int>(LogSeverity::NUM); ++i) {
+  for (size_t i = 0; i < LogSeverity::NUM; ++i) {
     auto severity = static_cast<LogSeverity>(i);
     _log_streams[i].first = severity;
     _log_streams[i].second.set_constructor(
@@ -101,7 +108,7 @@ Logger LoggerBuilder::build() noexcept {
 
 void LoggerBuilder::set_log_stream_creator(
     LoggerBuilder::Creator creator) noexcept {
-  for (int i = 0; i < static_cast<int>(LogSeverity::NUM); ++i) {
+  for (size_t i = 0; i < LogSeverity::NUM; ++i) {
     auto severity = static_cast<LogSeverity>(i);
     auto& stream = _log_streams[i].second;
     stream.set_constructor(
@@ -114,7 +121,7 @@ void LoggerBuilder::set_log_stream_creator(
 
 void LoggerBuilder::set_log_stream_creator(
     LogSeverity severity, LoggerBuilder::Creator creator) noexcept {
-  auto& stream = _log_streams[static_cast<int>(severity)].second;
+  auto& stream = _log_streams[severity].second;
   stream.set_constructor(
       [severity, creator](::std::unique_ptr<LogStream>* ptr) {
         new (ptr)::std::unique_ptr<LogStream> {creator()};
@@ -131,7 +138,12 @@ void LoggerBuilder::set_min_severity(LogSeverity min_severity) noexcept {
 ////////////////////////////////////////////////////////////////////////////////
 // LoggerManager begin
 LoggerManager& LoggerManager::instance() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static LoggerManager object;
+#pragma GCC diagnostic pop
   return object;
 }
 

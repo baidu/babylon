@@ -406,7 +406,7 @@ template <typename T, typename S>
 size_t ConcurrentBoundedQueue<T, S>::reserve_and_clear(size_t min_capacity) {
   auto new_capacity = ::absl::bit_ceil(min_capacity);
   if (new_capacity != capacity()) {
-    _slot_bits = __builtin_ctzll(new_capacity);
+    _slot_bits = static_cast<uint32_t>(__builtin_ctzll(new_capacity));
     _slot_mask = new_capacity - 1;
     _slots.resize(new_capacity);
     _next_push_index.store(0, ::std::memory_order_relaxed);

@@ -211,8 +211,6 @@ class GraphVertex {
   inline VertexStack* runnable_vertexes() noexcept;
 
  private:
-  static GraphProcessor DEFAULT_EMPTY_PROCESSOR;
-
   const GraphVertexBuilder* _builder {nullptr};
 
   Graph* _graph {nullptr};
@@ -299,34 +297,34 @@ BABYLON_NAMESPACE_END
   BOOST_PP_IF(BOOST_PP_EQUAL(BOOST_PP_TUPLE_ELEM(0, args), 0), \
               __ANYFLOW_DECLARE_DEPEND args, __ANYFLOW_DECLARE_EMIT args)
 
-#define __ANYFLOW_DECLARE_DEPEND(r, type, name, is_channel, is_mutable,       \
-                                 essential_level, is_va_args, ...)            \
-  {                                                                           \
-    BOOST_PP_IF(                                                              \
-        BOOST_PP_EQUAL(is_va_args, 0),                                        \
-        auto index = vertex().index_for_named_dependency(#name);              \
-        if (index < 0 && essential_level > 0) {                               \
-          BABYLON_LOG(WARNING)                                                \
-              << "no depend bind to " #name " for " << vertex();              \
-          return -1;                                                          \
-        } if (index >= 0) {                                                   \
-          auto depend = vertex().named_dependency(index);                     \
-          if (is_mutable) {                                                   \
-            depend->declare_mutable();                                        \
-          }                                                                   \
-          depend->declare_essential(essential_level == 1);                    \
-          BOOST_PP_IF(                                                        \
-              is_channel,                                                     \
-              depend->declare_channel<__ANYFLOW_TYPE_FOR_NAME(name)>();       \
-              , depend->declare_type<__ANYFLOW_TYPE_FOR_NAME(name)>();)       \
-        } __anyflow_index_for_##name = index;                                 \
-        ,                                                                     \
-        size_t anonymous_depends_size = vertex().anonymous_dependency_size(); \
-        name.resize(anonymous_depends_size);                                  \
-        for (size_t index = 0; index < anonymous_depends_size; index++) {     \
-          auto depend = vertex().anonymous_dependency(index);                 \
-          depend->declare_type<__ANYFLOW_TYPE_FOR_NAME(name)>();              \
-        })                                                                    \
+#define __ANYFLOW_DECLARE_DEPEND(r, type, name, is_channel, is_mutable,        \
+                                 essential_level, is_va_args, ...)             \
+  {                                                                            \
+    BOOST_PP_IF(                                                               \
+        BOOST_PP_EQUAL(is_va_args, 0),                                         \
+        auto index = vertex().index_for_named_dependency(#name);               \
+        if (index < 0 && essential_level > 0) {                                \
+          BABYLON_LOG(WARNING)                                                 \
+              << "no depend bind to " #name " for " << vertex();               \
+          return -1;                                                           \
+        } if (index >= 0) {                                                    \
+          auto depend = vertex().named_dependency(static_cast<size_t>(index)); \
+          if (is_mutable) {                                                    \
+            depend->declare_mutable();                                         \
+          }                                                                    \
+          depend->declare_essential(essential_level == 1);                     \
+          BOOST_PP_IF(                                                         \
+              is_channel,                                                      \
+              depend->declare_channel<__ANYFLOW_TYPE_FOR_NAME(name)>();        \
+              , depend->declare_type<__ANYFLOW_TYPE_FOR_NAME(name)>();)        \
+        } __anyflow_index_for_##name = index;                                  \
+        ,                                                                      \
+        size_t anonymous_depends_size = vertex().anonymous_dependency_size();  \
+        name.resize(anonymous_depends_size);                                   \
+        for (size_t index = 0; index < anonymous_depends_size; index++) {      \
+          auto depend = vertex().anonymous_dependency(index);                  \
+          depend->declare_type<__ANYFLOW_TYPE_FOR_NAME(name)>();               \
+        })                                                                     \
   }
 
 #define __ANYFLOW_DECLARE_EMIT(r, type, name, is_channel, is_mutable,       \

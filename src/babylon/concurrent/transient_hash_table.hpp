@@ -108,19 +108,19 @@ class GroupIterator {
 
   inline size_t operator*() noexcept {
 #if defined(__ARM_NEON)
-    return __builtin_ctzll(_mask) >> 2;
+    return static_cast<size_t>(__builtin_ctzll(_mask) >> 2);
 #else  // !defined(__ARM_NEON)
-    return __builtin_ctzll(_mask);
+    return static_cast<size_t>(__builtin_ctzll(_mask));
 #endif // !defined(__ARM_NEON)
   }
 
   inline ABSL_ATTRIBUTE_ALWAYS_INLINE GroupIndex operator++(int) noexcept {
 #if defined(__ARM_NEON)
-    size_t offset = __builtin_ctzll(_mask);
+    auto offset = static_cast<size_t>(__builtin_ctzll(_mask));
     _mask = _mask - (static_cast<uint64_t>(0xF) << offset);
     return offset >> 2;
 #else  // !defined(__ARM_NEON)
-    size_t offset = __builtin_ctzll(_mask);
+    auto offset = static_cast<size_t>(__builtin_ctzll(_mask));
     _mask = _mask - (0x1 << offset);
     return offset;
 #endif // !defined(__ARM_NEON)
@@ -142,11 +142,11 @@ class Group {
   static constexpr size_t CHECKER_MASK_BITS = 7;
 
   // 默认构造后的特殊状态，不存在元素，但又不可写入
-  static constexpr int8_t DUMMY_CONTROL = 0x82;
+  static constexpr int8_t DUMMY_CONTROL = static_cast<int8_t>(0x82);
   // 元素正在写入中
-  static constexpr int8_t BUSY_CONTROL = 0x81;
+  static constexpr int8_t BUSY_CONTROL = static_cast<int8_t>(0x81);
   // 可用未知当前也没有写入过元素
-  static constexpr int8_t EMPTY_CONTROL = 0x80;
+  static constexpr int8_t EMPTY_CONTROL = static_cast<int8_t>(0x80);
 
   static_assert(sizeof(int8_t) == sizeof(::std::atomic<int8_t>) &&
                     alignof(int8_t) == alignof(::std::atomic<int8_t>),
@@ -552,7 +552,7 @@ inline bool ConcurrentFixedSwissTable<T, H, E>::empty() const noexcept {
 
 template <typename T, typename H, typename E>
 inline size_t ConcurrentFixedSwissTable<T, H, E>::size() const noexcept {
-  return _size.value();
+  return static_cast<size_t>(_size.value());
 }
 
 template <typename T, typename H, typename E>

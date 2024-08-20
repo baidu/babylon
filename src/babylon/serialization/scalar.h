@@ -17,18 +17,18 @@ BABYLON_NAMESPACE_BEGIN
     static constexpr int SERIALIZED_SIZE_COMPLEXITY =                          \
         SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_SIMPLE;                \
     static void serialize(const type& value, CodedOutputStream& os) noexcept { \
-      os.WriteVarint32(value);                                                 \
+      os.WriteVarint32(static_cast<uint32_t>(value));                          \
     }                                                                          \
     static bool deserialize(CodedInputStream& is, type& value) noexcept {      \
       uint32_t uvalue;                                                         \
       if (ABSL_PREDICT_FALSE(!is.ReadVarint32(&uvalue))) {                     \
         return false;                                                          \
       }                                                                        \
-      value = uvalue;                                                          \
+      value = static_cast<type>(uvalue);                                       \
       return true;                                                             \
     }                                                                          \
     static size_t calculate_serialized_size(const type& value) noexcept {      \
-      return CodedOutputStream::VarintSize32(value);                           \
+      return CodedOutputStream::VarintSize32(static_cast<uint32_t>(value));    \
     }                                                                          \
     static bool print(const type& value, PrintStream& ps) noexcept {           \
       return ps.print_raw(::std::to_string(value));                            \
@@ -55,18 +55,18 @@ BABYLON_TMP_GEN(uint32_t);
     static constexpr int SERIALIZED_SIZE_COMPLEXITY =                          \
         SerializationHelper::SERIALIZED_SIZE_COMPLEXITY_SIMPLE;                \
     static void serialize(const type& value, CodedOutputStream& os) noexcept { \
-      os.WriteVarint64(value);                                                 \
+      os.WriteVarint64(static_cast<uint64_t>(value));                          \
     }                                                                          \
     static bool deserialize(CodedInputStream& is, type& value) noexcept {      \
       uint64_t uvalue;                                                         \
       if (ABSL_PREDICT_FALSE(!is.ReadVarint64(&uvalue))) {                     \
         return false;                                                          \
       }                                                                        \
-      value = uvalue;                                                          \
+      value = static_cast<type>(uvalue);                                       \
       return true;                                                             \
     }                                                                          \
     static size_t calculate_serialized_size(const type& value) noexcept {      \
-      return CodedOutputStream::VarintSize64(value);                           \
+      return CodedOutputStream::VarintSize64(static_cast<uint64_t>(value));    \
     }                                                                          \
     static bool print(const type& value, PrintStream& ps) noexcept {           \
       return ps.print_raw(::std::to_string(value));                            \

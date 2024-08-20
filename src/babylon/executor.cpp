@@ -15,7 +15,12 @@ int Executor::invoke(MoveOnlyFunction<void(void)>&&) noexcept {
 ////////////////////////////////////////////////////////////////////////////////
 // InplaceExecutor begin
 InplaceExecutor& InplaceExecutor::instance() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static InplaceExecutor executor;
+#pragma GCC diagnostic pop
   return executor;
 }
 
@@ -51,7 +56,12 @@ int InplaceExecutor::invoke(MoveOnlyFunction<void(void)>&& function) noexcept {
 ////////////////////////////////////////////////////////////////////////////////
 // AlwaysUseNewThreadExecutor begin
 AlwaysUseNewThreadExecutor& AlwaysUseNewThreadExecutor::instance() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static AlwaysUseNewThreadExecutor executor;
+#pragma GCC diagnostic pop
   return executor;
 }
 

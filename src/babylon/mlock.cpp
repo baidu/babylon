@@ -64,7 +64,12 @@ int MemoryLocker::last_errno() const noexcept {
 }
 
 MemoryLocker& MemoryLocker::instance() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static MemoryLocker object;
+#pragma GCC diagnostic pop
   return object;
 }
 

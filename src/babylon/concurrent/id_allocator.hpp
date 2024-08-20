@@ -141,7 +141,12 @@ namespace concurrent_id_allocator {
 template <typename T>
 struct IdAllocatorFotType {
   static IdAllocator<uint16_t>& instance() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
     static IdAllocator<uint16_t> object;
+#pragma GCC diagnostic pop
     return object;
   }
 };
@@ -161,8 +166,13 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE
        // clang-format off
 VersionedValue<uint16_t> ThreadId::current_thread_id() noexcept {
        // clang-format on
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   thread_local ThreadId id(
       internal::concurrent_id_allocator::IdAllocatorFotType<T>::instance());
+#pragma GCC diagnostic pop
   return id._value;
 }
 

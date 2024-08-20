@@ -76,12 +76,12 @@ TEST(string, recognize_string_with_resize) {
       this->size = size + 25;
     }
     char& operator[](size_t) {
-      return (char&)size;
+      return reinterpret_cast<char&>(size);
     }
     size_t size {0};
   } s;
-  ASSERT_EQ(7 + 25, *(size_t*)resize_uninitialized(s, 7));
-  ASSERT_EQ(12 + 25, *(size_t*)resize_uninitialized(s, 12));
+  ASSERT_EQ(7 + 25, *reinterpret_cast<size_t*>(resize_uninitialized(s, 7)));
+  ASSERT_EQ(12 + 25, *reinterpret_cast<size_t*>(resize_uninitialized(s, 12)));
 }
 
 TEST(string, recognize_string_with_resize_default_init_function) {
@@ -92,12 +92,12 @@ TEST(string, recognize_string_with_resize_default_init_function) {
       this->size = size;
     }
     char& operator[](int) {
-      return *(char*)size;
+      return *reinterpret_cast<char*>(size);
     }
     size_t size;
   } s;
-  ASSERT_EQ(7, (size_t)resize_uninitialized(s, 7));
-  ASSERT_EQ(12, (size_t)resize_uninitialized(s, 12));
+  ASSERT_EQ(7, reinterpret_cast<intptr_t>(resize_uninitialized(s, 7)));
+  ASSERT_EQ(12, reinterpret_cast<intptr_t>(resize_uninitialized(s, 12)));
 }
 
 TEST(string, stable_reserve_keep_stable_when_recreate) {

@@ -80,7 +80,7 @@ int LogStreamBuffer::overflow(int ch) noexcept {
 int LogStreamBuffer::sync() noexcept {
   auto ptr = pptr();
   if (ptr > _sync_point) {
-    _log.size += ptr - _sync_point;
+    _log.size += static_cast<uintptr_t>(ptr - _sync_point);
     _sync_point = ptr;
   }
   return 0;

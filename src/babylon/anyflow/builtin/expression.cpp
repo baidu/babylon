@@ -122,10 +122,15 @@ class UnaryOperator : public Operator {
   size_t _operand_index;
   GetOperandFunction _get_operand;
 };
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
 ::std::unordered_map<::std::string, ::std::function<::std::unique_ptr<Operator>(
                                         const Operator::ValueIndex&,
                                         const Operator::ValueIndex&)>>
     UnaryOperator::_s_registry;
+#pragma GCC diagnostic pop
 
 // 二元运算符基类，自带注册表
 class BinaryOperator : public Operator {
@@ -225,6 +230,10 @@ class BinaryOperator : public Operator {
   size_t _roperand_index;
   GetOperandFunction _get_roperand;
 };
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
 ::std::vector<::std::tuple<size_t, Any::Type>> BinaryOperator::TYPE_LEVEL =
     BinaryOperator::generate_type_level();
 ::std::unordered_map<
@@ -232,6 +241,7 @@ class BinaryOperator : public Operator {
                        const Operator::ValueIndex&, const Operator::ValueIndex&,
                        const Operator::ValueIndex&)>>
     BinaryOperator::_s_registry;
+#pragma GCC diagnostic pop
 
 // 定义并注册一个一元运算符
 #define __BABYLON_DEFINE_UNARY_OPERATOR(name, op)                \
@@ -284,7 +294,7 @@ class BinaryOperator : public Operator {
           if (ABSL_PREDICT_TRUE(value != nullptr)) {             \
             result = op !value->empty();                         \
           } else {                                               \
-            result = op(bool) operand;                           \
+            result = op static_cast<bool>(operand);              \
           }                                                      \
           break;                                                 \
       }                                                          \
@@ -363,6 +373,10 @@ class BinaryOperator : public Operator {
   BinaryOperator::Register<name_prefix##Operator>                              \
       name_prefix##Operator::_s_register(#op);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
 // 定义这些运算符
 __BABYLON_DEFINE_UNARY_OPERATOR(Not, !);
 __BABYLON_DEFINE_UNARY_OPERATOR(Neg, -);
@@ -381,6 +395,7 @@ __BABYLON_DEFINE_BINARY_OPERATOR(Ne, !=, 1);
 #pragma GCC diagnostic pop
 __BABYLON_DEFINE_BINARY_OPERATOR(And, &&, 0);
 __BABYLON_DEFINE_BINARY_OPERATOR(Or, ||, 0);
+#pragma GCC diagnostic pop
 
 #undef __BABYLON_DEFINE_UNARY_OPERATOR
 #undef __BABYLON_DEFINE_BINARY_OPERATOR
@@ -410,6 +425,10 @@ struct Option {
   ::std::vector<::std::unique_ptr<Operator>> operators;
 };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
 static struct QuotedString : public grammar<const char*, ::std::string()> {
   QuotedString() noexcept : base_type(start, "quoted_string") {
     start = '"' >> *(escaped_slash | escaped_quote | common_char) >> '"';
@@ -423,6 +442,7 @@ static struct QuotedString : public grammar<const char*, ::std::string()> {
   rule<const char*, char()> escaped_quote;
   rule<const char*, char()> common_char;
 } quoted_string;
+#pragma GCC diagnostic pop
 
 struct Variable : public grammar<const char*, ::std::string()> {
   Variable() noexcept : base_type(start, "variable") {
@@ -850,8 +870,13 @@ int32_t ExpressionProcessor::expend_conditional_expression(
         unsolved_expressions,
     const ::std::string& result_name,
     const ::std::string& expression_string) noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static expression::ConditionalExpression conditional_expression;
   static expression::Expression expression;
+#pragma GCC diagnostic pop
 
   ::std::tuple<::std::string, ::std::string, ::std::string> result;
   auto begin = expression_string.c_str();
@@ -868,7 +893,8 @@ int32_t ExpressionProcessor::expend_conditional_expression(
                                             ::boost::spirit::qi::space);
     // 也不是一般表达式则报错
     if (!ret || begin < end) {
-      ::std::string pointer(begin - expression_string.c_str(), ' ');
+      ::std::string pointer(
+          static_cast<size_t>(begin - expression_string.c_str()), ' ');
       pointer += '^';
       BABYLON_LOG(WARNING) << "error exp = " << expression_string;
       BABYLON_LOG(WARNING) << "            " << pointer;
@@ -923,7 +949,8 @@ int32_t ExpressionProcessor::expend_non_conditional_expression(
 
   // 完整解析才算成功
   if (!ret || begin < end) {
-    ::std::string pointer(begin - expression_string.c_str(), ' ');
+    ::std::string pointer(
+        static_cast<size_t>(begin - expression_string.c_str()), ' ');
     pointer += '^';
     BABYLON_LOG(WARNING) << "error exp = " << expression_string;
     BABYLON_LOG(WARNING) << "            " << pointer;

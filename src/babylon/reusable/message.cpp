@@ -121,14 +121,14 @@ void MessageAllocationMetadata::FieldAllocationMetadata::update_repeated_field(
     const ::google::protobuf::Message& message,
     const ::google::protobuf::Reflection* reflection) noexcept {
   switch (descriptor->cpp_type()) {
-#define __BABYLON_TMP_CASE(case_enum, type)                                 \
-  case ::google::protobuf::FieldDescriptor::case_enum: {                    \
-    size_t capacity =                                                       \
-        reflection->GetRepeatedField<type>(message, descriptor).Capacity(); \
-    if (repeated_reserved < capacity) {                                     \
-      repeated_reserved = capacity;                                         \
-    }                                                                       \
-    break;                                                                  \
+#define __BABYLON_TMP_CASE(case_enum, type)                                  \
+  case ::google::protobuf::FieldDescriptor::case_enum: {                     \
+    auto capacity = static_cast<size_t>(                                     \
+        reflection->GetRepeatedField<type>(message, descriptor).Capacity()); \
+    if (repeated_reserved < capacity) {                                      \
+      repeated_reserved = capacity;                                          \
+    }                                                                        \
+    break;                                                                   \
   }
     __BABYLON_TMP_CASE(CPPTYPE_INT32, int32_t)
     __BABYLON_TMP_CASE(CPPTYPE_UINT32, uint32_t)
@@ -138,28 +138,29 @@ void MessageAllocationMetadata::FieldAllocationMetadata::update_repeated_field(
     __BABYLON_TMP_CASE(CPPTYPE_FLOAT, float)
     __BABYLON_TMP_CASE(CPPTYPE_BOOL, bool)
     case ::google::protobuf::FieldDescriptor::CPPTYPE_ENUM: {
-      size_t capacity =
-          get_repeated_enum_field(message, reflection, descriptor).Capacity();
+      auto capacity = static_cast<size_t>(
+          get_repeated_enum_field(message, reflection, descriptor).Capacity());
       if (repeated_reserved < capacity) {
         repeated_reserved = capacity;
       }
       break;
     }
 #undef __BABYLON_TMP_CASE
-#define __BABYLON_TMP_CASE(case_enum, type)                                  \
-  case ::google::protobuf::FieldDescriptor::case_enum: {                     \
-    auto& repeated_field =                                                   \
-        reflection->GetRepeatedPtrField<type>(message, descriptor);          \
-    size_t capacity = repeated_field.size() + repeated_field.ClearedCount(); \
-    if (repeated_reserved < capacity) {                                      \
-      repeated_reserved = capacity;                                          \
-    }                                                                        \
-    auto begin = repeated_field.cbegin();                                    \
-    auto end = repeated_field.cbegin() + capacity;                           \
-    for (; begin != end; ++begin) {                                          \
-      update(*begin);                                                        \
-    }                                                                        \
-    break;                                                                   \
+#define __BABYLON_TMP_CASE(case_enum, type)                              \
+  case ::google::protobuf::FieldDescriptor::case_enum: {                 \
+    auto& repeated_field =                                               \
+        reflection->GetRepeatedPtrField<type>(message, descriptor);      \
+    auto capacity = static_cast<size_t>(repeated_field.size() +          \
+                                        repeated_field.ClearedCount());  \
+    if (repeated_reserved < capacity) {                                  \
+      repeated_reserved = capacity;                                      \
+    }                                                                    \
+    auto begin = repeated_field.cbegin();                                \
+    auto end = repeated_field.cbegin() + static_cast<ssize_t>(capacity); \
+    for (; begin != end; ++begin) {                                      \
+      update(*begin);                                                    \
+    }                                                                    \
+    break;                                                               \
   }
       __BABYLON_TMP_CASE(CPPTYPE_STRING, ::std::string)
       __BABYLON_TMP_CASE(CPPTYPE_MESSAGE, ::google::protobuf::Message)
@@ -196,11 +197,14 @@ void MessageAllocationMetadata::FieldAllocationMetadata::reserve_repeated_field(
       auto* repeated_field = reflection->MutableRepeatedPtrField<::std::string>(
           &message, descriptor);
       repeated_field->Reserve(repeated_reserved);
-      for (size_t i = repeated_field->size(); i < repeated_reserved; ++i) {
+      for (size_t i = static_cast<size_t>(repeated_field->size());
+           i < repeated_reserved; ++i) {
 #if GOOGLE_PROTOBUF_HAS_DONATED_STRING
-        repeated_field->AddAccessor()->reserve(string_reserved);
+        repeated_field->AddAccessor()->reserve(
+            static_cast<size_t>(string_reserved));
 #else  // !GOOGLE_PROTOBUF_HAS_DONATED_STRING
-        stable_reserve(*repeated_field->Add(), string_reserved);
+        stable_reserve(*repeated_field->Add(),
+                       static_cast<size_t>(string_reserved));
 #endif // !GOOGLE_PROTOBUF_HAS_DONATED_STRING
       }
       repeated_field->Clear();

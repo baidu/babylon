@@ -4,6 +4,9 @@
 
 #include "absl/time/clock.h" // absl::Now
 
+#include <sys/syscall.h> // __NR_gettid
+#include <unistd.h>      // ::syscall
+
 #include <iostream> // std::cerr
 
 BABYLON_NAMESPACE_BEGIN
@@ -53,10 +56,11 @@ void DefaultLogStream::do_begin() noexcept {
   ::babylon::localtime(&now_s, &time_struct);
   mutex().lock();
   (*this) << severity();
-  format(" %d-%02d-%02d %02d:%02d:%02d.%06d %.*s:%d] ",
+  thread_local int tid = ::syscall(__NR_gettid);
+  format(" %d-%02d-%02d %02d:%02d:%02d.%06d %d %.*s:%d] ",
          time_struct.tm_year + 1900, time_struct.tm_mon + 1,
          time_struct.tm_mday, time_struct.tm_hour, time_struct.tm_min,
-         time_struct.tm_sec, us, file().size(), file().data(), line());
+         time_struct.tm_sec, us, tid, file().size(), file().data(), line());
 }
 
 void DefaultLogStream::do_end() noexcept {
@@ -77,7 +81,12 @@ NullLogStream::NullLogStream() noexcept
 #endif // !__clang__ && BABYLON_GCC_VERSION < 50000
 
 NullLogStream::Buffer& NullLogStream::buffer() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static Buffer static_buffer;
+#pragma GCC diagnostic pop
   return static_buffer;
 }
 // NullLogStream end

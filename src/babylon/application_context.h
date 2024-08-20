@@ -489,7 +489,12 @@ ApplicationContext::component_accessor() noexcept {
 template <typename T>
 ABSL_ATTRIBUTE_NOINLINE ApplicationContext::ComponentAccessor<T>
 ApplicationContext::component_accessor(StringView name) noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static thread_local ::std::tuple<const Id*, ::std::string> key;
+#pragma GCC diagnostic pop
   ::std::get<0>(key) = &TypeId<T>().ID;
   ::std::get<1>(key) = name;
   auto it = _holder_by_type_and_name.find(key);

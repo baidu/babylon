@@ -313,7 +313,7 @@ TEST_F(ProcessorTest, any_accept_any_type) {
   vertex.named_emit("x").to("E");
   ASSERT_EQ(0, builder.finish());
   graph = builder.build();
-  ASSERT_TRUE((bool)graph);
+  ASSERT_TRUE(graph);
   a = graph->find_data("A");
   b = graph->find_data("B");
   c = graph->find_data("C");
@@ -342,7 +342,7 @@ TEST_F(ProcessorTest, mutable_data_get_non_const_pointer) {
   vertex.named_emit("x").to("E");
   ASSERT_EQ(0, builder.finish());
   graph = builder.build();
-  ASSERT_TRUE((bool)graph);
+  ASSERT_TRUE(graph);
   a = graph->find_data("A");
   b = graph->find_data("B");
   c = graph->find_data("C");
@@ -388,7 +388,7 @@ TEST_F(ProcessorTest, downstream_function_run_before_current_one_return) {
   v2.named_emit("x").to("X3");
   ASSERT_EQ(0, builder.finish());
   graph = builder.build();
-  ASSERT_TRUE((bool)graph);
+  ASSERT_TRUE(graph);
   auto* x1 = graph->find_data("X1");
   auto* x3 = graph->find_data("X3");
   *x1->emit<int32_t>() = 1;
@@ -453,7 +453,7 @@ TEST_F(ProcessorTest,
   v3.named_emit("x").to("X4");
   ASSERT_EQ(0, builder.finish());
   graph = builder.build();
-  ASSERT_TRUE((bool)graph);
+  ASSERT_TRUE(graph);
   auto* x1 = graph->find_data("X1");
   auto* x4 = graph->find_data("X4");
   *x1->emit<int32_t>() = 1;
@@ -490,7 +490,7 @@ TEST_F(ProcessorTest, depend_essential) {
   v2.named_emit("x").to("X2");
   ASSERT_EQ(0, builder.finish());
   graph = builder.build();
-  ASSERT_TRUE((bool)graph);
+  ASSERT_TRUE(graph);
   a = graph->find_data("A");
   auto* x1 = graph->find_data("X1");
   auto* x2 = graph->find_data("X2");

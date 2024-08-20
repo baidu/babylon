@@ -239,7 +239,7 @@ inline LogStream& LogStream::end() noexcept {
 }
 
 inline LogStream& LogStream::write(const char* data, size_t size) noexcept {
-  rdbuf()->sputn(data, size);
+  rdbuf()->sputn(data, static_cast<ssize_t>(size));
   return *this;
 }
 
