@@ -15,16 +15,16 @@ struct GarbageCollectorTest : public ::testing::Test {
     Reclaimer& operator=(Reclaimer&&) = default;
 
     Reclaimer(::std::promise<void>&& promise)
-        : promise {::std::move(promise)} {}
+        : _promise {::std::move(promise)} {}
 
     void operator()() noexcept {
       times++;
-      promise.set_value();
+      _promise.set_value();
     }
 
     static size_t times;
 
-    ::std::promise<void> promise;
+    ::std::promise<void> _promise;
   };
 
   virtual void SetUp() override {

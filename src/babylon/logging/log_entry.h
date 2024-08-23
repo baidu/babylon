@@ -31,9 +31,9 @@ class LogEntry {
                        ::std::vector<struct ::iovec>& iov) noexcept;
 
  private:
-  void pages_append_to_iovec(char** pages, size_t size, size_t page_size,
+  static void pages_append_to_iovec(char** pages, size_t size, size_t page_size,
                              ::std::vector<struct ::iovec>& iov) noexcept;
-  void page_table_append_to_iovec(PageTable& page_table, size_t size,
+  static void page_table_append_to_iovec(PageTable& page_table, size_t size,
                                   size_t page_size,
                                   ::std::vector<struct ::iovec>& iov) noexcept;
 

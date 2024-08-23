@@ -68,8 +68,8 @@ AlwaysUseNewThreadExecutor& AlwaysUseNewThreadExecutor::instance() noexcept {
 int AlwaysUseNewThreadExecutor::invoke(
     MoveOnlyFunction<void(void)>&& function) noexcept {
   ::std::thread(::std::bind(
-                    [](MoveOnlyFunction<void(void)>& function) {
-                      function();
+                    [](MoveOnlyFunction<void(void)>& captured_function) {
+                      captured_function();
                     },
                     ::std::move(function)))
       .detach();

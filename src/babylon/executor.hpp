@@ -16,10 +16,10 @@ inline Future<typename InvokeResult<C, Args...>::type, F> Executor::execute(
   Promise<R, F> promise;
   auto future = promise.get_future();
   MoveOnlyFunction<void(void)> function {::std::bind(
-      [](Promise<R, F>& promise, DC& callable,
-         typename ::std::decay<Args>::type&... args) {
-        run_and_set(promise, normalize(::std::move(callable)),
-                    ::std::move(args)...);
+      [](Promise<R, F>& captured_promise, DC& captured_callable,
+         typename ::std::decay<Args>::type&... captured_args) {
+        run_and_set(captured_promise, normalize(::std::move(captured_callable)),
+                    ::std::move(captured_args)...);
       },
       ::std::move(promise),
       uncomposable_bind_argument(::std::forward<C>(callable)),
@@ -35,8 +35,8 @@ template <typename C, typename... Args>
 inline int Executor::submit(C&& callable, Args&&... args) noexcept {
   typedef typename ::std::decay<C>::type DC;
   MoveOnlyFunction<void(void)> function {::std::bind(
-      [](DC& callable, typename ::std::decay<Args>::type&... args) {
-        normalize(::std::move(callable))(::std::move(args)...);
+      [](DC& captured_callable, typename ::std::decay<Args>::type&... captured_args) {
+        normalize(::std::move(captured_callable))(::std::move(captured_args)...);
       },
       uncomposable_bind_argument(::std::forward<C>(callable)),
       uncomposable_bind_argument(::std::forward<Args>(args))...)};

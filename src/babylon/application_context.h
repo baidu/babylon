@@ -135,8 +135,8 @@ class ApplicationContext::OffsetDeleter {
   void operator()(void* ptr) noexcept;
 
  private:
-  void (*deleter)(void*) {nullptr};
-  ptrdiff_t offset {0};
+  void (*_deleter)(void*) {nullptr};
+  ptrdiff_t _offset {0};
 };
 
 class ApplicationContext::ComponentHolder {
@@ -421,7 +421,7 @@ inline ApplicationContext::OffsetDeleter::OffsetDeleter(
 
 inline ApplicationContext::OffsetDeleter::OffsetDeleter(
     void (*deleter)(void*), ptrdiff_t offset) noexcept
-    : deleter {deleter}, offset {offset} {}
+    : _deleter {deleter}, _offset {offset} {}
 // ApplicationContext::OffsetDeleter end
 ////////////////////////////////////////////////////////////////////////////////
 

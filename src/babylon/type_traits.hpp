@@ -17,7 +17,7 @@ BABYLON_NAMESPACE_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 // Id begin
-inline constexpr Id::Id(StringView name) noexcept : name {name} {}
+inline constexpr Id::Id(StringView name_value) noexcept : name {name_value} {}
 
 inline constexpr bool Id::operator==(const Id& other) const noexcept {
   return this == &other;

@@ -20,9 +20,9 @@ BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-op
                        # 但是这个场景下的隐藏本身是无害的，目前也还没有很好的方法做命名区分
                        '-Wno-shadow-field',
                        # TODO(lijiang01): 逐步梳理清除
-                       '-Wno-shadow-field-in-constructor', '-Wno-gnu-anonymous-struct', '-Wno-nested-anon-types',
-                       '-Wno-shadow-uncaptured-local', '-Wno-weak-vtables', '-Wno-float-conversion', '-Wno-switch-enum',
-                       '-Wno-shadow', '-Wno-array-bounds-pointer-arithmetic', '-Wno-cast-align', '-Wno-vla-extension',
+                       '-Wno-weak-vtables', '-Wno-float-conversion', '-Wno-switch-enum',
+                       '-Wno-gnu-anonymous-struct', '-Wno-nested-anon-types',
+                       '-Wno-array-bounds-pointer-arithmetic', '-Wno-cast-align', '-Wno-vla-extension',
                        '-Wno-unneeded-member-function', '-Wno-deprecated-declarations']
 
 BABYLON_COPTS = select({
@@ -44,7 +44,9 @@ BABYLON_TEST_COPTS = BABYLON_COPTS + select({
       # 跨符号转换对单测自身并无大碍，且可以简化单测实现
       '-Wno-sign-conversion',
       # googletest-1.15开始使用了c++17属性
-      '-Wno-c++17-attribute-extensions'
+      '-Wno-c++17-attribute-extensions',
+      # 单测中使用了一些变量简写有意进行了无害隐藏
+      '-Wno-shadow',
     ],
     '//conditions:default': [],
 })

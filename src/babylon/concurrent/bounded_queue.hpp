@@ -554,10 +554,10 @@ inline size_t ConcurrentBoundedQueue<T, S>::try_push_n(C&& callback,
     return try_deal_n_continuously<CONCURRENT, USE_FUTEX_WAKE, true>(
         ::std::forward<C>(callback), index, end_index - index);
   } else {
-    size_t num = next_round_begin_index - index;
+    size_t continuous_num = next_round_begin_index - index;
     size_t pushed = try_deal_n_continuously<CONCURRENT, USE_FUTEX_WAKE, true>(
-        ::std::forward<C>(callback), index, num);
-    if (pushed < num) {
+        ::std::forward<C>(callback), index, continuous_num);
+    if (pushed < continuous_num) {
       return pushed;
     }
     return pushed + try_deal_n_continuously<CONCURRENT, USE_FUTEX_WAKE, true>(
@@ -714,10 +714,10 @@ inline size_t ConcurrentBoundedQueue<T, S>::try_pop_n(C&& callback,
     return try_deal_n_continuously<CONCURRENT, USE_FUTEX_WAKE, false>(
         ::std::forward<C>(callback), index, end_index - index);
   } else {
-    size_t num = next_round_begin_index - index;
+    size_t continuous_num = next_round_begin_index - index;
     size_t poped = try_deal_n_continuously<CONCURRENT, USE_FUTEX_WAKE, false>(
-        ::std::forward<C>(callback), index, num);
-    if (poped < num) {
+        ::std::forward<C>(callback), index, continuous_num);
+    if (poped < continuous_num) {
       return poped;
     }
     return poped + try_deal_n_continuously<CONCURRENT, USE_FUTEX_WAKE, false>(

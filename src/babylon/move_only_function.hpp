@@ -80,12 +80,12 @@ inline R MoveOnlyFunction<R(Args...)>::operator()(Args... args) const {
 ////////////////////////////////////////////////////////////////////////////////
 // UncomposableBindArgument begin
 template <typename T>
-inline UncomposableBindArgument<T>::UncomposableBindArgument(T&& value)
-    : value(::std::move(value)) {}
+inline UncomposableBindArgument<T>::UncomposableBindArgument(T&& input_value)
+    : value(::std::move(input_value)) {}
 
 template <typename T>
-inline UncomposableBindArgument<T>::UncomposableBindArgument(const T& value)
-    : value(value) {}
+inline UncomposableBindArgument<T>::UncomposableBindArgument(const T& input_value)
+    : value(input_value) {}
 
 template <typename T>
 inline UncomposableBindArgument<T>::operator T&() noexcept {

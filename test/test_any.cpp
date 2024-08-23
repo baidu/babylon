@@ -153,12 +153,12 @@ TEST(any, create_with_or_without_value) {
 
 TEST(any, reusable) {
   struct S {
-    S(size_t& destruct_num) : destruct_num(destruct_num) {}
-    S(const S& other) : destruct_num(other.destruct_num) {}
+    S(size_t& destruct_num) : _destruct_num(destruct_num) {}
+    S(const S& other) : _destruct_num(other._destruct_num) {}
     ~S() {
-      destruct_num++;
+      _destruct_num++;
     }
-    size_t& destruct_num;
+    size_t& _destruct_num;
   };
   size_t destruct_num = 0;
   S obj(destruct_num);

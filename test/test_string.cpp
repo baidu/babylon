@@ -73,12 +73,12 @@ TEST(string, recognize_string_with_resize) {
     typedef char* pointer;
     typedef size_t size_type;
     void resize(size_t size) {
-      this->size = size + 25;
+      _size = size + 25;
     }
     char& operator[](size_t) {
-      return reinterpret_cast<char&>(size);
+      return reinterpret_cast<char&>(_size);
     }
-    size_t size {0};
+    size_t _size {0};
   } s;
   ASSERT_EQ(7 + 25, *reinterpret_cast<size_t*>(resize_uninitialized(s, 7)));
   ASSERT_EQ(12 + 25, *reinterpret_cast<size_t*>(resize_uninitialized(s, 12)));
@@ -89,12 +89,12 @@ TEST(string, recognize_string_with_resize_default_init_function) {
     typedef char* pointer;
     typedef size_t size_type;
     void __resize_default_init(size_t size) {
-      this->size = size;
+      _size = size;
     }
     char& operator[](int) {
-      return *reinterpret_cast<char*>(size);
+      return *reinterpret_cast<char*>(_size);
     }
-    size_t size;
+    size_t _size;
   } s;
   ASSERT_EQ(7, reinterpret_cast<intptr_t>(resize_uninitialized(s, 7)));
   ASSERT_EQ(12, reinterpret_cast<intptr_t>(resize_uninitialized(s, 12)));

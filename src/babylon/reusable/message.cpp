@@ -29,18 +29,18 @@ void MessageAllocationMetadata::reserve(
 }
 
 MessageAllocationMetadata::FieldAllocationMetadata::FieldAllocationMetadata(
-    const ::google::protobuf::FieldDescriptor* descriptor) noexcept
-    : descriptor(descriptor) {}
+    const ::google::protobuf::FieldDescriptor* input_descriptor) noexcept
+    : descriptor(input_descriptor) {}
 
 MessageAllocationMetadata::FieldAllocationMetadata::FieldAllocationMetadata(
-    const ::google::protobuf::FieldDescriptor* descriptor,
-    const ::google::protobuf::Message* default_message) noexcept
-    : descriptor(descriptor), default_message(default_message) {}
+    const ::google::protobuf::FieldDescriptor* input_descriptor,
+    const ::google::protobuf::Message* input_default_message) noexcept
+    : descriptor(input_descriptor), default_message(input_default_message) {}
 
 MessageAllocationMetadata::FieldAllocationMetadata::FieldAllocationMetadata(
-    const ::google::protobuf::FieldDescriptor* descriptor,
-    const ::std::string* default_string) noexcept
-    : descriptor(descriptor), default_string(default_string) {}
+    const ::google::protobuf::FieldDescriptor* input_descriptor,
+    const ::std::string* input_default_string) noexcept
+    : descriptor(input_descriptor), default_string(input_default_string) {}
 
 void MessageAllocationMetadata::FieldAllocationMetadata::update(
     const ::google::protobuf::Message& message,

@@ -188,9 +188,9 @@ inline void ConcurrentVector<T, BLOCK_SIZE>::Snapshot::copy_n(IT begin,
                                                               size_t size,
                                                               size_t offset) {
   for_each(offset, offset + size, [&](T* iter, T* end) {
-    auto size = end - iter;
-    ::std::copy_n(begin, size, iter);
-    begin += size;
+    auto num = end - iter;
+    ::std::copy_n(begin, num, iter);
+    begin += num;
   });
 }
 

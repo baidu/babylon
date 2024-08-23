@@ -297,7 +297,7 @@ TEST(future, concurrent_works_fine) {
                          ::std::to_string(step_two_value[i]));
   }
 
-  for (size_t i = 0; i < times; ++i) {
+  for (size_t j = 0; j < times; ++j) {
     ::std::vector<::std::thread> threads;
     ::std::vector<Promise<::std::string>> promises;
     ::std::vector<Future<::std::string>> futures;

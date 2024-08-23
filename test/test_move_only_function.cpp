@@ -60,12 +60,12 @@ TEST(move_only_function, construct_from_moveable_callable_only) {
 TEST(move_only_function, callable_move_with_function) {
   typedef MoveOnlyFunction<::std::string(::std::string)> MOF;
   struct S {
-    S(::std::string prefix) : prefix(prefix) {}
+    S(::std::string prefix) : _prefix(prefix) {}
     ::std::string operator()(::std::string value) {
-      prefix += value;
-      return prefix;
+      _prefix += value;
+      return _prefix;
     }
-    ::std::string prefix;
+    ::std::string _prefix;
   };
   {
     S s("10086");
@@ -165,8 +165,8 @@ TEST(move_only_function, result_forward_out) {
   // NRVO
   {
     auto s = MOF([]() {
-      S s;
-      return s;
+      S obj;
+      return obj;
     })();
     ASSERT_EQ(0, s.copy);
     ASSERT_EQ(0, s.move);

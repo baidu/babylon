@@ -7,9 +7,9 @@ BABYLON_NAMESPACE_BEGIN
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationContext::OffsetDeleter begin
 void ApplicationContext::OffsetDeleter::operator()(void* ptr) noexcept {
-  if (deleter) {
-    auto address = reinterpret_cast<intptr_t>(ptr) + offset;
-    deleter(reinterpret_cast<void*>(address));
+  if (_deleter) {
+    auto address = reinterpret_cast<intptr_t>(ptr) + _offset;
+    _deleter(reinterpret_cast<void*>(address));
   }
 }
 // ApplicationContext::OffsetDeleter end

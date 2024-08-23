@@ -346,8 +346,8 @@ TEST(SwissMemoryResource, compatible_with_protobuf_in_asan_mode) {
       // 反复reserve会触发protobuf 4.x的重用功能
       // 内部有对应的asan poison标记动作
       // 验证和MemoryResource的标记可兼容
-      for (int i = 0; i < 10; ++i) {
-        message->mutable_m()->add_rp(i);
+      for (int k = 0; k < 10; ++k) {
+        message->mutable_m()->add_rp(k);
       }
     }
   }
