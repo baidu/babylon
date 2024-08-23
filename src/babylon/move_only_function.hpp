@@ -84,7 +84,8 @@ inline UncomposableBindArgument<T>::UncomposableBindArgument(T&& input_value)
     : value(::std::move(input_value)) {}
 
 template <typename T>
-inline UncomposableBindArgument<T>::UncomposableBindArgument(const T& input_value)
+inline UncomposableBindArgument<T>::UncomposableBindArgument(
+    const T& input_value)
     : value(input_value) {}
 
 template <typename T>

@@ -522,9 +522,9 @@ struct ConditionalExpression
 
 struct NonConditionalExpression
     : public grammar<const char*, space_type, ::std::tuple<size_t, size_t>()> {
-  NonConditionalExpression(
-      expression::Option& input_option,
-      ::std::unordered_map<::std::string, size_t>& input_variable_indexes) noexcept
+  NonConditionalExpression(expression::Option& input_option,
+                           ::std::unordered_map<::std::string, size_t>&
+                               input_variable_indexes) noexcept
       : base_type(start, "non_conditional_expression"),
         option(input_option),
         variable_indexes(input_variable_indexes) {

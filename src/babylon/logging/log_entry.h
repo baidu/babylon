@@ -31,11 +31,12 @@ class LogEntry {
                        ::std::vector<struct ::iovec>& iov) noexcept;
 
  private:
-  static void pages_append_to_iovec(char** pages, size_t size, size_t page_size,
-                             ::std::vector<struct ::iovec>& iov) noexcept;
-  static void page_table_append_to_iovec(PageTable& page_table, size_t size,
-                                  size_t page_size,
-                                  ::std::vector<struct ::iovec>& iov) noexcept;
+  static void pages_append_to_iovec(
+      char** pages, size_t size, size_t page_size,
+      ::std::vector<struct ::iovec>& iov) noexcept;
+  static void page_table_append_to_iovec(
+      PageTable& page_table, size_t size, size_t page_size,
+      ::std::vector<struct ::iovec>& iov) noexcept;
 
  public:
   // 元信息只记录一个总长度，总长度确定后

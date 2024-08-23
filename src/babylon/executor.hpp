@@ -35,8 +35,10 @@ template <typename C, typename... Args>
 inline int Executor::submit(C&& callable, Args&&... args) noexcept {
   typedef typename ::std::decay<C>::type DC;
   MoveOnlyFunction<void(void)> function {::std::bind(
-      [](DC& captured_callable, typename ::std::decay<Args>::type&... captured_args) {
-        normalize(::std::move(captured_callable))(::std::move(captured_args)...);
+      [](DC& captured_callable,
+         typename ::std::decay<Args>::type&... captured_args) {
+        normalize(::std::move(captured_callable))(
+            ::std::move(captured_args)...);
       },
       uncomposable_bind_argument(::std::forward<C>(callable)),
       uncomposable_bind_argument(::std::forward<Args>(args))...)};
