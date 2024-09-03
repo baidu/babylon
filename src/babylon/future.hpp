@@ -518,7 +518,8 @@ inline CountDownLatch<M>& CountDownLatch<M>::operator=(
   other._count.store(count, ::std::memory_order_relaxed);
   Promise<size_t, M> promise = ::std::move(_promise);
   _promise = ::std::move(other._promise);
-  other._promise = promise;
+  other._promise = ::std::move(promise);
+  return *this;
 }
 
 template <typename M>
