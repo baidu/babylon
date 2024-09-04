@@ -1,7 +1,7 @@
 {
-  "url": "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v27.3.tar.gz",
+  "url": "https://github.com/protocolbuffers/protobuf/releases/download/v27.3/protobuf-27.3.zip",
   "strip_prefix": "protobuf-27.3",
-  "integrity": "sha256-FTUVHvvHiT84sFeOg8rFhPKBmXTwZWmJdpiexxwa+Eo=",
+  "integrity": "sha256-pJFHIX9p6NGaqwzFwAWdYgEmH1y2IUX4q0rIuU5/+oY=",
   "patch_strip": 1,
   "patches": {
     "arenastring.patch": "sha256-8dbDqnk1FKUqY/94bs9M6Mw/dvk6WiWUJiDuhbtRNY4="
