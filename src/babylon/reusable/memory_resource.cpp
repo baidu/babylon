@@ -248,8 +248,8 @@ void ExclusiveMonotonicBufferResource::release() noexcept {
                                     PAGE_ARRAY_CAPACITY - _last_page_pointer);
     _last_page_array = _last_page_array->next;
 
-    //将pages的地址提前拷一份存起来，
-    //避免当page_rray持有自己时，page_rray所在的page被提前释放后_last_page_pointer失效
+    // 将pages的地址提前拷一份存起来，
+    // 避免当page_rray持有自己时，page_rray所在的page被提前释放后_last_page_pointer失效
     for (size_t i = 0; i < size; ++i) {
       tmp_pages[i] = SanitizerHelper::unpoison(_last_page_pointer[i],
                                                _page_allocator->page_size());

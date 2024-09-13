@@ -50,27 +50,6 @@ class MoveOnlyFunction<R(Args...)> {
   ::std::function<R(Args&&...)> _function;
 };
 
-// ::std::bind在遇到参数也是bind_expression时，会进行特化处理，做多级组合
-// 对需要把函数作为参数传递的场景，会导致bind_expression和普通函数表现不一致
-// 这里专门制作一个包装以便统一处理，例如
-// ::std::bind(function, normal_args, args_maybe_bind_result);
-// 改为
-// ::std::bind(function, normal_args,
-// uncomposable_bind_argument(arg_maybe_bind_result));
-template <typename T>
-struct UncomposableBindArgument {
-  inline UncomposableBindArgument(T&& value);
-  inline UncomposableBindArgument(const T& value);
-  inline operator T&() noexcept;
-  inline operator const T&() const noexcept;
-
-  T value;
-};
-
-template <typename T>
-inline UncomposableBindArgument<typename ::std::decay<T>::type>
-uncomposable_bind_argument(T&& value);
-
 BABYLON_NAMESPACE_END
 
 #include "babylon/move_only_function.hpp"

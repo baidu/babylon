@@ -1,4 +1,4 @@
-BABYLON_GCC_COPTS = ['-Wall', '-Wextra']
+BABYLON_GCC_COPTS = ['-std=c++14', '-Wall', '-Wextra']
 BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-option',
                        # 不保持老版本c++语法兼容
                        '-Wno-c++98-compat-pedantic',

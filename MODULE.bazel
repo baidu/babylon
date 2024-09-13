@@ -24,9 +24,12 @@ bazel_dep(name = 'boost.spirit', version = '1.83.0.bzl.2')
 # test only dependency
 
 # --registry=https://bcr.bazel.build
-single_version_override(module_name = 'abseil-cpp', version = '20240722.0')
-single_version_override(module_name = 'protobuf', version = '27.3')
-bazel_dep(name = 'googletest', version = '1.15.2', repo_name = 'com_google_googletest', dev_dependency = True)
+#single_version_override(module_name = 'abseil-cpp', version = '20240722.0')
+single_version_override(module_name = 'abseil-cpp', version = '20211102.0')
+#single_version_override(module_name = 'protobuf', version = '27.3')
+single_version_override(module_name = 'protobuf', version = '3.19.6')
+#bazel_dep(name = 'googletest', version = '1.15.2', repo_name = 'com_google_googletest', dev_dependency = True)
+bazel_dep(name = 'googletest', version = '1.11.0', repo_name = 'com_google_googletest', dev_dependency = True)
 bazel_dep(name = 'platforms', version = '0.0.10', dev_dependency = True)
 bazel_dep(name = 'rules_cc', version = '0.0.9', dev_dependency = True)
 

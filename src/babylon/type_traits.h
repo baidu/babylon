@@ -1,12 +1,13 @@
 #pragma once
 
 #include "babylon/absl_base_internal_invoke.h" // ::absl::base_internal::is_invocable_r
-#include "babylon/environment.h"
-#include "babylon/string_view.h" // StringView
+#include "babylon/string_view.h"               // StringView
 
 // clang-format off
 #include "babylon/protect.h"
 // clang-format on
+
+#include "absl/utility/utility.h" // absl::apply
 
 #include <type_traits> // std::invoke_result
 
@@ -14,6 +15,9 @@
 namespace std {
 template <typename F, typename... Args>
 using is_invocable = ::absl::base_internal::is_invocable_r<void, F, Args...>;
+using ::absl::apply;
+using ::absl::base_internal::invoke;
+using ::absl::base_internal::invoke_result_t;
 using ::absl::base_internal::is_invocable_r;
 };     // namespace std
 #endif // __cpp_lib_is_invocable < 201703L
@@ -233,13 +237,78 @@ class ParameterPack<T> {
 // ParameterPack end
 ////////////////////////////////////////////////////////////////////////////////
 
-#if __cpp_lib_is_invocable >= 201703L
-template <typename F, typename... Args>
-struct InvokeResult : public ::std::invoke_result<F, Args...> {};
-#else  // !__cpp_lib_is_invocable
-template <typename F, typename... Args>
-struct InvokeResult : public ::std::result_of<F(Args...)> {};
-#endif // !__cpp_lib_is_invocable
+template <typename, template <typename...> typename>
+struct IsSpecialization : public ::std::false_type {};
+template <template <typename...> typename T, typename... Args>
+struct IsSpecialization<T<Args...>, T> : public ::std::true_type {};
+
+template <typename C>
+struct CallableArgs;
+template <typename R, typename... Args>
+struct CallableArgs<R(Args...)> {
+  using type = ::std::tuple<Args...>;
+};
+template <typename R, typename... Args>
+struct CallableArgs<R (&)(Args...)> {
+  using type = ::std::tuple<Args...>;
+};
+template <typename R, typename... Args>
+struct CallableArgs<R (&&)(Args...)> {
+  using type = ::std::tuple<Args...>;
+};
+template <typename R, typename... Args>
+struct CallableArgs<R (*)(Args...)> {
+  using type = ::std::tuple<Args...>;
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*)(Args...)> {
+  using type = ::std::tuple<T*, Args...>;
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&)(Args...)> {
+  using type = ::std::tuple<T*, Args...>;
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&&)(Args...)> {
+  using type = ::std::tuple<T*, Args...>;
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const)(Args...)> {
+  using type = ::std::tuple<T*, Args...>;
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const&)(Args...)> {
+  using type = ::std::tuple<T*, Args...>;
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*)(Args...) const> {
+  using type = ::std::tuple<const T*, Args...>;
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&)(Args...) const> {
+  using type = ::std::tuple<const T*, Args...>;
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&&)(Args...) const> {
+  using type = ::std::tuple<const T*, Args...>;
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const)(Args...) const> {
+  using type = ::std::tuple<const T*, Args...>;
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const&)(Args...) const> {
+  using type = ::std::tuple<const T*, Args...>;
+};
+template <typename C>
+struct CallableArgs
+    : public CallableArgs<decltype(&::std::decay<C>::type::operator())> {
+  using BaseType =
+      typename CallableArgs<decltype(&::std::decay<C>::type::operator())>::type;
+  template <typename T, typename... Args>
+  static ::std::tuple<Args...> RemoveFirst(::std::tuple<T, Args...>);
+  using type = decltype(RemoveFirst(::std::declval<BaseType>()));
+};
 
 BABYLON_NAMESPACE_END
 

@@ -68,6 +68,26 @@ cc_library(
 )
 
 cc_library(
+  name = 'coroutine_and_executor',
+  srcs = ['coroutine.cpp', 'executor.cpp'],
+  hdrs = ['coroutine.h', 'current_executor.h', 'executor.h', 'executor.hpp'],
+  copts = BABYLON_COPTS,
+  includes = ['//src'],
+  strip_include_prefix = '//src',
+  deps = [
+    ':future',
+    '//src/babylon/logging',
+    '//src/babylon/concurrent:bounded_queue',
+  ],
+)
+
+alias(
+  name = 'coroutine',
+  actual = '//src/babylon:coroutine_and_executor',
+)
+
+
+cc_library(
   name = 'environment',
   hdrs = ['environment.h', 'protect.h', 'unprotect.h'],
   copts = BABYLON_COPTS,
@@ -78,17 +98,9 @@ cc_library(
   ],
 )
 
-cc_library(
+alias(
   name = 'executor',
-  srcs = ['executor.cpp'],
-  hdrs = ['executor.h', 'executor.hpp'],
-  copts = BABYLON_COPTS,
-  includes = ['//src'],
-  strip_include_prefix = '//src',
-  deps = [
-    ':future',
-    '//src/babylon/concurrent:bounded_queue',
-  ],
+  actual = '//src/babylon:coroutine_and_executor',
 )
 
 cc_library(
@@ -220,5 +232,6 @@ cc_library(
   deps = [
     ':absl_base_internal_invoke',
     ':string_view',
+    '@com_google_absl//absl/utility',
   ],
 )

@@ -51,7 +51,7 @@ template <typename C, typename T>
 struct ResultOfCallback {
   using U = typename NonVoid<T>::type;
   using F = decltype(&run_callback<C, U>);
-  using type = typename InvokeResult<F, C&, U&>::type;
+  using type = ::std::invoke_result_t<F, C&, U&>;
 };
 
 // 可以支持使用run_callback(const C&, T&&)来执行的回调函数
@@ -68,8 +68,8 @@ struct IsCompatibleCallback {
 // 执行回调并设置到另一个Promise中，适配void类型
 template <typename T, typename M, typename C, typename U,
           typename ::std::enable_if<
-              !::std::is_void<typename InvokeResult<
-                  decltype(&run_callback<C, U>), C&, U&>::type>::value,
+              !::std::is_void<::std::invoke_result_t<
+                  decltype(&run_callback<C, U>), C&, U&>>::value,
               int>::type = 0>
 inline void run_callback(Promise<T, M>& promise, C& callback,
                          U& value) noexcept {
@@ -77,8 +77,8 @@ inline void run_callback(Promise<T, M>& promise, C& callback,
 }
 template <typename T, typename M, typename C, typename U,
           typename ::std::enable_if<
-              ::std::is_void<typename InvokeResult<
-                  decltype(&run_callback<C, U>), C&, U&>::type>::value,
+              ::std::is_void<::std::invoke_result_t<
+                  decltype(&run_callback<C, U>), C&, U&>>::value,
               int>::type = 0>
 inline void run_callback(Promise<T, M>& promise, C& callback,
                          U& value) noexcept {

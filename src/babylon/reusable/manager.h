@@ -69,8 +69,8 @@ class ReusableManager {
   // 但是子类创建完成后，就可以将反射信息记录到ReusableTraits机制的AllocationMetadata中
   // 后续的重建就可以依照协议完成了
   template <typename T, typename C,
-            typename = typename ::std::enable_if<::std::is_same<
-                T*, typename InvokeResult<C, R&>::type>::value>::type>
+            typename = typename ::std::enable_if<
+                ::std::is_same<T*, ::std::invoke_result_t<C, R&>>::value>::type>
   ReusableAccessor<T> create_object(C&& creator) noexcept;
 
   // 对所有create_object创建的实例统计执行逻辑清空
