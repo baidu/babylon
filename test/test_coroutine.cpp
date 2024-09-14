@@ -1,5 +1,11 @@
 #include "babylon/executor.h"
 
+#if __cpp_concepts && __cpp_lib_coroutine
+
+#if __cpp_lib_concepts
+#include "coro/coro.hpp"
+#endif // __cpp_lib_concepts
+
 #include "gtest/gtest.h"
 
 #include <future>
@@ -127,3 +133,27 @@ TEST_F(CoroutineTest, future_is_awaitable) {
   promise.set_value("10086");
   ASSERT_EQ("10086", future.get());
 }
+
+#if __cpp_lib_concepts
+TEST_F(CoroutineTest, non_babylon_coroutine_task_is_awaitable) {
+  ::coro::thread_pool pool {::coro::thread_pool::options {.thread_count = 1}};
+
+  ::std::promise<::std::string> promise;
+  auto future = promise.get_future();
+  auto c = [&pool, future = ::std::move(future)]() mutable -> coro::task<::std::string> {
+    co_await pool.schedule();
+    co_return future.get();
+  };
+
+  auto t = c();
+  ::coro::sync_wait(c());
+  // auto future = executor.execute([&]() -> CoroutineTask<::std::string> {
+
+  //    });
+  // ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
+  // promise.set_value("10086");
+  // ASSERT_EQ("10086", future.get());
+}
+#endif // __cpp_lib_concepts
+
+#endif // __cpp_concepts && __cpp_lib_coroutine

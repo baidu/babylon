@@ -149,7 +149,8 @@ class BasicCoroutinePromise {
   }
 
   template <typename T, typename F>
-  FutureAwaitable<T, F>&& await_transform(FutureAwaitable<T, F>&& future) noexcept {
+  FutureAwaitable<T, F>&& await_transform(
+      FutureAwaitable<T, F>&& future) noexcept {
     return ::std::move(future);
   }
 
@@ -230,8 +231,8 @@ class CoroutinePromise<void> : public BasicCoroutinePromise {
   inline static constexpr void value() noexcept {}
 };
 
-//template <typename T>
-//class CoroutinePromise;
+// template <typename T>
+// class CoroutinePromise;
 template <typename T>
 class CoroutineTask {
  public:

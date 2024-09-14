@@ -251,57 +251,85 @@ struct CallableArgs<R(Args...)> {
   using type = ::std::tuple<Args...>;
 };
 template <typename R, typename... Args>
-struct CallableArgs<R (&)(Args...)> {
-  using type = ::std::tuple<Args...>;
+struct CallableArgs<R (&)(Args...)> : public CallableArgs<R(Args...)> {};
+template <typename R, typename... Args>
+struct CallableArgs<R (&&)(Args...)> : public CallableArgs<R(Args...)> {};
+template <typename R, typename... Args>
+struct CallableArgs<R (*)(Args...)> : public CallableArgs<R(Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*)(Args...)> : public CallableArgs<R(T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&)(Args...)> : public CallableArgs<R(T*, Args...)> {
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&&)(Args...)> : public CallableArgs<R(T*, Args...)> {
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const)(Args...)>
+    : public CallableArgs<R(T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const&)(Args...)>
+    : public CallableArgs<R(T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*)(Args...) const>
+    : public CallableArgs<R(const T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&)(Args...) const>
+    : public CallableArgs<R(const T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&&)(Args...) const>
+    : public CallableArgs<R(const T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const)(Args...) const>
+    : public CallableArgs<R(const T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const&)(Args...) const>
+    : public CallableArgs<R(const T*, Args...)> {};
+
+#if __cpp_noexcept_function_type
+template <typename R, typename... Args>
+struct CallableArgs<R(Args...) noexcept> : public CallableArgs<R(Args...)> {};
+template <typename R, typename... Args>
+struct CallableArgs<R (&)(Args...) noexcept> : public CallableArgs<R(Args...)> {
 };
 template <typename R, typename... Args>
-struct CallableArgs<R (&&)(Args...)> {
-  using type = ::std::tuple<Args...>;
-};
+struct CallableArgs<R (&&)(Args...) noexcept>
+    : public CallableArgs<R(Args...)> {};
 template <typename R, typename... Args>
-struct CallableArgs<R (*)(Args...)> {
-  using type = ::std::tuple<Args...>;
+struct CallableArgs<R (*)(Args...) noexcept> : public CallableArgs<R(Args...)> {
 };
 template <typename R, typename T, typename... Args>
-struct CallableArgs<R (T::*)(Args...)> {
-  using type = ::std::tuple<T*, Args...>;
-};
+struct CallableArgs<R (T::*)(Args...) noexcept>
+    : public CallableArgs<R(T*, Args...)> {};
 template <typename R, typename T, typename... Args>
-struct CallableArgs<R (T::*&)(Args...)> {
-  using type = ::std::tuple<T*, Args...>;
-};
+struct CallableArgs<R (T::*&)(Args...) noexcept>
+    : public CallableArgs<R(T*, Args...)> {};
 template <typename R, typename T, typename... Args>
-struct CallableArgs<R (T::*&&)(Args...)> {
-  using type = ::std::tuple<T*, Args...>;
-};
+struct CallableArgs<R (T::*&&)(Args...) noexcept>
+    : public CallableArgs<R(T*, Args...)> {};
 template <typename R, typename T, typename... Args>
-struct CallableArgs<R (T::*const)(Args...)> {
-  using type = ::std::tuple<T*, Args...>;
-};
+struct CallableArgs<R (T::*const)(Args...) noexcept>
+    : public CallableArgs<R(T*, Args...)> {};
 template <typename R, typename T, typename... Args>
-struct CallableArgs<R (T::*const&)(Args...)> {
-  using type = ::std::tuple<T*, Args...>;
-};
+struct CallableArgs<R (T::*const&)(Args...) noexcept>
+    : public CallableArgs<R(T*, Args...)> {};
 template <typename R, typename T, typename... Args>
-struct CallableArgs<R (T::*)(Args...) const> {
-  using type = ::std::tuple<const T*, Args...>;
-};
+struct CallableArgs<R (T::*)(Args...) const noexcept>
+    : public CallableArgs<R(const T*, Args...)> {};
 template <typename R, typename T, typename... Args>
-struct CallableArgs<R (T::*&)(Args...) const> {
-  using type = ::std::tuple<const T*, Args...>;
-};
+struct CallableArgs<R (T::*&)(Args...) const noexcept>
+    : public CallableArgs<R(const T*, Args...)> {};
 template <typename R, typename T, typename... Args>
-struct CallableArgs<R (T::*&&)(Args...) const> {
-  using type = ::std::tuple<const T*, Args...>;
-};
+struct CallableArgs<R (T::*&&)(Args...) const noexcept>
+    : public CallableArgs<R(const T*, Args...)> {};
 template <typename R, typename T, typename... Args>
-struct CallableArgs<R (T::*const)(Args...) const> {
-  using type = ::std::tuple<const T*, Args...>;
-};
+struct CallableArgs<R (T::*const)(Args...) const noexcept>
+    : public CallableArgs<R(const T*, Args...)> {};
 template <typename R, typename T, typename... Args>
-struct CallableArgs<R (T::*const&)(Args...) const> {
-  using type = ::std::tuple<const T*, Args...>;
-};
+struct CallableArgs<R (T::*const&)(Args...) const noexcept>
+    : public CallableArgs<R(const T*, Args...)> {};
+#endif // __cpp_noexcept_function_type
+
 template <typename C>
 struct CallableArgs
     : public CallableArgs<decltype(&::std::decay<C>::type::operator())> {

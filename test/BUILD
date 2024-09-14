@@ -32,6 +32,7 @@ cc_test(
   deps = [
     '//:coroutine',
     '@com_google_googletest//:gtest_main',
+    '@libcoro',
   ]
 )
 
