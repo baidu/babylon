@@ -310,7 +310,8 @@ class ThreadPoolExecutor : public Executor {
 
   void stop() noexcept;
 
-  int initialize(size_t worker_num, size_t queue_capacity) noexcept;
+  int ABSL_DEPRECATED("Use start instead")
+      initialize(size_t worker_num, size_t queue_capacity) noexcept;
 
  protected:
   virtual int invoke(MoveOnlyFunction<void(void)>&& function) noexcept override;

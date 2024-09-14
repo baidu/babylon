@@ -11,15 +11,17 @@ class CurrentExecutor {
     return storage();
   }
 
+ private:
   inline static void set(Executor* executor) noexcept {
     storage() = executor;
   }
 
- private:
   inline static Executor*& storage() noexcept {
     static thread_local Executor* executor {nullptr};
     return executor;
   }
+
+  friend Executor;
 };
 
 BABYLON_NAMESPACE_END

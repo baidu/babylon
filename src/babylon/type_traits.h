@@ -241,6 +241,8 @@ template <typename, template <typename...> typename>
 struct IsSpecialization : public ::std::false_type {};
 template <template <typename...> typename T, typename... Args>
 struct IsSpecialization<T<Args...>, T> : public ::std::true_type {};
+template <typename T, template <typename...> typename TP>
+constexpr bool IsSpecializationValue = IsSpecialization<T, TP>::value;
 
 template <typename C>
 struct CallableArgs;

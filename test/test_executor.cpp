@@ -14,10 +14,6 @@ using ::babylon::MoveOnlyFunction;
 using ::babylon::ThreadPoolExecutor;
 
 struct ExecutorTest : public ::testing::Test {
-  virtual void SetUp() override {
-    ::babylon::LoggerManager::instance();
-  }
-
   InplaceExecutor& inplace_executor = InplaceExecutor::instance();
   AlwaysUseNewThreadExecutor& thread_executor =
       AlwaysUseNewThreadExecutor::instance();
@@ -385,6 +381,61 @@ TEST_F(ExecutorTest, return_invalid_future_when_invoke_fail) {
   ASSERT_NE(0, executor.submit([] {}));
 }
 
+TEST_F(ExecutorTest, current_executor_mark_during_execution) {
+  {
+    struct S {
+      static void function(Executor& e) {
+        ASSERT_EQ(&e, ::babylon::CurrentExecutor::get());
+      }
+      void member_function(Executor& e) {
+        ASSERT_EQ(&e, ::babylon::CurrentExecutor::get());
+      }
+      void operator()(Executor& e) {
+        ASSERT_EQ(&e, ::babylon::CurrentExecutor::get());
+      }
+    } s;
+    thread_executor.execute(S::function, ::std::ref(thread_executor)).get();
+    thread_executor
+        .execute(&S::member_function, &s, ::std::ref(thread_executor))
+        .get();
+    thread_executor.execute(s, ::std::ref(thread_executor)).get();
+    thread_executor
+        .execute(
+            [](Executor& e) {
+              ASSERT_EQ(&e, ::babylon::CurrentExecutor::get());
+            },
+            ::std::ref(thread_executor))
+        .get();
+  }
+  {
+    struct S {
+      static ::babylon::CoroutineTask<> run(Executor& e) {
+        assert(&e == ::babylon::CurrentExecutor::get());
+        co_return;
+      }
+      ::babylon::CoroutineTask<> member_run(Executor& e) {
+        assert(&e == ::babylon::CurrentExecutor::get());
+        co_return;
+      }
+      ::babylon::CoroutineTask<> operator()(Executor& e) {
+        assert(&e == ::babylon::CurrentExecutor::get());
+        co_return;
+      }
+    } s;
+    thread_executor.execute(S::run, thread_executor).get();
+    thread_executor.execute(&S::member_run, &s, thread_executor).get();
+    thread_executor.execute(s, thread_executor).get();
+    thread_executor
+        .execute(
+            [&](Executor& e) -> CoroutineTask<> {
+              assert(&e == ::babylon::CurrentExecutor::get());
+              co_return;
+            },
+            thread_executor)
+        .get();
+  }
+}
+
 TEST_F(ExecutorTest, inplace_reentry_execution) {
   int value {1};
   int see[3] {0, 0, 0};
@@ -422,7 +473,7 @@ TEST_F(ExecutorTest, run_async_in_new_thread) {
 
 TEST_F(ExecutorTest, run_async_in_thread_pool) {
   ThreadPoolExecutor executor;
-  ASSERT_EQ(0, executor.initialize(1, 8));
+  ASSERT_EQ(0, executor.start());
   auto lambda = [] {
     thread_local int value {1};
     ::usleep(10000);
@@ -438,6 +489,104 @@ TEST_F(ExecutorTest, run_async_in_thread_pool) {
   ASSERT_TRUE(future.valid());
   ASSERT_FALSE(future.ready());
   ASSERT_EQ(3, future.get());
+}
+
+TEST_F(ExecutorTest, local_task_keep_stay_local_in_capacity) {
+  {
+    ThreadPoolExecutor executor;
+    executor.set_worker_number(2);
+    executor.start();
+    executor
+        .execute([&] {
+          auto future = executor.execute([] {});
+          ASSERT_TRUE(future.wait_for(::std::chrono::milliseconds {100}));
+        })
+        .get();
+  }
+  {
+    ThreadPoolExecutor executor;
+    executor.set_worker_number(2);
+    executor.set_local_capacity(1);
+    executor.start();
+    ::babylon::Future<void> future;
+    executor
+        .execute([&] {
+          future = executor.execute([] {});
+          ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
+        })
+        .get();
+    future.get();
+  }
+  {
+    ThreadPoolExecutor executor;
+    executor.set_worker_number(2);
+    executor.set_local_capacity(1);
+    executor.start();
+    ::babylon::Future<void> future;
+    executor
+        .execute([&] {
+          future = executor.execute([] {});
+          ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
+          executor.execute([] {}).get();
+        })
+        .get();
+    future.get();
+  }
+}
+
+TEST_F(ExecutorTest, local_task_auto_steal_when_finish) {
+  ThreadPoolExecutor executor;
+  executor.set_worker_number(2);
+  executor.set_local_capacity(1);
+  executor.set_enable_work_stealing(true);
+  executor.start();
+
+  ::std::promise<void> promise;
+  auto future = promise.get_future();
+  executor.submit([&] {
+    future.get();
+  });
+  executor
+      .execute([&] {
+        auto inner_future = executor.execute([] {});
+        ASSERT_FALSE(inner_future.wait_for(::std::chrono::milliseconds {100}));
+        promise.set_value();
+        inner_future.get();
+      })
+      .get();
+}
+
+TEST_F(ExecutorTest, local_task_steal_after_wakeup) {
+  ThreadPoolExecutor executor;
+  executor.set_worker_number(2);
+  executor.set_local_capacity(1);
+  executor.set_enable_work_stealing(true);
+  executor.start();
+  ::std::this_thread::sleep_for(::std::chrono::milliseconds {100});
+
+  executor
+      .execute([&] {
+        auto future = executor.execute([] {});
+        ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
+        executor.wakeup_one_worker();
+        future.get();
+      })
+      .get();
+}
+
+TEST_F(ExecutorTest, local_task_auto_balance) {
+  ThreadPoolExecutor executor;
+  executor.set_worker_number(2);
+  executor.set_local_capacity(1);
+  executor.set_balance_interval(::std::chrono::milliseconds {1});
+  executor.start();
+  ::std::this_thread::sleep_for(::std::chrono::milliseconds {100});
+
+  executor
+      .execute([&] {
+        executor.execute([] {}).get();
+      })
+      .get();
 }
 
 TEST_F(ExecutorTest, press) {
