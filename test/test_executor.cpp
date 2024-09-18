@@ -591,7 +591,9 @@ TEST_F(ExecutorTest, local_task_auto_balance) {
 
 TEST_F(ExecutorTest, press) {
   ThreadPoolExecutor executor;
-  ASSERT_EQ(0, executor.initialize(64, 128));
+  executor.set_worker_number(64);
+  executor.set_global_capacity(128);
+  executor.start();
 
   size_t concurrent = 32;
   size_t times = 2000;

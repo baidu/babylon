@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         compiler: [{name: gcc, flag: --action_env=CC=gcc-12}, {name: clang, flag: --action_env=CC=clang-14}]
-        std: [{name: c++17}, {name: c++14, flag: --cxxopt=-std=c++14 --cxxopt=-faligned-new}]
+        std: [{name: c++20}, {name: c++14, flag: --cxxopt=-std=c++14 --cxxopt=-faligned-new}]
         stdlib: [{name: stdlibc++}, {name: libc++, flag: --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++}]
         feature: [{name: asan, flag: --config=asan}, {name: tsan, flag: --features=tsan}]
         exclude:

@@ -24,25 +24,15 @@ bazel_dep(name = 'boost.spirit', version = '1.83.0.bzl.2')
 # test only dependency
 
 # --registry=https://bcr.bazel.build
-#single_version_override(module_name = 'abseil-cpp', version = '20240722.0')
-single_version_override(module_name = 'abseil-cpp', version = '20211102.0')
-#single_version_override(module_name = 'protobuf', version = '27.3')
-single_version_override(module_name = 'protobuf', version = '3.19.6')
-#bazel_dep(name = 'googletest', version = '1.15.2', repo_name = 'com_google_googletest', dev_dependency = True)
-bazel_dep(name = 'googletest', version = '1.11.0', repo_name = 'com_google_googletest', dev_dependency = True)
+single_version_override(module_name = 'abseil-cpp', version = '20240722.0')
+single_version_override(module_name = 'protobuf', version = '27.3')
+bazel_dep(name = 'googletest', version = '1.15.2', repo_name = 'com_google_googletest', dev_dependency = True)
 bazel_dep(name = 'libcoro', version = '0.12.1', dev_dependency = True)
 bazel_dep(name = 'platforms', version = '0.0.10', dev_dependency = True)
 bazel_dep(name = 'rules_cc', version = '0.0.9', dev_dependency = True)
+bazel_dep(name = 'rules_cuda', version = '0.2.3', dev_dependency = True)
 
-# rules_cuda latest release 0.2.1 is too old and do not have auto detect feature
-bazel_dep(name = 'rules_cuda', version = '0.2.1', dev_dependency = True)
-archive_override(
-  module_name = 'rules_cuda',
-  urls = ['https://github.com/bazel-contrib/rules_cuda/archive/3482c70dc60d9ab1ad26b768c117fcd61ee12494.tar.gz'],
-  strip_prefix = 'rules_cuda-3482c70dc60d9ab1ad26b768c117fcd61ee12494',
-  integrity = 'sha256-x78dpBtaMUgKBHf0ztSe7QirHLOv93xwTjc8+cUmlPU=',
-)
-
+# cuda toolchain
 cuda = use_extension('@rules_cuda//cuda:extensions.bzl', 'toolchain', dev_dependency = True)
 cuda.local_toolchain()
 
