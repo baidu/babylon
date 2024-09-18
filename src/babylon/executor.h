@@ -31,6 +31,7 @@ class Executor {
       ::std::is_member_function_pointer<C>::value;
 #endif // __cpp_concepts && __cpp_lib_coroutine
 
+ public:
   // The **effective** result type of C(Args...), generally
   // std::invoke_result_t<C, Args...>.
   //
@@ -43,6 +44,13 @@ class Executor {
   struct Result;
   template <typename C, typename... Args>
   using ResultType = typename Result<C, Args...>::type;
+
+#if __cpp_concepts && __cpp_lib_coroutine
+  template <typename A>
+  struct AwaitResult;
+  template <typename A>
+  using AwaitResultType = typename AwaitResult<A>::type;
+#endif // __cpp_concepts && __cpp_lib_coroutine
 
  public:
   // Thin wrapper of std::coroutine_handle<>. Implementor can resume it just
@@ -89,8 +97,7 @@ class Executor {
   // Await a awaitable object, just like co_await it inside a coroutine context.
   // Return a future object to wait and get that result.
   template <typename F = SchedInterface, typename A>
-  inline Future<CoroutineAwaitResultType<CoroutineTask<>::promise_type, A&&>, F>
-  execute(A&& awaitable) noexcept;
+  inline Future<AwaitResultType<A&&>, F> execute(A&& awaitable) noexcept;
 #endif // __cpp_concepts && __cpp_lib_coroutine
 
   //////////////////////////////////////////////////////////////////////////////
@@ -190,8 +197,27 @@ struct Executor::Result {
 template <typename C, typename... Args>
   requires CoroutineInvocable<C, Args...>
 struct Executor::Result<C, Args...> {
-  using type = CoroutineAwaitResultType<CoroutineTask<>::promise_type,
-                                        ::std::invoke_result_t<C, Args...>>;
+  using AwaitResultType =
+      CoroutineAwaitResultType<CoroutineTask<>::promise_type,
+                               ::std::invoke_result_t<C, Args...>>;
+  using type = ::std::conditional<
+      ::std::is_rvalue_reference<AwaitResultType>::value,
+      typename ::std::remove_reference<AwaitResultType>::type,
+      AwaitResultType>::type;
+};
+
+template <typename A>
+  requires requires {
+             typename CoroutineAwaitResultType<CoroutineTask<>::promise_type,
+                                               A>;
+           }
+struct Executor::AwaitResult<A> {
+  using AwaitReturnType =
+      CoroutineAwaitResultType<CoroutineTask<>::promise_type, A>;
+  using type = ::std::conditional<
+      ::std::is_rvalue_reference<AwaitReturnType>::value,
+      typename ::std::remove_reference<AwaitReturnType>::type,
+      AwaitReturnType>::type;
 };
 #endif // __cpp_concepts && __cpp_lib_coroutine
 

@@ -78,6 +78,7 @@ cc_library(
     ':future',
     '//src/babylon/logging',
     '//src/babylon/concurrent:bounded_queue',
+    '@libcoro',
   ],
 )
 

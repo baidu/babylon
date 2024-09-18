@@ -93,12 +93,15 @@ inline void run_callback(Promise<T, M>& promise, C& callback,
 template <typename T, typename M>
 class FutureContext {
  public:
-  // void类型比较特殊，无法完成许多处理，定义为零大小类型方便统一书写
-  typedef typename internal::future::NonVoid<T>::type ValueType;
+  using ResultType = Future<T, M>::ResultType;
+  using RemoveReferenceType = ::std::remove_reference<ResultType>::type;
+  using ValueType =
+      ::std::conditional<::std::is_lvalue_reference<ResultType>::value,
+                         ::std::reference_wrapper<RemoveReferenceType>,
+                         RemoveReferenceType>::type;
+
   // Promise的构造和赋值是分离的，为了支持无法默认构造的类型
   // 使用未初始化块替代类型本身作为成员，后续显式调用构造和析构
-  typedef typename ::std::aligned_storage<sizeof(ValueType),
-                                          alignof(ValueType)>::type StorageType;
   // 回调链节点
   struct CallbackNode {
     template <typename C>
@@ -155,7 +158,7 @@ class FutureContext {
 
   Futex<M> _futex {0};
   ::std::atomic<CallbackNode*> _head {nullptr};
-  StorageType _storage;
+  alignas(ValueType) uint8_t _storage[sizeof(ValueType)];
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -394,13 +397,8 @@ inline bool Future<T, M>::wait_for(
 template <typename T, typename M>
 template <typename C, typename>
 inline void Future<T, M>::on_finish(C&& callback) noexcept {
-  if (ABSL_PREDICT_TRUE(valid())) {
-    _context->on_finish(::std::forward<C>(callback));
-    _context.reset();
-    return;
-  }
-
-  assert(false && "try watch invalid future");
+  assert(valid() && "try watch invalid future");
+  _context->on_finish(::std::forward<C>(callback));
 }
 
 template <typename T, typename M>

@@ -78,9 +78,9 @@ inline Future<Executor::ResultType<C&&, Args&&...>, F> Executor::execute(
 }
 
 template <typename F, typename A>
-inline Future<CoroutineAwaitResultType<CoroutineTask<>::promise_type, A&&>, F>
-Executor::execute(A&& awaitable) noexcept {
-  using R = CoroutineAwaitResultType<CoroutineTask<>::promise_type, A&&>;
+inline Future<Executor::AwaitResultType<A&&>, F> Executor::execute(
+    A&& awaitable) noexcept {
+  using R = AwaitResultType<A&&>;
   Promise<R, F> promise;
   auto future = promise.get_future();
   submit(
@@ -117,7 +117,6 @@ template <typename C, typename... Args>
   requires CoroutineTaskInvocable<C&&, Args&&...> &&
            Executor::IsPlainFunction<C>
 inline int Executor::submit(C&& callable, Args&&... args) noexcept {
-  BABYLON_LOG(INFO) << "submit CoroutineTaskInvocable && IsPlainFunction";
   auto task =
       ::std::invoke(::std::forward<C>(callable), ::std::forward<Args>(args)...);
   return submit(::std::move(task));
@@ -128,8 +127,6 @@ template <typename C, typename... Args>
            (!CoroutineTaskInvocable<C &&, Args && ...>) &&
            Executor::IsPlainFunction<C>
 inline int Executor::submit(C&& callable, Args&&... args) noexcept {
-  BABYLON_LOG(INFO) << "submit CoroutineInvocable && !CoroutineTaskInvocable&& "
-                       "IsPlainFunction";
   using TaskType = ::std::invoke_result_t<C&&, Args&&...>;
   struct S {
     static CoroutineTask<> wrapper(TaskType task) {
@@ -144,7 +141,6 @@ inline int Executor::submit(C&& callable, Args&&... args) noexcept {
 template <typename C, typename... Args>
   requires CoroutineInvocable<C&&, Args&&...> && (!Executor::IsPlainFunction<C>)
 inline int Executor::submit(C&& callable, Args&&... args) noexcept {
-  BABYLON_LOG(INFO) << "submit CoroutineInvocable && !IsPlainFunction";
   using InnerArgsTuple = typename CallableArgs<C>::type;
   struct S {
     static CoroutineTask<> wrapper(C callable, InnerArgsTuple args_tuple) {
@@ -152,7 +148,8 @@ inline int Executor::submit(C&& callable, Args&&... args) noexcept {
     }
   };
   auto wrapper_task =
-      S::wrapper(::std::forward<C>(callable), ::std::forward<Args>(args)...);
+      S::wrapper(::std::forward<C>(callable),
+                 ::std::forward_as_tuple(::std::forward<Args>(args)...));
   return submit(::std::move(wrapper_task));
 }
 #endif // __cpp_concepts && __cpp_lib_coroutine

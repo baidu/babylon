@@ -6,15 +6,13 @@
 
 BABYLON_NAMESPACE_BEGIN
 
+// We cannot call function of executor in .h because it incomplete there. So
+// functions need interact with executor are placed in .cpp here.
 void BasicCoroutinePromise::resume_awaiter() noexcept {
-  BABYLON_LOG(INFO) << "BasicCoroutinePromise::resume_awaiter address "
-                    << _awaiter.address() << " to " << _awaiter_executor;
   _awaiter_executor->resume(_awaiter);
 }
 
 void BasicCoroutinePromise::resume(::std::coroutine_handle<> handle) noexcept {
-  BABYLON_LOG(INFO) << "BasicCoroutinePromise::resume address "
-                    << handle.address() << " to " << _executor;
   _executor->resume(handle);
 }
 

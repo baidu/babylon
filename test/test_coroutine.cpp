@@ -42,7 +42,6 @@ TEST_F(CoroutineTest, default_destroy_with_task) {
     auto task = [](S) -> CoroutineTask<> {
       co_return;
     }(S {new int});
-    ASSERT_TRUE(task);
     ASSERT_EQ(0, destroy_times);
   }
   ASSERT_EQ(1, destroy_times);
@@ -58,7 +57,6 @@ TEST_F(CoroutineTest, task_detach_coroutine_after_submit) {
       co_return;
     }(S {new ::std::future<void> {promise.get_future()}});
     future = executor.execute(::std::move(task));
-    ASSERT_FALSE(task);
     ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
   }
   ASSERT_EQ(0, destroy_times);
@@ -80,7 +78,6 @@ TEST_F(CoroutineTest, coroutine_awaiter_destroy_after_awaitee_resume_it) {
       }(::std::move(s));
     }(S {new ::std::future<void> {promise.get_future()}});
     future = executor.execute(::std::move(task));
-    ASSERT_FALSE(task);
     ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
   }
   ASSERT_EQ(0, destroy_times);
@@ -134,25 +131,99 @@ TEST_F(CoroutineTest, future_is_awaitable) {
   ASSERT_EQ("10086", future.get());
 }
 
+TEST_F(CoroutineTest, future_is_shared_awaitable) {
+  ::babylon::Promise<::std::string> promise;
+  auto future1 = executor.execute(
+      [future =
+           promise.get_future()]() mutable -> CoroutineTask<::std::string> {
+        co_return co_await future;
+      });
+  auto future2 = executor.execute(
+      [future =
+           promise.get_future()]() mutable -> CoroutineTask<::std::string> {
+        co_return co_await future;
+      });
+  ASSERT_FALSE(future1.wait_for(::std::chrono::milliseconds {100}));
+  ASSERT_FALSE(future2.wait_for(::std::chrono::milliseconds {100}));
+  promise.set_value("10086");
+  ASSERT_EQ("10086", future1.get());
+  ASSERT_EQ("10086", future2.get());
+}
+
 #if __cpp_lib_concepts
 TEST_F(CoroutineTest, non_babylon_coroutine_task_is_awaitable) {
   ::coro::thread_pool pool {::coro::thread_pool::options {.thread_count = 1}};
-
   ::std::promise<::std::string> promise;
-  auto future = promise.get_future();
-  auto c = [&pool, future = ::std::move(future)]() mutable -> coro::task<::std::string> {
+  auto future = executor.execute(
+      [&](::std::future<::std::string> future) -> CoroutineTask<::std::string> {
+        co_return co_await [&](::std::future<::std::string> future)
+                               -> coro::task<::std::string> {
+          co_await pool.schedule();
+          co_return future.get();
+        }(::std::move(future));
+      },
+      promise.get_future());
+  ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
+  promise.set_value("10086");
+  ASSERT_EQ("10086", future.get());
+}
+
+TEST_F(CoroutineTest, awaitable_by_non_babylon_coroutine_task) {
+  ::coro::thread_pool pool {::coro::thread_pool::options {.thread_count = 1}};
+  ::std::promise<::std::string> promise;
+  auto task =
+      [&](::std::future<::std::string> future) -> coro::task<::std::string> {
     co_await pool.schedule();
-    co_return future.get();
+    co_return co_await [&](::std::future<::std::string> future)
+                           -> CoroutineTask<::std::string> {
+      co_return future.get();
+    }(::std::move(future));
   };
+  promise.set_value("10086");
+  ASSERT_EQ("10086", ::coro::sync_wait(task(promise.get_future())));
+}
 
-  auto t = c();
-  ::coro::sync_wait(c());
-  // auto future = executor.execute([&]() -> CoroutineTask<::std::string> {
+TEST_F(CoroutineTest, future_awaitable_by_non_babylon_coroutine_task) {
+  ::coro::thread_pool pool {::coro::thread_pool::options {.thread_count = 1}};
+  ::babylon::Promise<::std::string> promise;
+  auto task = [&](::babylon::Future<::std::string> future)
+      -> coro::task<::std::string> {
+    co_await pool.schedule();
+    co_return co_await ::babylon::FutureAwaitable<::std::string>(
+        ::std::move(future));
+  };
+  promise.set_value("10086");
+  ASSERT_EQ("10086", ::coro::sync_wait(task(promise.get_future())));
+}
 
-  //    });
-  // ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
-  // promise.set_value("10086");
-  // ASSERT_EQ("10086", future.get());
+TEST_F(CoroutineTest, return_to_executor_when_resume_by_non_babylon_coroutine) {
+  ::coro::thread_pool pool {::coro::thread_pool::options {.thread_count = 1}};
+  ::std::array<::babylon::Executor*, 7> e;
+  auto future = executor.execute([&]() -> CoroutineTask<> {
+    e[0] = ::babylon::CurrentExecutor::get();
+    co_await [&]() -> coro::task<> {
+      e[1] = ::babylon::CurrentExecutor::get();
+      co_await pool.schedule();
+      e[2] = ::babylon::CurrentExecutor::get();
+      co_await [&]() -> CoroutineTask<> {
+        e[3] = ::babylon::CurrentExecutor::get();
+        co_return;
+      }()
+                            .set_executor(executor);
+      e[4] = ::babylon::CurrentExecutor::get();
+      co_await pool.schedule();
+      e[5] = ::babylon::CurrentExecutor::get();
+    }();
+    e[6] = ::babylon::CurrentExecutor::get();
+  });
+  future.get();
+  ASSERT_EQ(&executor, e[0]);
+  ASSERT_EQ(&executor, e[1]);
+  ASSERT_EQ(nullptr, e[2]);
+  ASSERT_EQ(&executor, e[3]);
+  ASSERT_EQ(&executor, e[4]);
+  ASSERT_EQ(nullptr, e[5]);
+  ASSERT_EQ(&executor, e[6]);
 }
 #endif // __cpp_lib_concepts
 

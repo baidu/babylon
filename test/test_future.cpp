@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include <future>
 #include <random>
 #include <thread>
 
@@ -116,12 +117,12 @@ TEST(future, on_finish_before_ready_called_with_value_when_ready) {
     value_pass_to_callback = value;
     called = true;
   });
-  // on_finish调用后，future就不再valid
-  ASSERT_FALSE(future.valid());
+  ASSERT_TRUE(future.valid());
   ASSERT_FALSE(called);
   promise.set_value(10086);
   ASSERT_TRUE(called);
   ASSERT_EQ(10086, value_pass_to_callback);
+  ASSERT_EQ(10086, future.get());
 }
 
 TEST(future, on_finish_after_ready_called_inplace) {
@@ -280,6 +281,16 @@ TEST(future, callback_can_build_a_chain) {
   promise.set_value(123);
   ASSERT_EQ(125, value_in_then_future);
   ASSERT_TRUE(final_future.ready());
+}
+
+TEST(future, support_lvalue_reference) {
+  Promise<int&> promise;
+  auto future = promise.get_future();
+
+  int x = 10010;
+  promise.set_value(x);
+  future.get() = 10086;
+  ASSERT_EQ(10086, x);
 }
 
 TEST(future, concurrent_works_fine) {
