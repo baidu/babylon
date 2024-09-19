@@ -310,6 +310,7 @@ FutureContext<T, M>::seal() noexcept {
 template <typename T, typename M>
 inline typename FutureContext<T, M>::ValueType&
 FutureContext<T, M>::value() noexcept {
+  assert(ready() && "cannot read value before ready");
   return *reinterpret_cast<ValueType*>(_storage);
 }
 

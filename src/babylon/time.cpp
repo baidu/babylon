@@ -99,6 +99,7 @@ int FastLocalTimeConverter::to_weekday(::absl::CivilSecond civil) noexcept {
     case ::absl::Weekday::saturday:
       return 6;
   }
+  ::abort();
 }
 
 ABSL_ATTRIBUTE_NOINLINE
