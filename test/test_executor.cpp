@@ -385,15 +385,15 @@ TEST_F(ExecutorTest, current_executor_mark_during_execution) {
   {
     struct S {
       static void function(Executor& e) {
-        (void) e;
+        (void)e;
         ASSERT_EQ(&e, ::babylon::CurrentExecutor::get());
       }
       void member_function(Executor& e) {
-        (void) e;
+        (void)e;
         ASSERT_EQ(&e, ::babylon::CurrentExecutor::get());
       }
       void operator()(Executor& e) {
-        (void) e;
+        (void)e;
         ASSERT_EQ(&e, ::babylon::CurrentExecutor::get());
       }
     } s;
@@ -405,7 +405,7 @@ TEST_F(ExecutorTest, current_executor_mark_during_execution) {
     thread_executor
         .execute(
             [](Executor& e) {
-              (void) e;
+              (void)e;
               ASSERT_EQ(&e, ::babylon::CurrentExecutor::get());
             },
             ::std::ref(thread_executor))
@@ -414,17 +414,17 @@ TEST_F(ExecutorTest, current_executor_mark_during_execution) {
   {
     struct S {
       static ::babylon::CoroutineTask<> run(Executor& e) {
-        (void) e;
+        (void)e;
         assert(&e == ::babylon::CurrentExecutor::get());
         co_return;
       }
       ::babylon::CoroutineTask<> member_run(Executor& e) {
-        (void) e;
+        (void)e;
         assert(&e == ::babylon::CurrentExecutor::get());
         co_return;
       }
       ::babylon::CoroutineTask<> operator()(Executor& e) {
-        (void) e;
+        (void)e;
         assert(&e == ::babylon::CurrentExecutor::get());
         co_return;
       }
@@ -435,7 +435,7 @@ TEST_F(ExecutorTest, current_executor_mark_during_execution) {
     thread_executor
         .execute(
             [&](Executor& e) -> CoroutineTask<> {
-              (void) e;
+              (void)e;
               assert(&e == ::babylon::CurrentExecutor::get());
               co_return;
             },

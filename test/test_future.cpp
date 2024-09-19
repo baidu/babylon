@@ -41,7 +41,7 @@ TEST(future, get_wait_until_ready) {
   ::std::mutex mutex;
   mutex.lock();
   ::std::thread([&] {
-    ::std::lock_guard<::std::mutex> {mutex};
+    { ::std::lock_guard<::std::mutex> lock {mutex}; }
     promise.set_value(10086);
   }).detach();
   ASSERT_FALSE(future.ready());
@@ -56,7 +56,7 @@ TEST(future, wait_for_may_timeout) {
   ::std::mutex mutex;
   mutex.lock();
   ::std::thread([&] {
-    ::std::lock_guard<::std::mutex> {mutex};
+    { ::std::lock_guard<::std::mutex> lock {mutex}; }
     promise.set_value();
   }).detach();
   ASSERT_FALSE(future.wait_for(std::chrono::milliseconds(100)));

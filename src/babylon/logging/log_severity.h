@@ -6,7 +6,7 @@
 #include "babylon/protect.h"
 // clang-format on
 
-#include <cstdint>  // uint8_t
+#include <cstdint> // uint8_t
 
 BABYLON_NAMESPACE_BEGIN
 

@@ -184,7 +184,7 @@ class BasicCoroutinePromise {
   // task will properly check and send origin awaiter back to it's executor.
  private:
   template <typename A>
-  requires requires { typename CoroutineAwaitResultType<void, A>; }
+    requires requires { typename CoroutineAwaitResultType<void, A>; }
   struct WrapperTask;
   template <typename A>
   using WrapperTaskType = typename WrapperTask<A>::type;
@@ -220,19 +220,18 @@ class BasicCoroutinePromise::FinalAwaitable {
   BasicCoroutinePromise* _promise {nullptr};
 };
 
-//template <typename A>
-//struct BasicCoroutinePromise::WrapperTask {
-//};
-// Awaitable may return rvalue reference. Remove that reference to make it fit T
-// in a CoroutineTask<T>.
+// template <typename A>
+// struct BasicCoroutinePromise::WrapperTask {
+// };
+//  Awaitable may return rvalue reference. Remove that reference to make it fit
+//  T in a CoroutineTask<T>.
 template <typename A>
   requires requires { typename CoroutineAwaitResultType<void, A>; }
 struct BasicCoroutinePromise::WrapperTask {
   using ResultType = CoroutineAwaitResultType<void, A>;
-  using ForwardType =
-      typename ::std::conditional<::std::is_rvalue_reference<ResultType>::value,
-                         typename ::std::remove_reference<ResultType>::type,
-                         ResultType>::type;
+  using ForwardType = typename ::std::conditional<
+      ::std::is_rvalue_reference<ResultType>::value,
+      typename ::std::remove_reference<ResultType>::type, ResultType>::type;
   using type = CoroutineTask<ForwardType>;
 };
 
@@ -256,8 +255,8 @@ class CoroutinePromise : public BasicCoroutinePromise {
   using RemoveReferenceType = typename ::std::remove_reference<T>::type;
   using PromiseValueType =
       typename ::std::conditional<::std::is_lvalue_reference<T>::value,
-                         ::std::reference_wrapper<RemoveReferenceType>,
-                         RemoveReferenceType>::type;
+                                  ::std::reference_wrapper<RemoveReferenceType>,
+                                  RemoveReferenceType>::type;
 
  public:
   inline CoroutineTask<T> get_return_object() noexcept;
@@ -375,8 +374,7 @@ class SharedFutureAwaitable : public BasicFutureAwaitable<T, F> {
 // BasicCoroutinePromise::FinalAwaitable begin
 inline BasicCoroutinePromise::FinalAwaitable::FinalAwaitable(
     BasicCoroutinePromise* promise) noexcept
-    : _promise {promise} {
-}
+    : _promise {promise} {}
 
 inline constexpr bool BasicCoroutinePromise::FinalAwaitable::await_ready()
     const noexcept {
@@ -399,8 +397,7 @@ BasicCoroutinePromise::FinalAwaitable::await_suspend(
 }
 
 inline void BasicCoroutinePromise::FinalAwaitable::await_resume()
-    const noexcept {
-}
+    const noexcept {}
 // BasicCoroutinePromise::FinalAwaitable end
 ////////////////////////////////////////////////////////////////////////////////
 

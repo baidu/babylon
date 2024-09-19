@@ -94,11 +94,12 @@ template <typename T, typename M>
 class FutureContext {
  public:
   using ResultType = typename Future<T, M>::ResultType;
-  using RemoveReferenceType = typename ::std::remove_reference<ResultType>::type;
+  using RemoveReferenceType =
+      typename ::std::remove_reference<ResultType>::type;
   using ValueType =
       typename ::std::conditional<::std::is_lvalue_reference<ResultType>::value,
-                         ::std::reference_wrapper<RemoveReferenceType>,
-                         RemoveReferenceType>::type;
+                                  ::std::reference_wrapper<RemoveReferenceType>,
+                                  RemoveReferenceType>::type;
 
   // Promise的构造和赋值是分离的，为了支持无法默认构造的类型
   // 使用未初始化块替代类型本身作为成员，后续显式调用构造和析构
