@@ -241,7 +241,7 @@ inline bool FutureContext<T, M>::wait_for(
 template <typename T, typename M>
 template <typename C, typename>
 inline void FutureContext<T, M>::on_finish(C&& callback) noexcept {
-  auto head = _head.load(::std::memory_order_relaxed);
+  auto head = _head.load(::std::memory_order_acquire);
   if (is_sealed(head)) {
     internal::future::run_callback(callback, value());
     return;
