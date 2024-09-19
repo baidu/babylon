@@ -175,7 +175,7 @@ TEST(future, future_work_with_void) {
     auto future = promise.get_future();
     mutex.lock();
     ::std::thread thread([&] {
-      {::std::lock_guard<::std::mutex> lock {mutex}};
+      { ::std::lock_guard<::std::mutex> lock {mutex}; }
       promise.set_value();
     });
     ASSERT_FALSE(future.ready());
