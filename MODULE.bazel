@@ -27,10 +27,12 @@ bazel_dep(name = 'boost.spirit', version = '1.83.0.bzl.2')
 single_version_override(module_name = 'abseil-cpp', version = '20240722.0')
 single_version_override(module_name = 'protobuf', version = '27.3')
 bazel_dep(name = 'googletest', version = '1.15.2', repo_name = 'com_google_googletest', dev_dependency = True)
-bazel_dep(name = 'libcoro', version = '0.12.1', dev_dependency = True)
 bazel_dep(name = 'platforms', version = '0.0.10', dev_dependency = True)
 bazel_dep(name = 'rules_cc', version = '0.0.9', dev_dependency = True)
 bazel_dep(name = 'rules_cuda', version = '0.2.3', dev_dependency = True)
+
+# --registry=https://baidu.github.io/babylon/registry
+bazel_dep(name = 'libcoro', version = '0.12.1', dev_dependency = True)
 
 # cuda toolchain
 cuda = use_extension('@rules_cuda//cuda:extensions.bzl', 'toolchain', dev_dependency = True)
