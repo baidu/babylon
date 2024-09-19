@@ -6,6 +6,8 @@
 #include "babylon/protect.h"
 // clang-format on
 
+#include <cstdint>  // uint8_t
+
 BABYLON_NAMESPACE_BEGIN
 
 class LogSeverity {
