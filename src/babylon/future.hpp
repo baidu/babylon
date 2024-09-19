@@ -153,6 +153,7 @@ class FutureContext {
   inline CallbackNode* seal() noexcept;
 
   inline ValueType& value() noexcept;
+  inline ValueType* pointer() noexcept;
 
   void wait_slow() noexcept;
   bool wait_for_slow(int64_t timeout_ns) noexcept;
@@ -196,7 +197,7 @@ template <typename T, typename M>
 template <typename... Args, typename>
 inline void FutureContext<T, M>::set_value(Args&&... args) {
   // 构造并设置value
-  new (&value()) ValueType(::std::forward<Args>(args)...);
+  new (pointer()) ValueType(::std::forward<Args>(args)...);
   // 原子发布数据：
   // 1、获取当前注册的回调链
   // 2、标记后续不再接受回调注册
@@ -256,7 +257,7 @@ inline void FutureContext<T, M>::on_finish(C&& callback) noexcept {
   auto* node = new CallbackNode(
       ::std::bind(internal::future::run_callback<C, ValueType>,
                   uncomposable_bind_argument(::std::forward<C>(callback)),
-                  ::std::ref(value())));
+                  ::std::ref(*pointer())));
 #endif // __cplusplus
 
   while (true) {
@@ -311,7 +312,13 @@ template <typename T, typename M>
 inline typename FutureContext<T, M>::ValueType&
 FutureContext<T, M>::value() noexcept {
   assert(ready(::std::memory_order_acquire) && "cannot read value before ready");
-  return *reinterpret_cast<ValueType*>(_storage);
+  return *pointer();
+}
+
+template <typename T, typename M>
+inline typename FutureContext<T, M>::ValueType*
+FutureContext<T, M>::pointer() noexcept {
+  return reinterpret_cast<ValueType*>(_storage);
 }
 
 template <typename T, typename M>

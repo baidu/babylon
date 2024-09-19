@@ -6,7 +6,11 @@ include(CTest)                      # for BUILD_TESTING option
 include(CMakePackageConfigHelpers)  # for write_basic_package_version_file
 
 option(BUILD_DEPS "Use FetchContent download and build dependencies" OFF)
-set(BUILD_TESTING ON)
+
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  set(CMAKE_CXX_STANDARD 20)
+  set(BUILD_TESTING ON)
+endif()
 
 if(BUILD_DEPS)
   include(FetchContent)
@@ -55,10 +59,6 @@ if(BUILD_TESTING AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   if(NOT TARGET GTest::gtest_main)
     find_package(GTest REQUIRED)
   endif()
-endif()
-
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-  set(CMAKE_CXX_STANDARD 20)
 endif()
 
 file(GLOB_RECURSE BABYLON_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/babylon/*.cpp")
