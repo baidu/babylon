@@ -39,6 +39,10 @@ inline ::std::basic_ostream<C, T>& operator<<(::std::basic_ostream<C, T>& os,
 ///////////////////////////////////////////////////////////////////////////////
 // TypeId begin
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
 // 从__PRETTY_FUNCTION__表达中截取关键的类型字符串
 #if __clang__
 template <typename T>
@@ -85,6 +89,7 @@ inline const StringView TypeId<T>::get_type_name() noexcept {
               "babylon::BasicStringView<char>]"));
 }
 #endif                             // !__clang__ && GLIBCXX_VERSION < 920200312
+#pragma GCC diagnostic pop
 
 #if !__clang__ && BABYLON_GCC_VERSION < 50000
 template <typename T>

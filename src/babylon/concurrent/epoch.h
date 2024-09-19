@@ -61,7 +61,7 @@ class Epoch {
     Slot& operator=(const Slot&) = delete;
     ~Slot() noexcept = default;
 
-    ::std::atomic<uint64_t> version = ATOMIC_VAR_INIT(UINT64_MAX);
+    ::std::atomic<uint64_t> version {UINT64_MAX};
     size_t lock_times {0};
   };
 
@@ -72,7 +72,7 @@ class Epoch {
 
   IdAllocator<uint32_t> _id_allocator;
   ConcurrentVector<Slot> _slots;
-  ::std::atomic<uint64_t> _version = ATOMIC_VAR_INIT(0);
+  ::std::atomic<uint64_t> _version {0};
 
   friend Accessor;
 };

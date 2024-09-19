@@ -23,7 +23,7 @@ BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-op
                        '-Wno-weak-vtables', '-Wno-float-conversion', '-Wno-switch-enum',
                        '-Wno-gnu-anonymous-struct', '-Wno-nested-anon-types',
                        '-Wno-array-bounds-pointer-arithmetic', '-Wno-cast-align', '-Wno-vla-extension',
-                       '-Wno-unneeded-member-function', '-Wno-deprecated-declarations']
+                       '-Wno-unneeded-member-function', '-Wno-deprecated-declarations', '-Wno-unsafe-buffer-usage']
 
 BABYLON_COPTS = select({
     '//:compiler_gcc': BABYLON_GCC_COPTS,

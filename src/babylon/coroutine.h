@@ -184,9 +184,10 @@ class BasicCoroutinePromise {
   // task will properly check and send origin awaiter back to it's executor.
  private:
   template <typename A>
+  requires requires { typename CoroutineAwaitResultType<void, A>; }
   struct WrapperTask;
   template <typename A>
-  using WrapperTaskType = WrapperTask<A>::type;
+  using WrapperTaskType = typename WrapperTask<A>::type;
   template <typename A>
   class ReferenceWrapper;
 
@@ -219,6 +220,9 @@ class BasicCoroutinePromise::FinalAwaitable {
   BasicCoroutinePromise* _promise {nullptr};
 };
 
+//template <typename A>
+//struct BasicCoroutinePromise::WrapperTask {
+//};
 // Awaitable may return rvalue reference. Remove that reference to make it fit T
 // in a CoroutineTask<T>.
 template <typename A>
@@ -226,7 +230,7 @@ template <typename A>
 struct BasicCoroutinePromise::WrapperTask {
   using ResultType = CoroutineAwaitResultType<void, A>;
   using ForwardType =
-      ::std::conditional<::std::is_rvalue_reference<ResultType>::value,
+      typename ::std::conditional<::std::is_rvalue_reference<ResultType>::value,
                          typename ::std::remove_reference<ResultType>::type,
                          ResultType>::type;
   using type = CoroutineTask<ForwardType>;
@@ -249,9 +253,9 @@ class BasicCoroutinePromise::ReferenceWrapper {
 template <typename T>
 class CoroutinePromise : public BasicCoroutinePromise {
  private:
-  using RemoveReferenceType = ::std::remove_reference<T>::type;
+  using RemoveReferenceType = typename ::std::remove_reference<T>::type;
   using PromiseValueType =
-      ::std::conditional<::std::is_lvalue_reference<T>::value,
+      typename ::std::conditional<::std::is_lvalue_reference<T>::value,
                          ::std::reference_wrapper<RemoveReferenceType>,
                          RemoveReferenceType>::type;
 
@@ -432,6 +436,7 @@ BasicCoroutinePromise::final_suspend() noexcept {
   return {this};
 }
 
+ABSL_ATTRIBUTE_NORETURN
 inline void BasicCoroutinePromise::unhandled_exception() noexcept {
   abort();
 }
@@ -491,8 +496,8 @@ template <typename A>
                              CoroutineTask>::value)
 inline BasicCoroutinePromise::WrapperTaskType<
     A&&> BasicCoroutinePromise::await_transform(A&& awaitable) noexcept {
-  return [](A&& awaitable) -> WrapperTaskType<A&&> {
-    co_return co_await ReferenceWrapper<A> {::std::forward<A>(awaitable)};
+  return [](A&& inner_awaitable) -> WrapperTaskType<A&&> {
+    co_return co_await ReferenceWrapper<A> {::std::forward<A>(inner_awaitable)};
   }(::std::forward<A>(awaitable));
 }
 

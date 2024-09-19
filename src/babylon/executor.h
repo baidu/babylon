@@ -74,10 +74,10 @@ class Executor {
   // that coroutine, and can be used to wait and get the co_return value just
   // like use co_await inside another coroutine.
   template <typename F = SchedInterface, typename C, typename... Args>
-#if __cpp_concepts && __cpp_lib_coroutine
-    requires ::std::is_invocable<C&&, Args&&...>::value &&
-             (!CoroutineInvocable<C &&, Args && ...>)
-#endif // __cpp_concepts && __cpp_lib_coroutine
+//#if __cpp_concepts && __cpp_lib_coroutine
+    requires ((::std::is_invocable<C&&, Args&&...>::value) &&
+             (!CoroutineInvocable<C &&, Args && ...>))
+//#endif // __cpp_concepts && __cpp_lib_coroutine
   inline Future<ResultType<C&&, Args&&...>, F> execute(C&& callable,
                                                        Args&&... args) noexcept;
 #if __cpp_concepts && __cpp_lib_coroutine
@@ -200,7 +200,7 @@ struct Executor::Result<C, Args...> {
   using AwaitResultType =
       CoroutineAwaitResultType<CoroutineTask<>::promise_type,
                                ::std::invoke_result_t<C, Args...>>;
-  using type = ::std::conditional<
+  using type = typename ::std::conditional<
       ::std::is_rvalue_reference<AwaitResultType>::value,
       typename ::std::remove_reference<AwaitResultType>::type,
       AwaitResultType>::type;
@@ -214,7 +214,7 @@ template <typename A>
 struct Executor::AwaitResult<A> {
   using AwaitReturnType =
       CoroutineAwaitResultType<CoroutineTask<>::promise_type, A>;
-  using type = ::std::conditional<
+  using type = typename ::std::conditional<
       ::std::is_rvalue_reference<AwaitReturnType>::value,
       typename ::std::remove_reference<AwaitReturnType>::type,
       AwaitReturnType>::type;
@@ -263,7 +263,7 @@ class InplaceExecutor : public Executor {
   InplaceExecutor(const InplaceExecutor&) = delete;
   InplaceExecutor& operator=(InplaceExecutor&&) = delete;
   InplaceExecutor& operator=(const InplaceExecutor&) = delete;
-  ~InplaceExecutor() noexcept = default;
+  virtual ~InplaceExecutor() noexcept override = default;
 };
 
 // Async executor launch new thread for every task execute/submit.
@@ -281,7 +281,7 @@ struct AlwaysUseNewThreadExecutor : public Executor {
   AlwaysUseNewThreadExecutor& operator=(AlwaysUseNewThreadExecutor&&) = delete;
   AlwaysUseNewThreadExecutor& operator=(const AlwaysUseNewThreadExecutor&) =
       delete;
-  ~AlwaysUseNewThreadExecutor() noexcept;
+  virtual ~AlwaysUseNewThreadExecutor() noexcept override;
 
   ::std::atomic<size_t> _running {0};
 };

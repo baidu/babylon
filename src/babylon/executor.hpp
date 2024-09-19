@@ -22,10 +22,10 @@ inline Executor::CoroutineHandle::CoroutineHandle(
 ////////////////////////////////////////////////////////////////////////////////
 // Executor begin
 template <typename F, typename C, typename... Args>
-#if __cpp_concepts && __cpp_lib_coroutine
-  requires ::std::is_invocable<C&&, Args&&...>::value &&
-           (!CoroutineInvocable<C &&, Args && ...>)
-#endif // __cpp_concepts && __cpp_lib_coroutine
+//#if __cpp_concepts && __cpp_lib_coroutine
+  requires ((::std::is_invocable<C&&, Args&&...>::value) &&
+           (!CoroutineInvocable<C &&, Args && ...>))
+//#endif // __cpp_concepts && __cpp_lib_coroutine
 inline Future<Executor::ResultType<C&&, Args&&...>, F> Executor::execute(
     C&& callable, Args&&... args) noexcept {
   using R = ResultType<C&&, Args&&...>;

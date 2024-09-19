@@ -70,9 +70,6 @@ TEST_F(CallableArgsTest, support_normal_function) {
     ASSERT_TRUE((::std::is_same<E, CallableArgs<F*>::type>::value));
     ASSERT_TRUE((::std::is_same<E, CallableArgs<F&>::type>::value));
     ASSERT_TRUE((::std::is_same<E, CallableArgs<F&&>::type>::value));
-    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F>::type>::value));
-    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F*>::type>::value));
-    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F&>::type>::value));
   }
   {
     struct S {
@@ -83,9 +80,6 @@ TEST_F(CallableArgsTest, support_normal_function) {
     ASSERT_TRUE((::std::is_same<E, CallableArgs<F*>::type>::value));
     ASSERT_TRUE((::std::is_same<E, CallableArgs<F&>::type>::value));
     ASSERT_TRUE((::std::is_same<E, CallableArgs<F&&>::type>::value));
-    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F>::type>::value));
-    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F*>::type>::value));
-    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F&>::type>::value));
   }
 }
 

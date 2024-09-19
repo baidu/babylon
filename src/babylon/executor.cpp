@@ -115,7 +115,7 @@ int ThreadPoolExecutor::start() noexcept {
 
 void ThreadPoolExecutor::wakeup_one_worker() noexcept {
   _global_task_queue.push<true, false, true>(
-      Task {.type {TaskType::WAKEUP}, .handle {}, .function {}});
+      Task {.type = TaskType::WAKEUP, .handle {}, .function {}});
 }
 
 void ThreadPoolExecutor::stop() noexcept {
@@ -128,7 +128,7 @@ void ThreadPoolExecutor::stop() noexcept {
   }
   for (size_t i = 0; i < _threads.size(); ++i) {
     _global_task_queue.push<true, false, true>(
-        Task {.type {TaskType::STOP}, .handle {}, .function {}});
+        Task {.type = TaskType::STOP, .handle {}, .function {}});
   }
   for (auto& thread : _threads) {
     thread.join();
@@ -148,14 +148,14 @@ int ThreadPoolExecutor::initialize(size_t worker_number,
 
 int ThreadPoolExecutor::invoke(
     MoveOnlyFunction<void(void)>&& function) noexcept {
-  return enqueue_task({.type {TaskType::FUNCTION},
+  return enqueue_task({.type = TaskType::FUNCTION,
                        .handle {},
                        .function {::std::move(function)}});
 }
 
 int ThreadPoolExecutor::resume(CoroutineHandle&& handle) noexcept {
   return enqueue_task(
-      {.type {TaskType::COROUTINE}, .handle {handle}, .function {}});
+      {.type = TaskType::COROUTINE, .handle {handle}, .function {}});
 }
 
 void ThreadPoolExecutor::keep_execute() noexcept {
@@ -191,7 +191,7 @@ void ThreadPoolExecutor::keep_execute() noexcept {
       } break;
       case TaskType::STOP: {
         return;
-      } break;
+      }
       case TaskType::WAKEUP: {
       } break;
     }

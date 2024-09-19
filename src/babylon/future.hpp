@@ -93,10 +93,10 @@ inline void run_callback(Promise<T, M>& promise, C& callback,
 template <typename T, typename M>
 class FutureContext {
  public:
-  using ResultType = Future<T, M>::ResultType;
-  using RemoveReferenceType = ::std::remove_reference<ResultType>::type;
+  using ResultType = typename Future<T, M>::ResultType;
+  using RemoveReferenceType = typename ::std::remove_reference<ResultType>::type;
   using ValueType =
-      ::std::conditional<::std::is_lvalue_reference<ResultType>::value,
+      typename ::std::conditional<::std::is_lvalue_reference<ResultType>::value,
                          ::std::reference_wrapper<RemoveReferenceType>,
                          RemoveReferenceType>::type;
 
@@ -309,7 +309,7 @@ FutureContext<T, M>::seal() noexcept {
 template <typename T, typename M>
 inline typename FutureContext<T, M>::ValueType&
 FutureContext<T, M>::value() noexcept {
-  return reinterpret_cast<ValueType&>(_storage);
+  return *reinterpret_cast<ValueType*>(_storage);
 }
 
 template <typename T, typename M>
