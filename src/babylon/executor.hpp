@@ -22,10 +22,10 @@ inline Executor::CoroutineHandle::CoroutineHandle(
 ////////////////////////////////////////////////////////////////////////////////
 // Executor begin
 template <typename F, typename C, typename... Args>
-//#if __cpp_concepts && __cpp_lib_coroutine
-  requires ((::std::is_invocable<C&&, Args&&...>::value) &&
-           (!CoroutineInvocable<C &&, Args && ...>))
-//#endif // __cpp_concepts && __cpp_lib_coroutine
+#if __cpp_concepts && __cpp_lib_coroutine
+  requires (::std::is_invocable<C&&, Args&&...>::value &&
+           !CoroutineInvocable<C &&, Args && ...>)
+#endif // __cpp_concepts && __cpp_lib_coroutine
 inline Future<Executor::ResultType<C&&, Args&&...>, F> Executor::execute(
     C&& callable, Args&&... args) noexcept {
   using R = ResultType<C&&, Args&&...>;
@@ -58,8 +58,15 @@ template <typename F, typename C, typename... Args>
   requires CoroutineInvocable<C&&, Args&&...> && Executor::IsPlainFunction<C>
 inline Future<Executor::ResultType<C&&, Args&&...>, F> Executor::execute(
     C&& callable, Args&&... args) noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#if ABSL_HAVE_ADDRESS_SANITIZER
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif // ABSL_HAVE_ADDRESS_SANITIZER
   auto task =
       ::std::invoke(::std::forward<C>(callable), ::std::forward<Args>(args)...);
+#pragma GCC diagnostic pop
   return execute<F>(::std::move(task));
 }
 

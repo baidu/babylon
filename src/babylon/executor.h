@@ -74,10 +74,10 @@ class Executor {
   // that coroutine, and can be used to wait and get the co_return value just
   // like use co_await inside another coroutine.
   template <typename F = SchedInterface, typename C, typename... Args>
-//#if __cpp_concepts && __cpp_lib_coroutine
-    requires ((::std::is_invocable<C&&, Args&&...>::value) &&
-             (!CoroutineInvocable<C &&, Args && ...>))
-//#endif // __cpp_concepts && __cpp_lib_coroutine
+#if __cpp_concepts && __cpp_lib_coroutine
+    requires (::std::is_invocable<C&&, Args&&...>::value &&
+             !CoroutineInvocable<C &&, Args && ...>)
+#endif // __cpp_concepts && __cpp_lib_coroutine
   inline Future<ResultType<C&&, Args&&...>, F> execute(C&& callable,
                                                        Args&&... args) noexcept;
 #if __cpp_concepts && __cpp_lib_coroutine
