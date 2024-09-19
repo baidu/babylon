@@ -157,9 +157,11 @@ class Executor {
 #endif // __cpp_concepts && __cpp_lib_coroutine
 
  private:
+#if __cpp_concepts && __cpp_lib_coroutine
   template <typename T>
   inline int submit(CoroutineTask<T>&& task) noexcept;
   inline int resume(::std::coroutine_handle<> handle) noexcept;
+#endif // __cpp_concepts && __cpp_lib_coroutine
 
   template <typename P, typename C, typename... Args>
   inline static void apply_and_set_value(

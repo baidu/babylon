@@ -159,7 +159,6 @@ inline int Executor::submit(C&& callable, Args&&... args) noexcept {
                  ::std::forward_as_tuple(::std::forward<Args>(args)...));
   return submit(::std::move(wrapper_task));
 }
-#endif // __cpp_concepts && __cpp_lib_coroutine
 
 template <typename T>
 inline int Executor::submit(CoroutineTask<T>&& task) noexcept {
@@ -174,6 +173,7 @@ inline int Executor::resume(::std::coroutine_handle<> handle) noexcept {
   }
   return ret;
 }
+#endif // __cpp_concepts && __cpp_lib_coroutine
 
 template <typename P, typename C, typename... Args>
 inline void Executor::apply_and_set_value(
