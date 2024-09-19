@@ -6,6 +6,7 @@ include(CTest)                      # for BUILD_TESTING option
 include(CMakePackageConfigHelpers)  # for write_basic_package_version_file
 
 option(BUILD_DEPS "Use FetchContent download and build dependencies" OFF)
+set(BUILD_TESTING ON)
 
 if(BUILD_DEPS)
   include(FetchContent)
