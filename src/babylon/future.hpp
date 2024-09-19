@@ -285,7 +285,7 @@ inline void FutureContext<T, M>::clear() noexcept {
   _futex.value().store(0, ::std::memory_order_relaxed);
   auto* head = _head.exchange(nullptr, ::std::memory_order_relaxed);
   if (is_sealed(head)) {
-    value().~ValueType();
+    pointer()->~ValueType();
   } else {
     while (head != nullptr) {
       auto* next_head = head->next;
