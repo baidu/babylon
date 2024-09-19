@@ -98,8 +98,6 @@ int FastLocalTimeConverter::to_weekday(::absl::CivilSecond civil) noexcept {
       return 5;
     case ::absl::Weekday::saturday:
       return 6;
-    default:
-      return -1;
   }
 }
 
