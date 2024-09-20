@@ -37,7 +37,9 @@ InplaceGraphExecutor& InplaceGraphExecutor::instance() noexcept {
 
 int ThreadPoolGraphExecutor::initialize(size_t worker_num,
                                         size_t queue_capacity) noexcept {
-  return _executor.initialize(worker_num, queue_capacity);
+  _executor.set_worker_number(worker_num);
+  _executor.set_global_capacity(queue_capacity);
+  return _executor.start();
 }
 
 void ThreadPoolGraphExecutor::stop() noexcept {
@@ -50,8 +52,8 @@ Closure ThreadPoolGraphExecutor::create_closure() noexcept {
 
 int ThreadPoolGraphExecutor::run(GraphVertex* vertex,
                                  GraphVertexClosure&& closure) noexcept {
-  _executor.submit([closure = ::std::move(closure), vertex]() mutable {
-    vertex->run(::std::move(closure));
+  _executor.submit([captured_closure = ::std::move(closure), vertex]() mutable {
+    vertex->run(::std::move(captured_closure));
   });
   return 0;
 }

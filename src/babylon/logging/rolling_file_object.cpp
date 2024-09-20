@@ -45,7 +45,7 @@ void RollingFileObject::delete_expire_files() noexcept {
 
   ::std::vector<::std::string> to_be_deleted_files;
   {
-    ::std::lock_guard<::std::mutex> {_tracking_files_mutex};
+    ::std::lock_guard<::std::mutex> lock {_tracking_files_mutex};
     while (_tracking_files.size() > _max_file_number) {
       to_be_deleted_files.emplace_back(::std::move(_tracking_files.front()));
       _tracking_files.pop_front();
@@ -165,7 +165,7 @@ int RollingFileObject::open() noexcept {
   }
 
   if (_max_file_number != SIZE_MAX) {
-    ::std::lock_guard<::std::mutex> {_tracking_files_mutex};
+    ::std::lock_guard<::std::mutex> lock {_tracking_files_mutex};
     _tracking_files.push_back(full_file_name);
   }
   auto old_fd = _fd;

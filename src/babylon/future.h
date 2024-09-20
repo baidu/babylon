@@ -25,7 +25,7 @@ class Promise;
 template <typename T, typename M = SchedInterface>
 class Future {
  public:
-  typedef typename internal::future::NonVoid<T>::type ResultType;
+  using ResultType = typename internal::future::NonVoid<T>::type;
   template <typename C>
   using IsCompatibleCallback =
       typename internal::future::IsCompatibleCallback<C, T>;

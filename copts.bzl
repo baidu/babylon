@@ -19,11 +19,13 @@ BABYLON_CLANG_COPTS = ['-faligned-new', '-Weverything', '-Wno-unknown-warning-op
                        # BABYLON_SERIALIZABLE宏内部定义的一些辅助成员在继承场景下会发生同名隐藏
                        # 但是这个场景下的隐藏本身是无害的，目前也还没有很好的方法做命名区分
                        '-Wno-shadow-field',
+                       # 采用和gcc更一致的-Wswitch-default风格
+                       '-Wno-covered-switch-default',
                        # TODO(lijiang01): 逐步梳理清除
-                       '-Wno-weak-vtables', '-Wno-float-conversion', '-Wno-switch-enum',
+                       '-Wno-weak-vtables', '-Wno-float-conversion', '-Wno-switch-enum', '-Wno-c++17-extensions',
                        '-Wno-gnu-anonymous-struct', '-Wno-nested-anon-types',
                        '-Wno-array-bounds-pointer-arithmetic', '-Wno-cast-align', '-Wno-vla-extension',
-                       '-Wno-unneeded-member-function', '-Wno-deprecated-declarations']
+                       '-Wno-unneeded-member-function', '-Wno-deprecated-declarations', '-Wno-unsafe-buffer-usage']
 
 BABYLON_COPTS = select({
     '//:compiler_gcc': BABYLON_GCC_COPTS,

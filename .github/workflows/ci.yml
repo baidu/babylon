@@ -9,9 +9,10 @@ on:
 jobs:
   basic:
     strategy:
+      fail-fast: false
       matrix:
-        compiler: [{name: gcc, flag: --action_env=CC=gcc-12}, {name: clang, flag: --action_env=CC=clang-14}]
-        std: [{name: c++17}, {name: c++14, flag: --cxxopt=-std=c++14 --cxxopt=-faligned-new}]
+        compiler: [{name: gcc, flag: --action_env=CC=gcc-14}, {name: clang, flag: --action_env=CC=clang-18}]
+        std: [{name: c++20}, {name: c++14, flag: --cxxopt=-std=c++14 --cxxopt=-faligned-new}]
         stdlib: [{name: stdlibc++}, {name: libc++, flag: --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++}]
         feature: [{name: asan, flag: --config=asan}, {name: tsan, flag: --features=tsan}]
         exclude:
@@ -19,7 +20,7 @@ jobs:
           stdlib: {name: libc++}
         - std: {name: c++14}
           feature: {name: tsan}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}
     steps:
     - uses: actions/checkout@v4
@@ -29,12 +30,14 @@ jobs:
         key: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-${{github.sha}}
         restore-keys: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-
         save-always: true
-    - run: bazel test --compilation_mode=opt --disk_cache=bazel-disk --verbose_failures --test_output=errors ${{matrix.compiler.flag}} ${{matrix.std.flag}} ${{matrix.stdlib.flag}} ${{matrix.feature.flag}} test/...
+    - run: sudo apt install libc++-18-dev libc++abi-18-dev
+    - run: bazel test --compilation_mode=dbg --disk_cache=bazel-disk --verbose_failures --test_output=errors ${{matrix.compiler.flag}} ${{matrix.std.flag}} ${{matrix.stdlib.flag}} ${{matrix.feature.flag}} test/...
 
   arenastring:
     strategy:
+      fail-fast: false
       matrix:
-        compiler: [{name: gcc, flag: --action_env=CC=gcc-12}, {name: clang, flag: --action_env=CC=clang-14}]
+        compiler: [{name: gcc, flag: --action_env=CC=gcc-14}, {name: clang, flag: --action_env=CC=clang-18}]
         stdlib: [{name: stdlibc++}, {name: libc++, flag: --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++}]
         mutable: [{name: default}, {name: half, flag: --config=arenastring}, {name: full, flag: --config=mutable-donated-string}]
         exclude:
@@ -44,7 +47,7 @@ jobs:
           mutable: {name: half}
         - compiler: {name: clang}
           mutable: {name: full}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}
     steps:
     - uses: actions/checkout@v4
@@ -54,11 +57,12 @@ jobs:
         key: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-${{github.sha}}
         restore-keys: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-
         save-always: true
+    - run: sudo apt install libc++-18-dev libc++abi-18-dev
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '27.3.arenastring'/" MODULE.bazel
     - run: bazel test --compilation_mode=opt --disk_cache=bazel-disk --verbose_failures --test_output=errors --config=asan ${{matrix.compiler.flag}} ${{matrix.stdlib.flag}} ${{matrix.mutable.flag}} test/...
 
   aarch64:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
@@ -74,7 +78,7 @@ jobs:
     - run: bazel test --disk_cache=bazel-disk --verbose_failures --test_output=errors --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --test_env=LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib -- test/... -test/logging:test_log_statically
 
   workspace:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
@@ -86,7 +90,7 @@ jobs:
     - run: bazel test --disk_cache=bazel-disk --verbose_failures --test_output=errors --enable_bzlmod=false test/...
 
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
@@ -103,7 +107,7 @@ jobs:
         file: bazel-out/_coverage/_coverage_report.lcov
 
   cmake:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: hendrikmuhs/ccache-action@v1.2

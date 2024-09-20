@@ -68,7 +68,7 @@ class ConcurrentExecutionQueue {
   void consume_until_empty() noexcept;
 
   Queue _queue;
-  ::std::atomic<size_t> _events = ATOMIC_VAR_INIT(0);
+  ::std::atomic<size_t> _events {0};
   Executor* _executor {nullptr};
   ConsumeFunction _consume_function;
 };

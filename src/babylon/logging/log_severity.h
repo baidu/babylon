@@ -6,6 +6,8 @@
 #include "babylon/protect.h"
 // clang-format on
 
+#include <cstdint> // uint8_t
+
 BABYLON_NAMESPACE_BEGIN
 
 class LogSeverity {
@@ -37,12 +39,17 @@ class LogSeverity {
  private:
   uint8_t _value {DEBUG};
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
   static constexpr StringView names[NUM] = {
       [DEBUG] = "DEBUG",
       [INFO] = "INFO",
       [WARNING] = "WARNING",
       [FATAL] = "FATAL",
   };
+#pragma GCC diagnostic pop
 };
 
 inline constexpr LogSeverity::LogSeverity(uint8_t value) noexcept

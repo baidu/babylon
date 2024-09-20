@@ -126,6 +126,11 @@ alias(
 )
 
 alias(
+  name = 'coroutine',
+  actual = '//src/babylon:coroutine',
+)
+
+alias(
   name = 'executor',
   actual = '//src/babylon:executor',
 )

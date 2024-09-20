@@ -1007,7 +1007,7 @@ int32_t ExpressionProcessor::expend_non_conditional_expression(
   return 0;
 }
 
-::std::atomic<size_t> ExpressionProcessor::_s_idx = ATOMIC_VAR_INIT(0);
+::std::atomic<size_t> ExpressionProcessor::_s_idx {0};
 // ExpressionProcessor end
 ///////////////////////////////////////////////////////////////////////////////
 

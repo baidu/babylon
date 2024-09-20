@@ -51,7 +51,7 @@ template <typename C, typename T>
 struct ResultOfCallback {
   using U = typename NonVoid<T>::type;
   using F = decltype(&run_callback<C, U>);
-  using type = typename InvokeResult<F, C&, U&>::type;
+  using type = ::std::invoke_result_t<F, C&, U&>;
 };
 
 // 可以支持使用run_callback(const C&, T&&)来执行的回调函数
@@ -68,8 +68,8 @@ struct IsCompatibleCallback {
 // 执行回调并设置到另一个Promise中，适配void类型
 template <typename T, typename M, typename C, typename U,
           typename ::std::enable_if<
-              !::std::is_void<typename InvokeResult<
-                  decltype(&run_callback<C, U>), C&, U&>::type>::value,
+              !::std::is_void<::std::invoke_result_t<
+                  decltype(&run_callback<C, U>), C&, U&>>::value,
               int>::type = 0>
 inline void run_callback(Promise<T, M>& promise, C& callback,
                          U& value) noexcept {
@@ -77,8 +77,8 @@ inline void run_callback(Promise<T, M>& promise, C& callback,
 }
 template <typename T, typename M, typename C, typename U,
           typename ::std::enable_if<
-              ::std::is_void<typename InvokeResult<
-                  decltype(&run_callback<C, U>), C&, U&>::type>::value,
+              ::std::is_void<::std::invoke_result_t<
+                  decltype(&run_callback<C, U>), C&, U&>>::value,
               int>::type = 0>
 inline void run_callback(Promise<T, M>& promise, C& callback,
                          U& value) noexcept {
@@ -93,12 +93,16 @@ inline void run_callback(Promise<T, M>& promise, C& callback,
 template <typename T, typename M>
 class FutureContext {
  public:
-  // void类型比较特殊，无法完成许多处理，定义为零大小类型方便统一书写
-  typedef typename internal::future::NonVoid<T>::type ValueType;
+  using ResultType = typename Future<T, M>::ResultType;
+  using RemoveReferenceType =
+      typename ::std::remove_reference<ResultType>::type;
+  using ValueType =
+      typename ::std::conditional<::std::is_lvalue_reference<ResultType>::value,
+                                  ::std::reference_wrapper<RemoveReferenceType>,
+                                  RemoveReferenceType>::type;
+
   // Promise的构造和赋值是分离的，为了支持无法默认构造的类型
   // 使用未初始化块替代类型本身作为成员，后续显式调用构造和析构
-  typedef typename ::std::aligned_storage<sizeof(ValueType),
-                                          alignof(ValueType)>::type StorageType;
   // 回调链节点
   struct CallbackNode {
     template <typename C>
@@ -149,13 +153,14 @@ class FutureContext {
   inline CallbackNode* seal() noexcept;
 
   inline ValueType& value() noexcept;
+  inline ValueType* pointer() noexcept;
 
   void wait_slow() noexcept;
   bool wait_for_slow(int64_t timeout_ns) noexcept;
 
   Futex<M> _futex {0};
   ::std::atomic<CallbackNode*> _head {nullptr};
-  StorageType _storage;
+  alignas(ValueType) uint8_t _storage[sizeof(ValueType)];
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -192,7 +197,7 @@ template <typename T, typename M>
 template <typename... Args, typename>
 inline void FutureContext<T, M>::set_value(Args&&... args) {
   // 构造并设置value
-  new (&value()) ValueType(::std::forward<Args>(args)...);
+  new (pointer()) ValueType(::std::forward<Args>(args)...);
   // 原子发布数据：
   // 1、获取当前注册的回调链
   // 2、标记后续不再接受回调注册
@@ -237,22 +242,22 @@ inline bool FutureContext<T, M>::wait_for(
 template <typename T, typename M>
 template <typename C, typename>
 inline void FutureContext<T, M>::on_finish(C&& callback) noexcept {
-  auto head = _head.load(::std::memory_order_relaxed);
+  auto head = _head.load(::std::memory_order_acquire);
   if (is_sealed(head)) {
     internal::future::run_callback(callback, value());
     return;
   }
 
 #if __cplusplus >= 201402L
-  auto* node = new CallbackNode(
-      [this, callback = ::std::forward<C>(callback)]() mutable {
-        internal::future::run_callback(callback, value());
+  auto node = new CallbackNode(
+      [this, captured_callback = ::std::forward<C>(callback)]() mutable {
+        internal::future::run_callback(captured_callback, value());
       });
 #else  // __cplusplus < 201402L
-  auto* node = new CallbackNode(
+  auto node = new CallbackNode(
       ::std::bind(internal::future::run_callback<C, ValueType>,
                   uncomposable_bind_argument(::std::forward<C>(callback)),
-                  ::std::ref(value())));
+                  ::std::ref(*pointer())));
 #endif // __cplusplus
 
   while (true) {
@@ -280,7 +285,7 @@ inline void FutureContext<T, M>::clear() noexcept {
   _futex.value().store(0, ::std::memory_order_relaxed);
   auto* head = _head.exchange(nullptr, ::std::memory_order_relaxed);
   if (is_sealed(head)) {
-    value().~ValueType();
+    pointer()->~ValueType();
   } else {
     while (head != nullptr) {
       auto* next_head = head->next;
@@ -306,7 +311,15 @@ FutureContext<T, M>::seal() noexcept {
 template <typename T, typename M>
 inline typename FutureContext<T, M>::ValueType&
 FutureContext<T, M>::value() noexcept {
-  return reinterpret_cast<ValueType&>(_storage);
+  assert(ready(::std::memory_order_acquire) &&
+         "cannot read value before ready");
+  return *pointer();
+}
+
+template <typename T, typename M>
+inline typename FutureContext<T, M>::ValueType*
+FutureContext<T, M>::pointer() noexcept {
+  return reinterpret_cast<ValueType*>(_storage);
 }
 
 template <typename T, typename M>
@@ -394,13 +407,8 @@ inline bool Future<T, M>::wait_for(
 template <typename T, typename M>
 template <typename C, typename>
 inline void Future<T, M>::on_finish(C&& callback) noexcept {
-  if (ABSL_PREDICT_TRUE(valid())) {
-    _context->on_finish(::std::forward<C>(callback));
-    _context.reset();
-    return;
-  }
-
-  assert(false && "try watch invalid future");
+  assert(valid() && "try watch invalid future");
+  _context->on_finish(::std::forward<C>(callback));
 }
 
 template <typename T, typename M>
@@ -410,11 +418,11 @@ inline typename Future<T, M>::template ThenFuture<C, M> Future<T, M>::then(
   ThenPromise<C, M> promise;
   auto future = promise.get_future();
 #if __cplusplus >= 201402L
-  on_finish(
-      [promise = ::std::move(promise),
-       callback = ::std::forward<C>(callback)](ResultType& value) mutable {
-        internal::future::run_callback(promise, callback, value);
-      });
+  on_finish([captured_promise = ::std::move(promise),
+             captured_callback =
+                 ::std::forward<C>(callback)](ResultType& value) mutable {
+    internal::future::run_callback(captured_promise, captured_callback, value);
+  });
 #else  // __cplusplus < 201402L
   on_finish(
       ::std::bind(internal::future::run_callback<ThenType<C>, M, C, ResultType>,

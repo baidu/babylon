@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+using ::babylon::CallableArgs;
 using ::babylon::Id;
 using ::babylon::TypeId;
 
@@ -49,8 +50,162 @@ TEST(type_traits, id_is_readable) {
   ss << F();
   type_name = ss.str();
 #ifdef __clang__
-  ASSERT_EQ(type_name, "(lambda at test/test_type_traits.cpp:12:17)");
+  ASSERT_EQ(type_name, "(lambda at test/test_type_traits.cpp:13:17)");
 #else  // !__clang__
   ASSERT_EQ(type_name, "F()::<lambda(int)>");
 #endif // !__clang__
+}
+
+struct CallableArgsTest : public ::testing::Test {
+  using E = ::std::tuple<int, int&, int&&>;
+};
+
+TEST_F(CallableArgsTest, support_normal_function) {
+  {
+    struct S {
+      static int run(int, int&, int&&);
+    };
+    using F = decltype(S::run);
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F*>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F&&>::type>::value));
+  }
+  {
+    struct S {
+      static int run(int, int&, int&&) noexcept;
+    };
+    using F = decltype(S::run);
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F*>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F&&>::type>::value));
+  }
+}
+
+TEST_F(CallableArgsTest, support_member_function) {
+  {
+    struct S {
+      int run(int, int&, int&&);
+    };
+    using E = ::std::tuple<S*, int, int&, int&&>;
+    using F = decltype(&S::run);
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F&&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F&>::type>::value));
+  }
+  {
+    struct S {
+      int run(int, int&, int&&) noexcept;
+    };
+    using E = ::std::tuple<S*, int, int&, int&&>;
+    using F = decltype(&S::run);
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F>::type>::value));
+  }
+  {
+    struct S {
+      int run(int, int&, int&&) const;
+    };
+    using E = ::std::tuple<const S*, int, int&, int&&>;
+    using F = decltype(&S::run);
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F&&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F&>::type>::value));
+  }
+  {
+    struct S {
+      int run(int, int&, int&&) const noexcept;
+    };
+    using E = ::std::tuple<const S*, int, int&, int&&>;
+    using F = decltype(&S::run);
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<F>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F>::type>::value));
+  }
+}
+
+TEST_F(CallableArgsTest, support_function_object) {
+  {
+    struct S {
+      int operator()(int, int&, int&&);
+    };
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S&>::type>::value));
+  }
+  {
+    struct S {
+      int operator()(int, int&, int&&) noexcept;
+    };
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S&>::type>::value));
+  }
+  {
+    struct S {
+      int operator()(int, int&, int&&) const;
+    };
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S&>::type>::value));
+  }
+  {
+    struct S {
+      int operator()(int, int&, int&&) const noexcept;
+    };
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S&>::type>::value));
+  }
+}
+
+TEST_F(CallableArgsTest, support_lambda) {
+  {
+    auto l = [](int, int&, int&&) {};
+    using S = decltype(l);
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S&>::type>::value));
+  }
+  {
+    auto l = [](int, int&, int&&) noexcept {};
+    using S = decltype(l);
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S&>::type>::value));
+  }
+  {
+    auto l = [](int, int&, int&&) mutable {};
+    using S = decltype(l);
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S&>::type>::value));
+  }
+  {
+    auto l = [](int, int&, int&&) mutable noexcept {};
+    using S = decltype(l);
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<S&&>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S>::type>::value));
+    ASSERT_TRUE((::std::is_same<E, CallableArgs<const S&>::type>::value));
+  }
 }

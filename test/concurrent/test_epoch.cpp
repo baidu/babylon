@@ -6,6 +6,8 @@
 #include <random>
 #include <thread>
 
+#pragma GCC diagnostic ignored "-Wswitch-default" // ASSERT_DEATH
+
 using ::babylon::Epoch;
 using Accessor = ::babylon::Epoch::Accessor;
 
@@ -22,7 +24,7 @@ TEST_F(EpochTest, default_accessor_not_valid) {
 TEST_F(EpochTest, accessor_valid_until_release) {
   auto accessor = epoch.create_accessor();
   ASSERT_TRUE(accessor);
-  ::std::lock_guard<Accessor> {accessor};
+  { ::std::lock_guard<Accessor> lock {accessor}; }
   accessor.release();
   ASSERT_FALSE(accessor);
   accessor.release();
@@ -48,14 +50,14 @@ TEST_F(EpochTest, accessor_movable) {
   auto accessor = epoch.create_accessor();
   {
     auto accessor_moved = ::std::move(accessor);
-    ::std::lock_guard<Accessor> {accessor_moved};
+    { ::std::lock_guard<Accessor> lock {accessor_moved}; }
     ASSERT_DEATH(accessor.lock(), "");
 
     accessor = ::std::move(accessor_moved);
-    ::std::lock_guard<Accessor> {accessor};
+    { ::std::lock_guard<Accessor> lock {accessor}; }
     ASSERT_DEATH(accessor_moved.lock(), "");
   }
-  ::std::lock_guard<Accessor> {accessor};
+  { ::std::lock_guard<Accessor> lock {accessor}; }
 }
 
 TEST_F(EpochTest, epoch_increase_when_tick) {

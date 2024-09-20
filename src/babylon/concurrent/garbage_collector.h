@@ -66,6 +66,9 @@ class GarbageCollector {
     ReclaimTask& operator=(const ReclaimTask&) = delete;
     ~ReclaimTask() noexcept = default;
 
+    ReclaimTask(R&& reclaimer, uint64_t lowest_epoch) noexcept
+        : reclaimer {::std::move(reclaimer)}, lowest_epoch {lowest_epoch} {}
+
     R reclaimer;
     uint64_t lowest_epoch {UINT64_MAX};
   };
@@ -117,8 +120,8 @@ ABSL_ATTRIBUTE_ALWAYS_INLINE inline void GarbageCollector<R>::retire(
 template <typename R>
 ABSL_ATTRIBUTE_ALWAYS_INLINE inline void GarbageCollector<R>::retire(
     R&& reclaimer, uint64_t lowest_epoch) noexcept {
-  _queue.template push<true, false, false>(ReclaimTask {
-      .reclaimer = ::std::move(reclaimer), .lowest_epoch = lowest_epoch});
+  _queue.template push<true, false, false>(
+      ReclaimTask {::std::forward<R>(reclaimer), lowest_epoch});
 }
 
 template <typename R>

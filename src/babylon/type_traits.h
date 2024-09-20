@@ -1,22 +1,53 @@
 #pragma once
 
 #include "babylon/absl_base_internal_invoke.h" // ::absl::base_internal::is_invocable_r
-#include "babylon/environment.h"
-#include "babylon/string_view.h" // StringView
+#include "babylon/string_view.h"               // StringView
 
 // clang-format off
 #include "babylon/protect.h"
 // clang-format on
 
+#include "absl/utility/utility.h" // absl::apply
+
 #include <type_traits> // std::invoke_result
 
-#if __cpp_lib_is_invocable < 201703L
 namespace std {
+#if !__cpp_lib_is_invocable
 template <typename F, typename... Args>
 using is_invocable = ::absl::base_internal::is_invocable_r<void, F, Args...>;
+using ::absl::base_internal::invoke_result_t;
 using ::absl::base_internal::is_invocable_r;
-};     // namespace std
-#endif // __cpp_lib_is_invocable < 201703L
+#endif // !__cpp_lib_is_invocable
+
+#if !__cpp_lib_apply
+using ::absl::apply;
+#endif // !__cpp_lib_apply
+
+#if !__cpp_lib_invoke
+using ::absl::base_internal::invoke;
+#endif // !__cpp_lib_invoke
+} // namespace std
+
+#if !__cpp_lib_is_invocable
+BABYLON_NAMESPACE_BEGIN
+namespace internal {
+template <typename V, typename F, typename... Args>
+struct InvokeResult {};
+template <typename F, typename... Args>
+struct InvokeResult<
+    typename ::std::enable_if<::std::is_invocable<F, Args...>::value>::type, F,
+    Args...> {
+  using type = ::std::invoke_result_t<F, Args...>;
+};
+} // namespace internal
+BABYLON_NAMESPACE_END
+
+namespace std {
+template <typename F, typename... Args>
+struct invoke_result
+    : public ::babylon::internal::InvokeResult<void, F, Args...> {};
+} // namespace std
+#endif // !__cpp_lib_is_invocable
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -56,7 +87,7 @@ struct TypeId {
   inline static const StringView get_type_name() noexcept;
   static const Id ID;
 #else  // __clang__ || GLIBCXX_VERSION >= 920200312
-  inline static constexpr StringView get_type_name() noexcept;
+  inline static constexpr babylon::StringView get_type_name() noexcept;
   static constexpr Id ID {TypeId<T>::get_type_name()};
 #endif // __clang__ || GLIBCXX_VERSION >= 920200312
 };
@@ -233,13 +264,108 @@ class ParameterPack<T> {
 // ParameterPack end
 ////////////////////////////////////////////////////////////////////////////////
 
-#if __cpp_lib_is_invocable >= 201703L
-template <typename F, typename... Args>
-struct InvokeResult : public ::std::invoke_result<F, Args...> {};
-#else  // !__cpp_lib_is_invocable
-template <typename F, typename... Args>
-struct InvokeResult : public ::std::result_of<F(Args...)> {};
-#endif // !__cpp_lib_is_invocable
+template <typename, template <typename...> typename>
+struct IsSpecialization : public ::std::false_type {};
+template <template <typename...> typename T, typename... Args>
+struct IsSpecialization<T<Args...>, T> : public ::std::true_type {};
+template <typename T, template <typename...> typename TP>
+constexpr bool IsSpecializationValue = IsSpecialization<T, TP>::value;
+
+template <typename C>
+struct CallableArgs;
+template <typename R, typename... Args>
+struct CallableArgs<R(Args...)> {
+  using type = ::std::tuple<Args...>;
+};
+template <typename R, typename... Args>
+struct CallableArgs<R (&)(Args...)> : public CallableArgs<R(Args...)> {};
+template <typename R, typename... Args>
+struct CallableArgs<R (&&)(Args...)> : public CallableArgs<R(Args...)> {};
+template <typename R, typename... Args>
+struct CallableArgs<R (*)(Args...)> : public CallableArgs<R(Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*)(Args...)> : public CallableArgs<R(T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&)(Args...)> : public CallableArgs<R(T*, Args...)> {
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&&)(Args...)> : public CallableArgs<R(T*, Args...)> {
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const)(Args...)>
+    : public CallableArgs<R(T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const&)(Args...)>
+    : public CallableArgs<R(T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*)(Args...) const>
+    : public CallableArgs<R(const T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&)(Args...) const>
+    : public CallableArgs<R(const T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&&)(Args...) const>
+    : public CallableArgs<R(const T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const)(Args...) const>
+    : public CallableArgs<R(const T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const&)(Args...) const>
+    : public CallableArgs<R(const T*, Args...)> {};
+
+#if __cpp_noexcept_function_type
+template <typename R, typename... Args>
+struct CallableArgs<R(Args...) noexcept> : public CallableArgs<R(Args...)> {};
+template <typename R, typename... Args>
+struct CallableArgs<R (&)(Args...) noexcept> : public CallableArgs<R(Args...)> {
+};
+template <typename R, typename... Args>
+struct CallableArgs<R (&&)(Args...) noexcept>
+    : public CallableArgs<R(Args...)> {};
+template <typename R, typename... Args>
+struct CallableArgs<R (*)(Args...) noexcept> : public CallableArgs<R(Args...)> {
+};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*)(Args...) noexcept>
+    : public CallableArgs<R(T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&)(Args...) noexcept>
+    : public CallableArgs<R(T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&&)(Args...) noexcept>
+    : public CallableArgs<R(T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const)(Args...) noexcept>
+    : public CallableArgs<R(T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const&)(Args...) noexcept>
+    : public CallableArgs<R(T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*)(Args...) const noexcept>
+    : public CallableArgs<R(const T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&)(Args...) const noexcept>
+    : public CallableArgs<R(const T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*&&)(Args...) const noexcept>
+    : public CallableArgs<R(const T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const)(Args...) const noexcept>
+    : public CallableArgs<R(const T*, Args...)> {};
+template <typename R, typename T, typename... Args>
+struct CallableArgs<R (T::*const&)(Args...) const noexcept>
+    : public CallableArgs<R(const T*, Args...)> {};
+#endif // __cpp_noexcept_function_type
+
+template <typename C>
+struct CallableArgs
+    : public CallableArgs<decltype(&::std::decay<C>::type::operator())> {
+  using BaseType =
+      typename CallableArgs<decltype(&::std::decay<C>::type::operator())>::type;
+  template <typename T, typename... Args>
+  static ::std::tuple<Args...> RemoveFirst(::std::tuple<T, Args...>);
+  using type = decltype(RemoveFirst(::std::declval<BaseType>()));
+};
 
 BABYLON_NAMESPACE_END
 
