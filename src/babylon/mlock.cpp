@@ -32,8 +32,8 @@ int MemoryLocker::start() noexcept {
     return -1;
   }
   _stoped = ::std::promise<void>();
-  auto stoped = _stoped.get_future();
-  _thread = ::std::thread([&, stoped = ::std::move(stoped)] {
+  _thread = ::std::thread([&] {
+    auto stoped = _stoped.get_future();
     do {
       check_and_lock();
       _round++;

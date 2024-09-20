@@ -194,6 +194,8 @@ void ThreadPoolExecutor::keep_execute() noexcept {
       }
       case TaskType::WAKEUP: {
       } break;
+      default:
+        assert(false);
     }
   }
 }

@@ -52,8 +52,8 @@ Closure ThreadPoolGraphExecutor::create_closure() noexcept {
 
 int ThreadPoolGraphExecutor::run(GraphVertex* vertex,
                                  GraphVertexClosure&& closure) noexcept {
-  _executor.submit([closure = ::std::move(closure), vertex]() mutable {
-    vertex->run(::std::move(closure));
+  _executor.submit([captured_closure = ::std::move(closure), vertex]() mutable {
+    vertex->run(::std::move(captured_closure));
   });
   return 0;
 }

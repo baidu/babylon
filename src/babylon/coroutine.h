@@ -333,13 +333,13 @@ class BasicFutureAwaitable {
   template <typename U>
   inline void await_suspend(
       ::std::coroutine_handle<CoroutinePromise<U>> handle) noexcept {
-    _future.on_finish([this, handle] {
+    _future.on_finish([handle] {
       handle.promise().resume(handle);
     });
   }
 
   inline void await_suspend(::std::coroutine_handle<> handle) noexcept {
-    _future.on_finish([this, handle] {
+    _future.on_finish([handle] {
       handle.resume();
     });
   }

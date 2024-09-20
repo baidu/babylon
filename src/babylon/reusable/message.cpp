@@ -165,6 +165,9 @@ void MessageAllocationMetadata::FieldAllocationMetadata::update_repeated_field(
       __BABYLON_TMP_CASE(CPPTYPE_STRING, ::std::string)
       __BABYLON_TMP_CASE(CPPTYPE_MESSAGE, ::google::protobuf::Message)
 #undef __BABYLON_TMP_CASE
+    default:
+      assert(false);
+      break;
   }
 }
 
@@ -223,6 +226,9 @@ void MessageAllocationMetadata::FieldAllocationMetadata::reserve_repeated_field(
       repeated_field->Clear();
       break;
     }
+    default:
+      assert(false);
+      break;
   }
 }
 #pragma GCC diagnostic pop

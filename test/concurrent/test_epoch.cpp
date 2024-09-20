@@ -6,6 +6,8 @@
 #include <random>
 #include <thread>
 
+#pragma GCC diagnostic ignored "-Wswitch-default" // ASSERT_DEATH
+
 using ::babylon::Epoch;
 using Accessor = ::babylon::Epoch::Accessor;
 

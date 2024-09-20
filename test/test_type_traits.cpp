@@ -50,7 +50,7 @@ TEST(type_traits, id_is_readable) {
   ss << F();
   type_name = ss.str();
 #ifdef __clang__
-  ASSERT_EQ(type_name, "(lambda at test/test_type_traits.cpp:12:17)");
+  ASSERT_EQ(type_name, "(lambda at test/test_type_traits.cpp:13:17)");
 #else  // !__clang__
   ASSERT_EQ(type_name, "F()::<lambda(int)>");
 #endif // !__clang__

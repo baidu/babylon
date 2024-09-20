@@ -71,6 +71,26 @@ int GraphData::recursive_activate(VertexStack& runnable_vertexes,
   return 0;
 }
 
+int GraphData::activate(DataStack& activating_data,
+                        VertexStack& runnable_vertexes,
+                        ClosureContext* closure) noexcept {
+  // trigger时检测过一次ready，送给activate的如果没有producer直接报错
+  if (ABSL_PREDICT_FALSE(_producers.empty())) {
+    BABYLON_LOG(WARNING) << "can not activate " << *this << " with no producer";
+    return -1;
+  }
+  for (auto& producer : _producers) {
+    if (ABSL_PREDICT_FALSE(0 != producer->activate(activating_data,
+                                                   runnable_vertexes,
+                                                   closure))) {
+      BABYLON_LOG(WARNING) << "activate producer " << producer << " of "
+                           << *this << " failed";
+      return -1;
+    }
+  }
+  return 0;
+}
+
 bool GraphData::check_safe_mutable() const noexcept {
   // 依赖不超过1个，是安全的
   if (_successors.size() <= 1) {

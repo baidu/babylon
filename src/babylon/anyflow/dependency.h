@@ -3,6 +3,8 @@
 #include "babylon/any.h"
 #include "babylon/concurrent/transient_topic.h"
 
+#include "absl/container/inlined_vector.h"
+
 #include <atomic>
 
 BABYLON_NAMESPACE_BEGIN
@@ -74,9 +76,9 @@ class GraphDependency {
   // T == Any 特化：返回目标底层Any容器的指针，用于多类型支持等高级场景
   template <typename T>
   inline T* mutable_value() noexcept;
-  inline int activated_vertex_name(
+  int activated_vertex_name(
       ::std::vector<std::string>& vertex_name) const noexcept;
-  inline int activated_vertex_name(std::string& vertex_name) const noexcept;
+  int activated_vertex_name(std::string& vertex_name) const noexcept;
   ///////////////////////////////////////////////////////////////////////////
 
   template <typename T>
@@ -96,8 +98,8 @@ class GraphDependency {
   // return 0: 正常激活，进入等待状态
   //        1: 正常激活，进入完成状态
   //       <0: 激活失败
-  inline int activate(DataStack& activating_data) noexcept;
-  inline void ready(GraphData* data, VertexStack& runnable_vertexes) noexcept;
+  int activate(DataStack& activating_data) noexcept;
+  void ready(GraphData* data, VertexStack& runnable_vertexes) noexcept;
   // 检测依赖是否成立，实际读取原子变量
   // 如果依赖成立，设置_established供后续使用
   inline bool check_established() noexcept;

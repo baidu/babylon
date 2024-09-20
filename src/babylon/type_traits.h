@@ -11,16 +11,31 @@
 
 #include <type_traits> // std::invoke_result
 
-#if __cpp_lib_is_invocable < 201703L
 namespace std {
+
+#if !__cpp_lib_is_invocable
 template <typename F, typename... Args>
 using is_invocable = ::absl::base_internal::is_invocable_r<void, F, Args...>;
-using ::absl::apply;
-using ::absl::base_internal::invoke;
 using ::absl::base_internal::invoke_result_t;
 using ::absl::base_internal::is_invocable_r;
-};     // namespace std
-#endif // __cpp_lib_is_invocable < 201703L
+template <typename F, typename... Args>
+struct invoke_result {};
+template <typename F, typename... Args,
+          typename = ::std::invoke_result_t<F, Args...>>
+struct invoke_result {
+  using type = ::std::invoke_result_t<F, Args...>;
+};
+#endif // !__cpp_lib_is_invocable
+
+#if !__cpp_lib_apply
+using ::absl::apply;
+#endif // !__cpp_lib_apply
+
+#if !__cpp_lib_invoke
+using ::absl::base_internal::invoke;
+#endif // !__cpp_lib_invoke
+
+} // namespace std
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -60,7 +75,7 @@ struct TypeId {
   inline static const StringView get_type_name() noexcept;
   static const Id ID;
 #else  // __clang__ || GLIBCXX_VERSION >= 920200312
-  inline static constexpr StringView get_type_name() noexcept;
+  inline static constexpr babylon::StringView get_type_name() noexcept;
   static constexpr Id ID {TypeId<T>::get_type_name()};
 #endif // __clang__ || GLIBCXX_VERSION >= 920200312
 };

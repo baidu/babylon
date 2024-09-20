@@ -1,6 +1,7 @@
 #pragma once
 
 #include "babylon/any.h"
+#include "babylon/anyflow/dependency.h"
 #include "babylon/anyflow/executor.h"
 #include "babylon/reusable/memory_resource.h"
 

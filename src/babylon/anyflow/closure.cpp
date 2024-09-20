@@ -1,6 +1,7 @@
 #include "babylon/anyflow/closure.h"
 
 #include "babylon/anyflow/data.h"
+#include "babylon/anyflow/vertex.h"
 
 BABYLON_NAMESPACE_BEGIN
 namespace anyflow {

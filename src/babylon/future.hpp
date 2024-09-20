@@ -249,12 +249,12 @@ inline void FutureContext<T, M>::on_finish(C&& callback) noexcept {
   }
 
 #if __cplusplus >= 201402L
-  auto* node = new CallbackNode(
-      [this, callback = ::std::forward<C>(callback)]() mutable {
-        internal::future::run_callback(callback, value());
+  auto node = new CallbackNode(
+      [this, captured_callback = ::std::forward<C>(callback)]() mutable {
+        internal::future::run_callback(captured_callback, value());
       });
 #else  // __cplusplus < 201402L
-  auto* node = new CallbackNode(
+  auto node = new CallbackNode(
       ::std::bind(internal::future::run_callback<C, ValueType>,
                   uncomposable_bind_argument(::std::forward<C>(callback)),
                   ::std::ref(*pointer())));
@@ -311,7 +311,8 @@ FutureContext<T, M>::seal() noexcept {
 template <typename T, typename M>
 inline typename FutureContext<T, M>::ValueType&
 FutureContext<T, M>::value() noexcept {
-  assert(ready(::std::memory_order_acquire) && "cannot read value before ready");
+  assert(ready(::std::memory_order_acquire) &&
+         "cannot read value before ready");
   return *pointer();
 }
 
@@ -417,11 +418,11 @@ inline typename Future<T, M>::template ThenFuture<C, M> Future<T, M>::then(
   ThenPromise<C, M> promise;
   auto future = promise.get_future();
 #if __cplusplus >= 201402L
-  on_finish(
-      [promise = ::std::move(promise),
-       callback = ::std::forward<C>(callback)](ResultType& value) mutable {
-        internal::future::run_callback(promise, callback, value);
-      });
+  on_finish([captured_promise = ::std::move(promise),
+             captured_callback =
+                 ::std::forward<C>(callback)](ResultType& value) mutable {
+    internal::future::run_callback(captured_promise, captured_callback, value);
+  });
 #else  // __cplusplus < 201402L
   on_finish(
       ::std::bind(internal::future::run_callback<ThenType<C>, M, C, ResultType>,

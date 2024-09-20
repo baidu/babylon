@@ -3,7 +3,7 @@
 #include "babylon/anyflow/closure.h"
 #include "babylon/anyflow/data.h"
 #include "babylon/anyflow/dependency.h"
-#include "babylon/anyflow/vertex.h"
+// #include "babylon/anyflow/vertex.h"
 
 BABYLON_NAMESPACE_BEGIN
 namespace anyflow {
@@ -338,16 +338,17 @@ void GraphData::default_on_reset(Any& data) noexcept {
 
 template <typename T, typename C>
 inline void GraphData::set_on_reset(C&& callback) noexcept {
-#if __cpp_init_captures
-  _on_reset = [callback = ::std::forward<C>(callback)](Any& data) {
-#else  // !__cpp_init_captures
-  _on_reset = [callback](Any& data) {
-#endif // !__cpp_init_captures
-    auto value = switch_to<T>(data);
-    if (value != nullptr) {
-      callback(*value);
+  struct S {
+    void operator()(Any& data) {
+      auto value = switch_to<T>(data);
+      if (value != nullptr) {
+        callback(*value);
+      }
     }
+
+    C callback;
   };
+  _on_reset = S {.callback {::std::forward<C>(callback)}};
 }
 
 template <typename T>
@@ -595,26 +596,6 @@ inline void GraphData::trigger(DataStack& activating_data) noexcept {
       activating_data.emplace_back(this);
     }
   }
-}
-
-inline int32_t GraphData::activate(DataStack& activating_data,
-                                   VertexStack& runnable_vertexes,
-                                   ClosureContext* closure) noexcept {
-  // trigger时检测过一次ready，送给activate的如果没有producer直接报错
-  if (ABSL_PREDICT_FALSE(_producers.empty())) {
-    BABYLON_LOG(WARNING) << "can not activate " << *this << " with no producer";
-    return -1;
-  }
-  for (auto& producer : _producers) {
-    if (ABSL_PREDICT_FALSE(0 != producer->activate(activating_data,
-                                                   runnable_vertexes,
-                                                   closure))) {
-      BABYLON_LOG(WARNING) << "activate producer " << producer << " of "
-                           << *this << " failed";
-      return -1;
-    }
-  }
-  return 0;
 }
 
 inline ::std::ostream& operator<<(::std::ostream& os, const GraphData& data) {

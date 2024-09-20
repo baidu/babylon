@@ -375,9 +375,8 @@ class GraphData {
   // 激活当前data，如果producer依赖就绪，则加入runnable_vertexes
   // 如果producer还有依赖，则进入激活状态，并将进一步需要激活的节点
   // 加入activating_data
-  inline int32_t activate(DataStack& activating_data,
-                          VertexStack& runnable_vertexes,
-                          ClosureContext* closure) noexcept;
+  int activate(DataStack& activating_data, VertexStack& runnable_vertexes,
+               ClosureContext* closure) noexcept;
 
   bool check_safe_mutable() const noexcept;
 

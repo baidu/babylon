@@ -192,9 +192,7 @@ class Executor {
 };
 
 template <typename C, typename... Args>
-struct Executor::Result {
-  using type = ::std::invoke_result_t<C, Args...>;
-};
+struct Executor::Result : public ::std::invoke_result<C, Args...> {};
 #if __cpp_concepts && __cpp_lib_coroutine
 template <typename C, typename... Args>
   requires CoroutineInvocable<C, Args...>
