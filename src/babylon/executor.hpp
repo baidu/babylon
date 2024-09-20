@@ -3,10 +3,15 @@
 #include "babylon/current_executor.h" // CurrentExecutor
 #include "babylon/executor.h"
 
+// clang-foramt off
+#include "babylon/protect.h"
+// clang-foramt on
+
 BABYLON_NAMESPACE_BEGIN
 
 ////////////////////////////////////////////////////////////////////////////////
 // Executor::CoroutineHandle begin
+#if __cpp_lib_coroutine
 inline void Executor::CoroutineHandle::resume() const noexcept {
   CurrentExecutor::set(_executor);
   _handle.resume();
@@ -16,6 +21,7 @@ inline void Executor::CoroutineHandle::resume() const noexcept {
 inline Executor::CoroutineHandle::CoroutineHandle(
     Executor* executor, ::std::coroutine_handle<> handle) noexcept
     : _executor {executor}, _handle {handle} {}
+#endif // __cpp_lib_coroutine
 // Executor::CoroutineHandle end
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -190,6 +196,7 @@ inline void Executor::apply_and_set_value(
   promise.set_value();
 }
 
+#if __cpp_concepts && __cpp_lib_coroutine
 template <typename P, typename A>
 CoroutineTask<> Executor::await_and_set_value(P promise, A awaitable) noexcept {
   promise.set_value(co_await ::std::move(awaitable));
@@ -216,6 +223,7 @@ CoroutineTask<> Executor::await_apply_and_set_value(Promise<void, F> promise,
   co_await ::std::apply(::std::forward<C>(callable), ::std::move(args_tuple));
   promise.set_value();
 }
+#endif // __cpp_concepts && __cpp_lib_coroutine
 // Executor end
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -230,3 +238,5 @@ void ThreadPoolExecutor::set_balance_interval(
 ////////////////////////////////////////////////////////////////////////////////
 
 BABYLON_NAMESPACE_END
+
+#include "babylon/unprotect.h"

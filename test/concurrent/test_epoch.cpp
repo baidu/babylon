@@ -24,7 +24,7 @@ TEST_F(EpochTest, default_accessor_not_valid) {
 TEST_F(EpochTest, accessor_valid_until_release) {
   auto accessor = epoch.create_accessor();
   ASSERT_TRUE(accessor);
-  ::std::lock_guard<Accessor> {accessor};
+  { ::std::lock_guard<Accessor> {accessor}; }
   accessor.release();
   ASSERT_FALSE(accessor);
   accessor.release();

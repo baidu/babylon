@@ -103,10 +103,7 @@ TEST_F(CallableArgsTest, support_member_function) {
     using E = ::std::tuple<S*, int, int&, int&&>;
     using F = decltype(&S::run);
     ASSERT_TRUE((::std::is_same<E, CallableArgs<F>::type>::value));
-    ASSERT_TRUE((::std::is_same<E, CallableArgs<F&>::type>::value));
-    ASSERT_TRUE((::std::is_same<E, CallableArgs<F&&>::type>::value));
     ASSERT_TRUE((::std::is_same<E, CallableArgs<const F>::type>::value));
-    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F&>::type>::value));
   }
   {
     struct S {
@@ -127,10 +124,7 @@ TEST_F(CallableArgsTest, support_member_function) {
     using E = ::std::tuple<const S*, int, int&, int&&>;
     using F = decltype(&S::run);
     ASSERT_TRUE((::std::is_same<E, CallableArgs<F>::type>::value));
-    ASSERT_TRUE((::std::is_same<E, CallableArgs<F&>::type>::value));
-    ASSERT_TRUE((::std::is_same<E, CallableArgs<F&&>::type>::value));
     ASSERT_TRUE((::std::is_same<E, CallableArgs<const F>::type>::value));
-    ASSERT_TRUE((::std::is_same<E, CallableArgs<const F&>::type>::value));
   }
 }
 

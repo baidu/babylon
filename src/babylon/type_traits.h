@@ -12,19 +12,11 @@
 #include <type_traits> // std::invoke_result
 
 namespace std {
-
 #if !__cpp_lib_is_invocable
 template <typename F, typename... Args>
 using is_invocable = ::absl::base_internal::is_invocable_r<void, F, Args...>;
 using ::absl::base_internal::invoke_result_t;
 using ::absl::base_internal::is_invocable_r;
-template <typename F, typename... Args>
-struct invoke_result {};
-template <typename F, typename... Args,
-          typename = ::std::invoke_result_t<F, Args...>>
-struct invoke_result {
-  using type = ::std::invoke_result_t<F, Args...>;
-};
 #endif // !__cpp_lib_is_invocable
 
 #if !__cpp_lib_apply
@@ -34,8 +26,28 @@ using ::absl::apply;
 #if !__cpp_lib_invoke
 using ::absl::base_internal::invoke;
 #endif // !__cpp_lib_invoke
-
 } // namespace std
+
+#if !__cpp_lib_is_invocable
+BABYLON_NAMESPACE_BEGIN
+namespace internal {
+template <typename V, typename F, typename... Args>
+struct InvokeResult {};
+template <typename F, typename... Args>
+struct InvokeResult<
+    typename ::std::enable_if<::std::is_invocable<F, Args...>::value>::type, F,
+    Args...> {
+  using type = ::std::invoke_result_t<F, Args...>;
+};
+} // namespace internal
+BABYLON_NAMESPACE_END
+
+namespace std {
+template <typename F, typename... Args>
+struct invoke_result
+    : public ::babylon::internal::InvokeResult<void, F, Args...> {};
+} // namespace std
+#endif // !__cpp_lib_is_invocable
 
 BABYLON_NAMESPACE_BEGIN
 

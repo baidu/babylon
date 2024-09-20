@@ -6,7 +6,6 @@
 
 using ::babylon::AlwaysUseNewThreadExecutor;
 using ::babylon::async;
-using ::babylon::CoroutineTask;
 using ::babylon::Executor;
 using ::babylon::Future;
 using ::babylon::InplaceExecutor;
@@ -235,9 +234,8 @@ TEST_F(ExecutorTest, support_coroutine_lambda) {
     {
       ::std::promise<::std::string> promise;
       future = promise.get_future();
-      auto l =
-          [promise = ::std::move(promise)](
-              ::std::string prefix) mutable -> CoroutineTask<::std::string> {
+      auto l = [promise = ::std::move(promise)](::std::string prefix) mutable
+          -> ::babylon::CoroutineTask<::std::string> {
         promise.set_value(prefix + "-10086");
         co_return prefix + "-10086";
       };
@@ -250,9 +248,8 @@ TEST_F(ExecutorTest, support_coroutine_lambda) {
     ::babylon::Future<::std::string> future;
     {
       ::std::promise<::std::string> promise;
-      auto l =
-          [promise = ::std::move(promise)](
-              ::std::string prefix) mutable -> CoroutineTask<::std::string> {
+      auto l = [promise = ::std::move(promise)](::std::string prefix) mutable
+          -> ::babylon::CoroutineTask<::std::string> {
         promise.set_value(prefix + "-10086");
         co_return prefix + "-10086";
       };
@@ -411,6 +408,7 @@ TEST_F(ExecutorTest, current_executor_mark_during_execution) {
             ::std::ref(thread_executor))
         .get();
   }
+#if __cpp_concepts && __cpp_lib_coroutine
   {
     struct S {
       static ::babylon::CoroutineTask<> run(Executor& e) {
@@ -434,7 +432,7 @@ TEST_F(ExecutorTest, current_executor_mark_during_execution) {
     thread_executor.execute(s, thread_executor).get();
     thread_executor
         .execute(
-            [&](Executor& e) -> CoroutineTask<> {
+            [&](Executor& e) -> ::babylon::CoroutineTask<> {
               (void)e;
               assert(&e == ::babylon::CurrentExecutor::get());
               co_return;
@@ -442,6 +440,7 @@ TEST_F(ExecutorTest, current_executor_mark_during_execution) {
             thread_executor)
         .get();
   }
+#endif // __cpp_concepts && __cpp_lib_coroutine
 }
 
 TEST_F(ExecutorTest, inplace_reentry_execution) {

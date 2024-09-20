@@ -142,7 +142,6 @@ class Executor {
   //        never be called inside.
   virtual int invoke(MoveOnlyFunction<void(void)>&& function) noexcept;
 
-#if __cpp_concepts && __cpp_lib_coroutine
   // Execute/submit interface for coroutine will packing them to a
   // coroutine_handle first, and then call this interface. Default
   // implementation will forward to the invoke interface for convenience. A
@@ -154,7 +153,6 @@ class Executor {
   //        !=0: Front-end transfer is fail. The coroutine state will keep
   //        as-is.
   virtual int resume(CoroutineHandle&& handle) noexcept;
-#endif // __cpp_concepts && __cpp_lib_coroutine
 
  private:
 #if __cpp_concepts && __cpp_lib_coroutine
@@ -230,14 +228,28 @@ class Executor::CoroutineHandle {
   inline CoroutineHandle& operator=(const CoroutineHandle&) noexcept = default;
   inline ~CoroutineHandle() noexcept = default;
 
+#if __cpp_lib_coroutine
   inline void resume() const noexcept;
+#endif // __cpp_lib_coroutine
 
  private:
+#if __cpp_lib_coroutine
   inline CoroutineHandle(Executor* executor,
                          ::std::coroutine_handle<> handle) noexcept;
+#endif // __cpp_lib_coroutine
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wunused-private-field"
   Executor* _executor {nullptr};
+#if __cpp_lib_coroutine
   ::std::coroutine_handle<> _handle;
+  static_assert(sizeof(_handle) == sizeof(void*), "Check ABI consistentcy");
+#else  // !__cpp_lib_coroutine
+  void* _handle {nullptr};
+#endif // !__cpp_lib_coroutine
+#pragma GCC diagnostic pop
 
   friend Executor;
 };

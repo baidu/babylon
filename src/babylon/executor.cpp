@@ -1,5 +1,9 @@
 #include "babylon/executor.h"
 
+// clang-foramt off
+#include "babylon/protect.h"
+// clang-foramt on
+
 BABYLON_NAMESPACE_BEGIN
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -10,13 +14,18 @@ int Executor::invoke(MoveOnlyFunction<void(void)>&&) noexcept {
   return -1;
 }
 
-#if __cpp_concepts && __cpp_lib_coroutine
+#if __cpp_lib_coroutine
 int Executor::resume(CoroutineHandle&& handle) noexcept {
   return invoke([handle]() {
     handle.resume();
   });
 }
-#endif //__cpp_concepts && __cpp_lib_coroutine
+#else  // !__cpp_lib_coroutine
+int Executor::resume(CoroutineHandle&&) noexcept {
+  // Fail if babylon itself is not compiled with -fcoroutines
+  return -1;
+}
+#endif // !__cpp_lib_coroutine
 // Executor end
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -153,10 +162,17 @@ int ThreadPoolExecutor::invoke(
                        .function {::std::move(function)}});
 }
 
+#if __cpp_lib_coroutine
 int ThreadPoolExecutor::resume(CoroutineHandle&& handle) noexcept {
   return enqueue_task(
       {.type = TaskType::COROUTINE, .handle {handle}, .function {}});
 }
+#else  // !__cpp_lib_coroutine
+int ThreadPoolExecutor::resume(CoroutineHandle&&) noexcept {
+  // Fail if babylon itself is not compiled with -fcoroutines
+  return -1;
+}
+#endif // !__cpp_lib_coroutine
 
 void ThreadPoolExecutor::keep_execute() noexcept {
   auto& local_queue = _local_task_queues.local();
@@ -183,9 +199,11 @@ void ThreadPoolExecutor::keep_execute() noexcept {
       }
     }
     switch (task.type) {
+#if __cpp_lib_coroutine
       case TaskType::COROUTINE: {
         task.handle.resume();
       } break;
+#endif // __cpp_lib_coroutine
       case TaskType::FUNCTION: {
         task.function();
       } break;

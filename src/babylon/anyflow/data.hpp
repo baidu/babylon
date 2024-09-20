@@ -3,7 +3,10 @@
 #include "babylon/anyflow/closure.h"
 #include "babylon/anyflow/data.h"
 #include "babylon/anyflow/dependency.h"
-// #include "babylon/anyflow/vertex.h"
+
+// clang-format off
+#include "babylon/protect.h"
+// clang-format on
 
 BABYLON_NAMESPACE_BEGIN
 namespace anyflow {
@@ -345,7 +348,6 @@ inline void GraphData::set_on_reset(C&& callback) noexcept {
         callback(*value);
       }
     }
-
     C callback;
   };
   _on_reset = S {.callback {::std::forward<C>(callback)}};
@@ -607,3 +609,5 @@ inline ::std::ostream& operator<<(::std::ostream& os, const GraphData& data) {
 
 } // namespace anyflow
 BABYLON_NAMESPACE_END
+
+#include "babylon/unprotect.h"
