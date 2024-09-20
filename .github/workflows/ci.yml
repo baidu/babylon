@@ -35,8 +35,9 @@ jobs:
 
   arenastring:
     strategy:
+      fail-fast: false
       matrix:
-        compiler: [{name: gcc, flag: --action_env=CC=gcc-12}, {name: clang, flag: --action_env=CC=clang-16}]
+        compiler: [{name: gcc, flag: --action_env=CC=gcc-14}, {name: clang, flag: --action_env=CC=clang-18}]
         stdlib: [{name: stdlibc++}, {name: libc++, flag: --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++}]
         mutable: [{name: default}, {name: half, flag: --config=arenastring}, {name: full, flag: --config=mutable-donated-string}]
         exclude:
@@ -56,6 +57,7 @@ jobs:
         key: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-${{github.sha}}
         restore-keys: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-
         save-always: true
+    - run: sudo apt install libc++-18-dev libc++abi-18-dev
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '27.3.arenastring'/" MODULE.bazel
     - run: bazel test --compilation_mode=opt --disk_cache=bazel-disk --verbose_failures --test_output=errors --config=asan ${{matrix.compiler.flag}} ${{matrix.stdlib.flag}} ${{matrix.mutable.flag}} test/...
 
