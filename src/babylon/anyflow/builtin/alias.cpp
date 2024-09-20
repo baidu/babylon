@@ -45,7 +45,7 @@ void AliasProcessor::apply(GraphBuilder& builder, const ::std::string& alias,
   vertex.anonymous_emit().to(alias);
 }
 
-::std::atomic<size_t> AliasProcessor::_s_idx = ATOMIC_VAR_INIT(0);
+::std::atomic<size_t> AliasProcessor::_s_idx {0};
 
 } // namespace builtin
 } // namespace anyflow

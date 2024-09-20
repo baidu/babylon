@@ -32,7 +32,7 @@ GraphVertexBuilder& ConstProcessor::apply_without_value(
   return vertex;
 }
 
-::std::atomic<size_t> ConstProcessor::_s_idx = ATOMIC_VAR_INIT(0);
+::std::atomic<size_t> ConstProcessor::_s_idx {0};
 
 } // namespace builtin
 } // namespace anyflow

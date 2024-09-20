@@ -56,7 +56,7 @@ void SelectProcessor::apply(GraphBuilder& builder, const ::std::string& dest,
   vertex.anonymous_emit().to(dest);
 }
 
-::std::atomic<size_t> SelectProcessor::_s_idx = ATOMIC_VAR_INIT(0);
+::std::atomic<size_t> SelectProcessor::_s_idx {0};
 // SelectProcessor end
 ///////////////////////////////////////////////////////////////////////////////
 

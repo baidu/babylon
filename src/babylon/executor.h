@@ -5,6 +5,10 @@
 #include "babylon/future.h"                   // Future
 #include "babylon/move_only_function.h"       // MoveOnlyFunction
 
+#if __cpp_lib_coroutine
+#include <coroutine> // std::coroutine_handle
+#endif
+
 #include <thread> // std::thread
 #include <vector> // std::vector
 
