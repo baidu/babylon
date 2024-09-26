@@ -8,24 +8,6 @@ BABYLON_NAMESPACE_BEGIN
 
 ////////////////////////////////////////////////////////////////////////////////
 // Executor begin
-Executor::~Executor() noexcept {}
-
-int Executor::invoke(MoveOnlyFunction<void(void)>&&) noexcept {
-  return -1;
-}
-
-#if __cpp_lib_coroutine
-int Executor::resume(CoroutineHandle&& handle) noexcept {
-  return invoke([handle]() {
-    handle.resume();
-  });
-}
-#else  // !__cpp_lib_coroutine
-int Executor::resume(CoroutineHandle&&) noexcept {
-  // Fail if babylon itself is not compiled with -fcoroutines
-  return -1;
-}
-#endif // !__cpp_lib_coroutine
 // Executor end
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,6 +24,7 @@ InplaceExecutor& InplaceExecutor::instance() noexcept {
 }
 
 int InplaceExecutor::invoke(MoveOnlyFunction<void(void)>&& function) noexcept {
+  auto scope = runner_scope();
   function();
   return 0;
 }
@@ -70,6 +53,7 @@ int AlwaysUseNewThreadExecutor::invoke(
     MoveOnlyFunction<void(void)>&& function) noexcept {
   _running.fetch_add(1, ::std::memory_order_acq_rel);
   ::std::thread([this, captured_function = ::std::move(function)] {
+    auto scope = runner_scope();
     captured_function();
     _running.fetch_sub(1, ::std::memory_order_acq_rel);
   }).detach();
@@ -124,7 +108,7 @@ int ThreadPoolExecutor::start() noexcept {
 
 void ThreadPoolExecutor::wakeup_one_worker() noexcept {
   _global_task_queue.push<true, false, true>(
-      Task {.type = TaskType::WAKEUP, .handle {}, .function {}});
+      Task {.type = TaskType::WAKEUP, .function {}});
 }
 
 void ThreadPoolExecutor::stop() noexcept {
@@ -137,7 +121,7 @@ void ThreadPoolExecutor::stop() noexcept {
   }
   for (size_t i = 0; i < _threads.size(); ++i) {
     _global_task_queue.push<true, false, true>(
-        Task {.type = TaskType::STOP, .handle {}, .function {}});
+        Task {.type = TaskType::STOP, .function {}});
   }
   for (auto& thread : _threads) {
     thread.join();
@@ -157,25 +141,13 @@ int ThreadPoolExecutor::initialize(size_t worker_number,
 
 int ThreadPoolExecutor::invoke(
     MoveOnlyFunction<void(void)>&& function) noexcept {
-  return enqueue_task({.type = TaskType::FUNCTION,
-                       .handle {},
-                       .function {::std::move(function)}});
-}
-
-#if __cpp_lib_coroutine
-int ThreadPoolExecutor::resume(CoroutineHandle&& handle) noexcept {
   return enqueue_task(
-      {.type = TaskType::COROUTINE, .handle {handle}, .function {}});
+      {.type = TaskType::FUNCTION, .function {::std::move(function)}});
 }
-#else  // !__cpp_lib_coroutine
-int ThreadPoolExecutor::resume(CoroutineHandle&&) noexcept {
-  // Fail if babylon itself is not compiled with -fcoroutines
-  return -1;
-}
-#endif // !__cpp_lib_coroutine
 
 void ThreadPoolExecutor::keep_execute() noexcept {
   auto& local_queue = _local_task_queues.local();
+  auto scope = runner_scope();
   while (true) {
     Task task;
     if (!local_queue.try_pop<true, false>(task)) {
@@ -199,11 +171,6 @@ void ThreadPoolExecutor::keep_execute() noexcept {
       }
     }
     switch (task.type) {
-#if __cpp_lib_coroutine
-      case TaskType::COROUTINE: {
-        task.handle.resume();
-      } break;
-#endif // __cpp_lib_coroutine
       case TaskType::FUNCTION: {
         task.function();
       } break;
@@ -237,7 +204,7 @@ void ThreadPoolExecutor::keep_balance() noexcept {
 }
 
 int ThreadPoolExecutor::enqueue_task(Task&& task) noexcept {
-  if (this == CurrentExecutor::get()) {
+  if (is_running_in()) {
     if (_local_capacity > 0) {
       auto& local_queue = _local_task_queues.local();
       if (local_queue.size() < _local_capacity) {

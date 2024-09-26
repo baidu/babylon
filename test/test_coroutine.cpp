@@ -11,6 +11,7 @@
 #include <future>
 
 using ::babylon::CoroutineTask;
+using ::babylon::Executor;
 
 struct CoroutineTest : public ::testing::Test {
   virtual void SetUp() override {
@@ -18,6 +19,18 @@ struct CoroutineTest : public ::testing::Test {
     executor.set_local_capacity(8);
     executor.start();
     destroy_times = 0;
+  }
+
+  static void assert_in_executor(Executor& executor) {
+    if (!executor.is_running_in()) {
+      ::abort();
+    }
+  }
+
+  static void assert_not_in_executor(Executor& executor) {
+    if (executor.is_running_in()) {
+      ::abort();
+    }
   }
 
   ::babylon::ThreadPoolExecutor executor;
@@ -88,35 +101,27 @@ TEST_F(CoroutineTest, coroutine_awaiter_destroy_after_awaitee_resume_it) {
 }
 
 TEST_F(CoroutineTest, coroutine_execute_and_resume_in_executor_they_belong) {
-  using IT = ::std::tuple<::std::future<void>, ::babylon::Executor*>;
-  using S = P<IT>;
-  using OT = ::std::tuple<::babylon::Executor*, ::babylon::Executor*,
-                          ::babylon::Executor*>;
   ::babylon::ThreadPoolExecutor executor2;
   executor2.set_worker_number(8);
   executor2.set_local_capacity(8);
   executor2.start();
 
-  ::std::promise<void> promise;
-  ::babylon::Future<OT> future;
-  auto task = [](S s) -> CoroutineTask<OT> {
-    auto e0 = ::babylon::CurrentExecutor::get();
-    auto executor2 = ::std::get<1>(*s);
-    auto awaitee = [](S s) -> CoroutineTask<::babylon::Executor*> {
-      ::std::get<0>(*s).get();
-      co_return ::babylon::CurrentExecutor::get();
-    }(::std::move(s));
-    awaitee.set_executor(*executor2);
-    auto e1 = co_await ::std::move(awaitee);
-    auto e2 = ::babylon::CurrentExecutor::get();
-    co_return OT {e0, e1, e2};
-  }(S {new IT {promise.get_future(), &executor2}});
-  future = executor.execute(::std::move(task));
-  promise.set_value();
-  auto t = future.get();
-  ASSERT_EQ(&executor, ::std::get<0>(t));
-  ASSERT_EQ(&executor2, ::std::get<1>(t));
-  ASSERT_EQ(&executor, ::std::get<2>(t));
+  executor
+      .execute([&]() -> CoroutineTask<> {
+        assert_in_executor(executor);
+        co_await [&]() -> CoroutineTask<> {
+          assert_in_executor(executor);
+          co_return;
+        }();
+        assert_in_executor(executor);
+        co_await [&]() -> CoroutineTask<> {
+          assert_in_executor(executor2);
+          co_return;
+        }()
+                              .set_executor(executor2);
+        assert_in_executor(executor);
+      })
+      .get();
 }
 
 TEST_F(CoroutineTest, future_is_awaitable) {
@@ -166,6 +171,11 @@ TEST_F(CoroutineTest, non_babylon_coroutine_task_is_awaitable) {
   ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
   promise.set_value("10086");
   ASSERT_EQ("10086", future.get());
+
+  // auto l = []() -> CoroutineTask<> {
+  //   co_return;
+  // };
+  // using X = Executor::AwaitResultType<decltype(l)>;
 }
 
 TEST_F(CoroutineTest, awaitable_by_non_babylon_coroutine_task) {
@@ -198,32 +208,25 @@ TEST_F(CoroutineTest, future_awaitable_by_non_babylon_coroutine_task) {
 
 TEST_F(CoroutineTest, return_to_executor_when_resume_by_non_babylon_coroutine) {
   ::coro::thread_pool pool {::coro::thread_pool::options {.thread_count = 1}};
-  ::std::array<::babylon::Executor*, 7> e;
-  auto future = executor.execute([&]() -> CoroutineTask<> {
-    e[0] = ::babylon::CurrentExecutor::get();
-    co_await [&]() -> coro::task<> {
-      e[1] = ::babylon::CurrentExecutor::get();
-      co_await pool.schedule();
-      e[2] = ::babylon::CurrentExecutor::get();
-      co_await [&]() -> CoroutineTask<> {
-        e[3] = ::babylon::CurrentExecutor::get();
-        co_return;
-      }()
-                            .set_executor(executor);
-      e[4] = ::babylon::CurrentExecutor::get();
-      co_await pool.schedule();
-      e[5] = ::babylon::CurrentExecutor::get();
-    }();
-    e[6] = ::babylon::CurrentExecutor::get();
-  });
-  future.get();
-  ASSERT_EQ(&executor, e[0]);
-  ASSERT_EQ(&executor, e[1]);
-  ASSERT_EQ(nullptr, e[2]);
-  ASSERT_EQ(&executor, e[3]);
-  ASSERT_EQ(&executor, e[4]);
-  ASSERT_EQ(nullptr, e[5]);
-  ASSERT_EQ(&executor, e[6]);
+  executor
+      .execute([&]() -> CoroutineTask<> {
+        assert_in_executor(executor);
+        co_await [&]() -> coro::task<> {
+          assert_in_executor(executor);
+          co_await pool.schedule();
+          assert_not_in_executor(executor);
+          co_await [&]() -> CoroutineTask<> {
+            assert_in_executor(executor);
+            co_return;
+          }()
+                                .set_executor(executor);
+          assert_in_executor(executor);
+          co_await pool.schedule();
+          assert_not_in_executor(executor);
+        }();
+        assert_in_executor(executor);
+      })
+      .get();
 }
 #endif // __cpp_lib_concepts
 

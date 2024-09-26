@@ -31,6 +31,7 @@ cc_test(
   copts = BABYLON_TEST_COPTS,
   deps = [
     '//:coroutine',
+    '//:executor',
     '@com_google_googletest//:gtest_main',
     '@libcoro',
   ]

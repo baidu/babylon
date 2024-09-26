@@ -1,6 +1,5 @@
 #pragma once
 
-#include "babylon/current_executor.h" // CurrentExecutor
 #include "babylon/executor.h"
 
 // clang-foramt off
@@ -8,22 +7,6 @@
 // clang-foramt on
 
 BABYLON_NAMESPACE_BEGIN
-
-////////////////////////////////////////////////////////////////////////////////
-// Executor::CoroutineHandle begin
-#if __cpp_lib_coroutine
-inline void Executor::CoroutineHandle::resume() const noexcept {
-  CurrentExecutor::set(_executor);
-  _handle.resume();
-  CurrentExecutor::set(nullptr);
-}
-
-inline Executor::CoroutineHandle::CoroutineHandle(
-    Executor* executor, ::std::coroutine_handle<> handle) noexcept
-    : _executor {executor}, _handle {handle} {}
-#endif // __cpp_lib_coroutine
-// Executor::CoroutineHandle end
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Executor begin
@@ -41,10 +24,8 @@ inline Future<Executor::ResultType<C&&, Args&&...>, F> Executor::execute(
     typename ::std::decay<C>::type callable;
     ::std::tuple<typename ::std::decay<Args>::type...> args_tuple;
     void operator()() noexcept {
-      CurrentExecutor::set(executor);
       apply_and_set_value(promise, ::std::move(callable),
                           ::std::move(args_tuple));
-      CurrentExecutor::set(nullptr);
     }
   } s {.executor {this},
        .promise {},
@@ -113,9 +94,7 @@ inline int Executor::submit(C&& callable, Args&&... args) noexcept {
     typename ::std::decay<C>::type callable;
     ::std::tuple<typename ::std::decay<Args>::type...> args_tuple;
     void operator()() {
-      CurrentExecutor::set(executor);
       ::std::apply(::std::move(callable), ::std::move(args_tuple));
-      CurrentExecutor::set(nullptr);
     }
   };
   S s {.executor {this},
@@ -173,7 +152,9 @@ inline int Executor::submit(CoroutineTask<T>&& task) noexcept {
 }
 
 inline int Executor::resume(::std::coroutine_handle<> handle) noexcept {
-  auto ret = resume({this, handle});
+  auto ret = invoke([handle] {
+    handle.resume();
+  });
   if (ABSL_PREDICT_FALSE(ret != 0)) {
     handle.destroy();
   }

@@ -76,6 +76,11 @@ alias(
 )
 
 alias(
+  name = 'concurrent_deposit_box',
+  actual = '//src/babylon/concurrent:deposit_box',
+)
+
+alias(
   name = 'concurrent_epoch',
   actual = '//src/babylon/concurrent:epoch',
 )
@@ -127,7 +132,7 @@ alias(
 
 alias(
   name = 'coroutine',
-  actual = '//src/babylon:coroutine',
+  actual = '//src/babylon/coroutine',
 )
 
 alias(

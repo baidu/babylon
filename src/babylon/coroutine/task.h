@@ -1,23 +1,10 @@
 #pragma once
 
-#include "babylon/basic_executor.h"
 #include "babylon/coroutine/promise.h"
-#include "babylon/coroutine/traits.h"
-#include "babylon/future.h"
-#include "babylon/logging/logger.h"
-
-#include "absl/types/optional.h"
 
 #if __cpp_concepts && __cpp_lib_coroutine
 
-#include <coroutine>
-
 BABYLON_NAMESPACE_BEGIN
-
-template <typename T, typename F = ::babylon::SchedInterface>
-class FutureAwaitable;
-template <typename T, typename F = ::babylon::SchedInterface>
-class SharedFutureAwaitable;
 
 template <typename T = void>
 class CoroutineTask {
@@ -94,56 +81,29 @@ concept CoroutineTaskInvocable =
     CoroutineInvocable<C, Args...> &&
     IsSpecialization<::std::invoke_result_t<C, Args...>, CoroutineTask>::value;
 
-template <typename T, typename F>
-class BasicFutureAwaitable {
+template <typename T>
+class BasicCoroutinePromise::Transformer<CoroutineTask<T>> {
  public:
-  inline BasicFutureAwaitable(Future<T, F>&& future) noexcept
-      : _future {::std::move(future)} {}
-  inline BasicFutureAwaitable(const Future<T, F>& future) noexcept
-      : _future {future} {}
-
-  inline bool await_ready() const noexcept {
-    return _future.ready();
-  }
-
-  template <typename P>
-    requires(::std::is_base_of<BasicCoroutinePromise, P>::value)
-  inline void await_suspend(::std::coroutine_handle<P> handle) noexcept {
-    _future.on_finish([handle] {
-      handle.promise().resume(handle);
-    });
-  }
-
-  inline void await_suspend(::std::coroutine_handle<> handle) noexcept {
-    _future.on_finish([handle] {
-      handle.resume();
-    });
-  }
-
-  inline T& await_resume() noexcept {
-    return _future.get();
-  }
-
- private:
-  Future<T, F> _future;
-};
-
-template <typename T, typename F>
-class FutureAwaitable : public BasicFutureAwaitable<T, F> {
- private:
-  using Base = BasicFutureAwaitable<T, F>;
-
- public:
-  using Base::Base;
-  inline T&& await_resume() noexcept {
-    return ::std::move(Base::await_resume());
+  static CoroutineTask<T>&& await_transform(BasicCoroutinePromise& promise,
+                                            CoroutineTask<T>&& task) {
+    if (!task.executor()) {
+      task.set_executor(*promise.executor());
+    }
+    return ::std::move(task);
   }
 };
 
-template <typename T, typename F>
-class SharedFutureAwaitable : public BasicFutureAwaitable<T, F> {
+template <typename A>
+  requires requires { typename CoroutineWrapperTaskType<A&&>; }
+class BasicCoroutinePromise::Transformer<A> {
  public:
-  using BasicFutureAwaitable<T, F>::BasicFutureAwaitable;
+  inline static CoroutineWrapperTaskType<A&&> await_transform(
+      BasicCoroutinePromise&, A&& awaitable) noexcept {
+    return [](A&& inner_awaitable) -> CoroutineWrapperTaskType<A&&> {
+      co_return co_await BasicCoroutinePromise::NoTransformation<A> {
+          ::std::forward<A>(inner_awaitable)};
+    }(::std::forward<A>(awaitable));
+  }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -230,44 +190,6 @@ inline ::std::coroutine_handle<> CoroutineTask<T>::await_suspend(
 }
 // CoroutineTask end
 ////////////////////////////////////////////////////////////////////////////////
-
-template <typename T>
-class BasicCoroutinePromise::Transformer<CoroutineTask<T>> {
- public:
-  static CoroutineTask<T>&& await_transform(BasicCoroutinePromise& promise,
-                                            CoroutineTask<T>&& task) {
-    if (!task.executor()) {
-      task.set_executor(*promise.executor());
-    }
-    return ::std::move(task);
-  }
-};
-
-template <typename A>
-  requires requires { typename CoroutineWrapperTaskType<A&&>; }
-class BasicCoroutinePromise::Transformer<A> {
- public:
-  inline static CoroutineWrapperTaskType<A&&> await_transform(
-      BasicCoroutinePromise&, A&& awaitable) noexcept {
-    return [](A&& inner_awaitable) -> CoroutineWrapperTaskType<A&&> {
-      co_return co_await BasicCoroutinePromise::NoTransformation<A> {
-          ::std::forward<A>(inner_awaitable)};
-    }(::std::forward<A>(awaitable));
-  }
-};
-
-template <typename T, typename F>
-class BasicCoroutinePromise::Transformer<Future<T, F>> {
- public:
-  static FutureAwaitable<T, F> await_transform(BasicCoroutinePromise&,
-                                               Future<T, F>&& future) {
-    return ::std::move(future);
-  }
-  static SharedFutureAwaitable<T, F> await_transform(BasicCoroutinePromise&,
-                                                     Future<T, F>& future) {
-    return future;
-  }
-};
 
 BABYLON_NAMESPACE_END
 

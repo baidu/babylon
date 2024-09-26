@@ -26,6 +26,11 @@ using ::absl::apply;
 #if !__cpp_lib_invoke
 using ::absl::base_internal::invoke;
 #endif // !__cpp_lib_invoke
+
+#if !__cpp_lib_remove_cvref
+template <typename T>
+using remove_cvref_t = ::std::remove_cv<::std::remove_reference<T>::type>::type;
+#endif // !__cpp_lib_remove_cvref
 } // namespace std
 
 #if !__cpp_lib_is_invocable

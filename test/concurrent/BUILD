@@ -37,6 +37,16 @@ cc_test(
 )
 
 cc_test(
+  name = 'test_deposit_box',
+  srcs = ['test_deposit_box.cpp'],
+  copts = BABYLON_TEST_COPTS,
+  deps = [
+    '//:concurrent_deposit_box',
+    '@com_google_googletest//:gtest_main',
+  ]
+)
+
+cc_test(
   name = 'test_epoch',
   srcs = ['test_epoch.cpp'],
   copts = BABYLON_TEST_COPTS,
