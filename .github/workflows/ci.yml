@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         compiler: [{name: gcc, flag: --action_env=CC=gcc-14}, {name: clang, flag: --action_env=CC=clang-18}]
-        std: [{name: c++20}, {name: c++14, flag: --cxxopt=-std=c++14 --cxxopt=-faligned-new}]
+        std: [{name: c++20}, {name: c++14, flag: --cxxopt=-std=c++14 --cxxopt=-faligned-new --cxxopt=-fconcepts --cxxopt=-fcoroutines}]
         stdlib: [{name: stdlibc++}, {name: libc++, flag: --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++}]
         feature: [{name: asan, flag: --config=asan}, {name: tsan, flag: --features=tsan}]
         exclude:
