@@ -230,7 +230,7 @@ inline ::std::coroutine_handle<> Cancellable<A>::await_suspend(
 }
 
 template <typename A>
-inline Cancellable<A>::OptionalResultType
+inline typename Cancellable<A>::OptionalResultType
 Cancellable<A>::await_resume() noexcept {
   if (!canceled()) {
     return ::std::move(_task.handle().promise().value());

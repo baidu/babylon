@@ -118,7 +118,7 @@ inline int Executor::submit(C&& callable, Args&&... args) noexcept {
   using TaskType = ::std::invoke_result_t<C&&, Args&&...>;
   struct S {
     static CoroutineTask<> wrapper(TaskType task) {
-      co_await task;
+      co_await ::std::move(task);
     }
   };
   auto task =
