@@ -101,8 +101,8 @@ class Executor : public BasicExecutor {
 #if __cpp_concepts && __cpp_lib_coroutine
   // Await a awaitable object, just like co_await it inside a coroutine context.
   // Return a future object to wait and get that result.
-  template <typename F = SchedInterface,
-            coroutine::Awaitable<CoroutineTask<>::promise_type> A>
+  template <typename F = SchedInterface, typename A>
+    requires coroutine::Awaitable<A, CoroutineTask<>::promise_type>
   inline Future<AwaitResultType<A&&>, F> execute(A&& awaitable) noexcept;
 #endif // __cpp_concepts && __cpp_lib_coroutine
 

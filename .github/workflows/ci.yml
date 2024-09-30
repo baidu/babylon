@@ -12,13 +12,17 @@ jobs:
       fail-fast: false
       matrix:
         compiler: [{name: gcc, flag: --action_env=CC=gcc-14}, {name: clang, flag: --action_env=CC=clang-18}]
-        std: [{name: c++20}, {name: c++14, flag: --cxxopt=-std=c++14 --cxxopt=-faligned-new --cxxopt=-fconcepts --cxxopt=-fcoroutines}]
+        std: [{name: c++20}, {name: c++14, flag: --cxxopt=-std=c++14 --cxxopt=-faligned-new}, {name: c++14-coroutine, flag: --cxxopt=-faligned-new --cxxopt=-fconcepts --cxxopt=-fcoroutines}]
         stdlib: [{name: stdlibc++}, {name: libc++, flag: --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++}]
         feature: [{name: asan, flag: --config=asan}, {name: tsan, flag: --features=tsan}]
         exclude:
         - compiler: {name: gcc}
           stdlib: {name: libc++}
+        - compiler: {name: clang}
+          std: {name: c++14-coroutine}
         - std: {name: c++14}
+          feature: {name: tsan}
+        - std: {name: c++14-coroutine}
           feature: {name: tsan}
     runs-on: ubuntu-24.04
     name: basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}
