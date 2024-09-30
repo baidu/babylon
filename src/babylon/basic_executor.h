@@ -27,8 +27,6 @@ class BasicExecutor {
   BasicExecutor& operator=(BasicExecutor&&) noexcept = default;
   BasicExecutor& operator=(const BasicExecutor&) noexcept = default;
 
-  // Open a scope mark is_running_in **this** executor.
-  inline RunnerScope runner_scope() noexcept;
   inline bool is_running_in() const noexcept;
 
  private:
@@ -60,9 +58,9 @@ class BasicExecutor::RunnerScope {
   RunnerScope& operator=(const RunnerScope&) = delete;
   inline ~RunnerScope() noexcept;
 
- private:
   inline RunnerScope(BasicExecutor& current) noexcept;
 
+ private:
   BasicExecutor* _old_current;
 
   friend BasicExecutor;
@@ -84,10 +82,6 @@ inline BasicExecutor::RunnerScope::~RunnerScope() noexcept {
 
 ////////////////////////////////////////////////////////////////////////////////
 // BasicExecutor begin
-inline BasicExecutor::RunnerScope BasicExecutor::runner_scope() noexcept {
-  return {*this};
-}
-
 inline bool BasicExecutor::is_running_in() const noexcept {
   return this == current();
 }

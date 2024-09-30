@@ -24,7 +24,7 @@ InplaceExecutor& InplaceExecutor::instance() noexcept {
 }
 
 int InplaceExecutor::invoke(MoveOnlyFunction<void(void)>&& function) noexcept {
-  auto scope = runner_scope();
+  RunnerScope scope {*this};
   function();
   return 0;
 }
@@ -53,7 +53,7 @@ int AlwaysUseNewThreadExecutor::invoke(
     MoveOnlyFunction<void(void)>&& function) noexcept {
   _running.fetch_add(1, ::std::memory_order_acq_rel);
   ::std::thread([this, captured_function = ::std::move(function)] {
-    auto scope = runner_scope();
+    RunnerScope scope {*this};
     captured_function();
     _running.fetch_sub(1, ::std::memory_order_acq_rel);
   }).detach();
@@ -147,7 +147,7 @@ int ThreadPoolExecutor::invoke(
 
 void ThreadPoolExecutor::keep_execute() noexcept {
   auto& local_queue = _local_task_queues.local();
-  auto scope = runner_scope();
+  RunnerScope scope {*this};
   while (true) {
     Task task;
     if (!local_queue.try_pop<true, false>(task)) {
