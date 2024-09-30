@@ -131,6 +131,13 @@
 #define BABYLON_NAMESPACE_BEGIN namespace babylon {
 #define BABYLON_NAMESPACE_END }
 
+#define BABYLON_COROUTINE_NAMESPACE_BEGIN \
+  BABYLON_NAMESPACE_BEGIN                 \
+  namespace coroutine {
+#define BABYLON_COROUTINE_NAMESPACE_END \
+  }                                     \
+  BABYLON_NAMESPACE_END
+
 // 早期arena patch版本
 // - protobuf_3-2-1-8_PD_BL
 // - protobuf_3-2-1-9_PD_BL

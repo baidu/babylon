@@ -29,8 +29,14 @@ using ::absl::base_internal::invoke;
 
 #if !__cpp_lib_remove_cvref
 template <typename T>
-using remove_cvref_t = ::std::remove_cv<::std::remove_reference<T>::type>::type;
+using remove_cvref_t =
+    ::std::remove_cv<typename ::std::remove_reference<T>::type>::type;
 #endif // !__cpp_lib_remove_cvref
+
+#if __cpp_concepts && !__cpp_lib_concepts
+template <typename C, typename... Args>
+concept invocable = is_invocable<C, Args...>::value;
+#endif
 } // namespace std
 
 #if !__cpp_lib_is_invocable
@@ -370,6 +376,11 @@ struct CallableArgs
   template <typename T, typename... Args>
   static ::std::tuple<Args...> RemoveFirst(::std::tuple<T, Args...>);
   using type = decltype(RemoveFirst(::std::declval<BaseType>()));
+};
+
+class Void final {
+ private:
+  char _dummy[0];
 };
 
 BABYLON_NAMESPACE_END

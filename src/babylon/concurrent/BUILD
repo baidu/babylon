@@ -50,6 +50,7 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     ':id_allocator',
+    '@com_google_absl//absl/types:optional',
   ],
 )
 

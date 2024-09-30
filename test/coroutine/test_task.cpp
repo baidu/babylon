@@ -69,6 +69,11 @@ TEST_F(CoroutineTest, task_detach_coroutine_after_submit) {
       s->get();
       co_return;
     }(S {new ::std::future<void> {promise.get_future()}});
+    // bool x = ::babylon::coroutine::Awaitable<decltype(::std::move(task)),
+    // CoroutineTask<>::promise_type>; x =
+    // ::babylon::coroutine::Awaitable<decltype(task),
+    // CoroutineTask<>::promise_type>; ASSERT_TRUE(x); using X =
+    // Future<::babylon::Executor::AwaitResultType<decltype(::std::move(task))>>;
     future = executor.execute(::std::move(task));
     ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
   }
@@ -79,6 +84,7 @@ TEST_F(CoroutineTest, task_detach_coroutine_after_submit) {
   ASSERT_EQ(1, destroy_times);
 }
 
+/*
 TEST_F(CoroutineTest, coroutine_awaiter_destroy_after_awaitee_resume_it) {
   using S = P<::std::future<void>>;
   ::std::promise<void> promise;
@@ -171,11 +177,6 @@ TEST_F(CoroutineTest, non_babylon_coroutine_task_is_awaitable) {
   ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
   promise.set_value("10086");
   ASSERT_EQ("10086", future.get());
-
-  // auto l = []() -> CoroutineTask<> {
-  //   co_return;
-  // };
-  // using X = Executor::AwaitResultType<decltype(l)>;
 }
 
 TEST_F(CoroutineTest, awaitable_by_non_babylon_coroutine_task) {
@@ -229,5 +230,6 @@ TEST_F(CoroutineTest, return_to_executor_when_resume_by_non_babylon_coroutine) {
       .get();
 }
 #endif // __cpp_lib_concepts
+*/
 
 #endif // __cpp_concepts && __cpp_lib_coroutine

@@ -2,6 +2,10 @@
 
 #include "babylon/move_only_function.h" // MoveOnlyFunction
 
+BABYLON_COROUTINE_NAMESPACE_BEGIN
+class BasicCoroutinePromise;
+BABYLON_COROUTINE_NAMESPACE_END
+
 BABYLON_NAMESPACE_BEGIN
 
 // Unified interface about an asynchronous execution mechanism.
@@ -43,8 +47,8 @@ class BasicExecutor {
 
   virtual ~BasicExecutor() noexcept;
 
-  friend class BasicCoroutinePromise; // invoke
-  friend class Executor;              // inherited by Executor only
+  friend coroutine::BasicCoroutinePromise; // invoke
+  friend class Executor;                   // inherited by Executor only
 };
 
 class BasicExecutor::RunnerScope {

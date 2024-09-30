@@ -6,11 +6,12 @@
 
 #include <coroutine>
 
-BABYLON_NAMESPACE_BEGIN
+BABYLON_COROUTINE_NAMESPACE_BEGIN
 
-// Check if a callable invocation C(Args...) is a coroutine
+// Check if C(Args...) is not only invocable but also worked as coroutine
 template <typename C, typename... Args>
-concept CoroutineInvocable =
+concept Invocable =
+    ::std::invocable<C, Args...> &&
     requires {
       typename ::std::coroutine_traits<::std::invoke_result_t<C, Args...>,
                                        Args...>::promise_type;
@@ -22,20 +23,20 @@ concept CoroutineInvocable =
 // A stand for raw awaitee object
 //
 // follow the first step in co_await: convert expression to awaitable
-template <typename P, typename A>
-struct CoroutineAwaitableFrom {
+template <typename A, typename P>
+struct AwaitableFrom {
   using type = A;
 };
-template <typename P, typename A>
+template <typename A, typename P>
   requires requires {
              ::std::declval<P>().await_transform(::std::declval<A>());
            }
-struct CoroutineAwaitableFrom<P, A> {
+struct AwaitableFrom<A, P> {
   using type =
       decltype(::std::declval<P>().await_transform(::std::declval<A>()));
 };
-template <typename P, typename A>
-using CoroutineAwaitableType = typename CoroutineAwaitableFrom<P, A>::type;
+template <typename A, typename P>
+using AwaitableType = typename AwaitableFrom<A, P>::type;
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,28 +45,28 @@ using CoroutineAwaitableType = typename CoroutineAwaitableFrom<P, A>::type;
 // A stand for raw awaitee object
 //
 // follow the second step in co_await: convert awaitable to awaiter
-template <typename P, typename A>
-struct CoroutineAwaiterFrom {
-  using type = CoroutineAwaitableType<P, A>;
+template <typename A, typename P>
+struct AwaiterFrom {
+  using type = AwaitableType<A, P>;
 };
-template <typename P, typename A>
+template <typename A, typename P>
   requires requires {
-             ::std::declval<CoroutineAwaitableType<P, A>>().operator co_await();
+             ::std::declval<AwaitableType<A, P>>().operator co_await();
            }
-struct CoroutineAwaiterFrom<P, A> {
-  using type = decltype(::std::declval<CoroutineAwaitableType<P, A>>().
-                        operator co_await());
+struct AwaiterFrom<A, P> {
+  using type =
+      decltype(::std::declval<AwaitableType<A, P>>().operator co_await());
 };
-template <typename P, typename A>
+template <typename A, typename P>
   requires requires {
-             operator co_await(::std::declval<CoroutineAwaitableType<P, A>>());
+             operator co_await(::std::declval<AwaitableType<A, P>>());
            }
-struct CoroutineAwaiterFrom<P, A> {
-  using type = decltype(operator co_await(
-      ::std::declval<CoroutineAwaitableType<P, A>>()));
+struct AwaiterFrom<A, P> {
+  using type =
+      decltype(operator co_await(::std::declval<AwaitableType<A, P>>()));
 };
-template <typename P, typename A>
-using CoroutineAwaiterType = typename CoroutineAwaiterFrom<P, A>::type;
+template <typename A, typename P>
+using AwaiterType = typename AwaiterFrom<A, P>::type;
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,11 +83,19 @@ using CoroutineAwaiterType = typename CoroutineAwaiterFrom<P, A>::type;
 //
 // Then decltype(x) is:
 // CoroutineAwaitableType<SomeTaskType::promise_type, decltype(awaitee_object)>
-template <typename P, typename A>
-using CoroutineAwaitResultType =
-    decltype(::std::declval<CoroutineAwaiterType<P, A>>().await_resume());
+template <typename A, typename P = void>
+using AwaitResultType =
+    decltype(::std::declval<AwaiterType<A, P>>().await_resume());
 ////////////////////////////////////////////////////////////////////////////////
 
+template <typename A, typename P = void>
+concept Awaitable = requires { typename AwaitResultType<A, P>; };
+
+BABYLON_COROUTINE_NAMESPACE_END
+
+BABYLON_NAMESPACE_BEGIN
+template <typename C, typename... Args>
+concept CoroutineInvocable = coroutine::Invocable<C, Args...>;
 BABYLON_NAMESPACE_END
 
 #endif // __cpp_concepts && __cpp_lib_coroutine

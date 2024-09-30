@@ -1,11 +1,11 @@
 #pragma once
 
-#include "babylon/coroutine/promise.h"  // BasicCoroutinePromise
-#include "babylon/future.h"             // Future
+#include "babylon/coroutine/promise.h" // BasicCoroutinePromise
+#include "babylon/future.h"            // Future
 
 #if __cpp_concepts && __cpp_lib_coroutine
 
-BABYLON_NAMESPACE_BEGIN
+BABYLON_COROUTINE_NAMESPACE_BEGIN
 
 template <typename T, typename F>
 class BasicFutureAwaitable {
@@ -72,6 +72,6 @@ class BasicCoroutinePromise::Transformer<Future<T, F>> {
   }
 };
 
-BABYLON_NAMESPACE_END
+BABYLON_COROUTINE_NAMESPACE_END
 
 #endif // __cpp_concepts && __cpp_lib_coroutine

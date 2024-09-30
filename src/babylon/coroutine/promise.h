@@ -8,7 +8,7 @@
 
 #if __cpp_concepts && __cpp_lib_coroutine
 
-BABYLON_NAMESPACE_BEGIN
+BABYLON_COROUTINE_NAMESPACE_BEGIN
 
 // Common part of CoroutineTask<T>::promise_type
 class BasicCoroutinePromise {
@@ -33,6 +33,8 @@ class BasicCoroutinePromise {
   // to avoid chaining infinitely. Use this wrapper to identify this.
   template <typename A>
   class NoTransformation;
+
+  class Resumption;
 
   //////////////////////////////////////////////////////////////////////////////
   // Protocol to be a coroutine promise type, except result type-related
@@ -120,6 +122,25 @@ class BasicCoroutinePromise::Transformer<
   }
 };
 
+class BasicCoroutinePromise::Resumption {
+ public:
+  inline Resumption(BasicCoroutinePromise* promise,
+                    ::std::coroutine_handle<> handle) noexcept
+      : _promise {promise}, _handle {handle} {}
+
+  inline void run() noexcept {
+    _promise->resume(_handle);
+  }
+
+  inline operator bool() const noexcept {
+    return _promise != nullptr;
+  }
+
+ private:
+  BasicCoroutinePromise* _promise;
+  ::std::coroutine_handle<> _handle;
+};
+
 template <typename T>
 class CoroutinePromise : public BasicCoroutinePromise {
  private:
@@ -133,7 +154,8 @@ class CoroutinePromise : public BasicCoroutinePromise {
   template <typename U>
   inline void return_value(U&& value) noexcept;
   inline void return_value(T& value) noexcept;
-  inline T& value() noexcept;
+  inline T& value() & noexcept;
+  inline T&& value() && noexcept;
 
  private:
   ::absl::optional<PromiseValueType> _value;
@@ -143,7 +165,7 @@ template <>
 class CoroutinePromise<void> : public BasicCoroutinePromise {
  public:
   inline static constexpr void return_void() noexcept;
-  inline static constexpr void value() noexcept;
+  inline static constexpr Void value() noexcept;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -284,16 +306,22 @@ inline void CoroutinePromise<T>::return_value(T& value) noexcept {
 inline constexpr void CoroutinePromise<void>::return_void() noexcept {}
 
 template <typename T>
-inline T& CoroutinePromise<T>::value() noexcept {
+inline T& CoroutinePromise<T>::value() & noexcept {
   return *_value;
 }
 
-inline constexpr void CoroutinePromise<void>::value() noexcept {}
+template <typename T>
+inline T&& CoroutinePromise<T>::value() && noexcept {
+  return ::std::move(*_value);
+}
 
+inline constexpr Void CoroutinePromise<void>::value() noexcept {
+  return {};
+}
 // BasicCoroutinePromise end
 ////////////////////////////////////////////////////////////////////////////////
 
-BABYLON_NAMESPACE_END
+BABYLON_COROUTINE_NAMESPACE_END
 
 #endif // __cpp_concepts && __cpp_lib_coroutine
 

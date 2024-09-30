@@ -2,7 +2,7 @@
 
 #include "babylon/concurrent/id_allocator.h"
 
-#include <optional>
+#include "absl/types/optional.h"
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -14,12 +14,12 @@ class DepositBox {
   template <typename... Args>
   inline VersionedValue<uint32_t> emplace(Args&&... args) noexcept;
 
-  inline ::std::optional<T> take(VersionedValue<uint32_t> id) noexcept;
+  inline ::absl::optional<T> take(VersionedValue<uint32_t> id) noexcept;
 
  private:
   struct Slot {
     ::std::atomic<uint32_t> version;
-    ::std::optional<T> object;
+    ::absl::optional<T> object;
   };
 
   DepositBox() = default;
@@ -51,12 +51,12 @@ inline VersionedValue<uint32_t> DepositBox<T>::emplace(
 }
 
 template <typename T>
-inline ::std::optional<T> DepositBox<T>::take(
+inline ::absl::optional<T> DepositBox<T>::take(
     VersionedValue<uint32_t> id) noexcept {
   auto& slot = _slots.ensure(id.value);
   if (slot.version.compare_exchange_strong(id.version, id.version + 1,
                                            ::std::memory_order_relaxed)) {
-    ::std::optional<T> result = ::std::move(slot.object);
+    ::absl::optional<T> result = ::std::move(slot.object);
     _slot_id_allocator.deallocate(id.value);
     return result;
   }

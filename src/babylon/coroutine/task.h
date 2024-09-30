@@ -4,25 +4,22 @@
 
 #if __cpp_concepts && __cpp_lib_coroutine
 
-BABYLON_NAMESPACE_BEGIN
+BABYLON_COROUTINE_NAMESPACE_BEGIN
 
 template <typename T = void>
-class CoroutineTask {
+class Task {
  public:
   class promise_type;
 
-  inline CoroutineTask() noexcept = default;
-  inline CoroutineTask(CoroutineTask&& other) noexcept;
-  CoroutineTask(const CoroutineTask&) = delete;
-  inline CoroutineTask& operator=(CoroutineTask&& other) noexcept;
-  CoroutineTask& operator=(const CoroutineTask&) = delete;
-  inline ~CoroutineTask() noexcept;
+  inline Task() noexcept = default;
+  inline Task(Task&& other) noexcept;
+  Task(const Task&) = delete;
+  inline Task& operator=(Task&& other) noexcept;
+  Task& operator=(const Task&) = delete;
+  inline ~Task() noexcept;
 
-  inline CoroutineTask<T>& set_executor(BasicExecutor& executor) & noexcept;
-  inline CoroutineTask<T>&& set_executor(BasicExecutor& executor) && noexcept {
-    set_executor(executor);
-    return ::std::move(*this);
-  }
+  inline Task<T>& set_executor(BasicExecutor& executor) & noexcept;
+  inline Task<T>&& set_executor(BasicExecutor& executor) && noexcept;
   inline BasicExecutor* executor() const noexcept;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -37,10 +34,14 @@ class CoroutineTask {
   inline T await_resume() noexcept;
   //////////////////////////////////////////////////////////////////////////////
 
- private:
-  inline CoroutineTask(::std::coroutine_handle<promise_type> handle) noexcept;
+  inline ::std::coroutine_handle<promise_type> handle() noexcept {
+    return _handle;
+  }
 
-  inline ::std::coroutine_handle<> release() noexcept;
+  inline ::std::coroutine_handle<promise_type> release() noexcept;
+
+ private:
+  inline Task(::std::coroutine_handle<promise_type> handle) noexcept;
 
   inline ::std::coroutine_handle<> await_suspend(
       std::coroutine_handle<> awaiter,
@@ -53,9 +54,9 @@ class CoroutineTask {
 };
 
 template <typename T>
-class CoroutineTask<T>::promise_type : public CoroutinePromise<T> {
+class Task<T>::promise_type : public CoroutinePromise<T> {
  public:
-  inline CoroutineTask<T> get_return_object() noexcept {
+  inline Task<T> get_return_object() noexcept {
     return {::std::coroutine_handle<promise_type>::from_promise(*this)};
   }
 };
@@ -63,29 +64,29 @@ class CoroutineTask<T>::promise_type : public CoroutinePromise<T> {
 template <typename A>
 struct CoroutineWrapperTask {};
 template <typename A>
-  requires requires { typename CoroutineAwaitResultType<void, A>; }
+  requires requires { typename AwaitResultType<void, A>; }
 struct CoroutineWrapperTask<A> {
-  using ResultType = CoroutineAwaitResultType<void, A>;
+  using ResultType = AwaitResultType<void, A>;
   using ForwardType = typename ::std::conditional<
       ::std::is_rvalue_reference<ResultType>::value,
       typename ::std::remove_reference<ResultType>::type, ResultType>::type;
-  using type = CoroutineTask<ForwardType>;
+  using type = Task<ForwardType>;
 };
 template <typename A>
 using CoroutineWrapperTaskType = CoroutineWrapperTask<A>::type;
 
-// Check if a callable invocation C(Args...) is a babylon coroutine, thus,
-// return CoroutineTask<T>
+// Check if C(Args...) is a babylon coroutine, thus,
+// return Task<T>
 template <typename C, typename... Args>
-concept CoroutineTaskInvocable =
+concept TaskInvocable =
     CoroutineInvocable<C, Args...> &&
-    IsSpecialization<::std::invoke_result_t<C, Args...>, CoroutineTask>::value;
+    IsSpecialization<::std::invoke_result_t<C, Args...>, Task>::value;
 
 template <typename T>
-class BasicCoroutinePromise::Transformer<CoroutineTask<T>> {
+class BasicCoroutinePromise::Transformer<Task<T>> {
  public:
-  static CoroutineTask<T>&& await_transform(BasicCoroutinePromise& promise,
-                                            CoroutineTask<T>&& task) {
+  inline static Task<T>&& await_transform(BasicCoroutinePromise& promise,
+                                          Task<T>&& task) {
     if (!task.executor()) {
       task.set_executor(*promise.executor());
     }
@@ -107,77 +108,80 @@ class BasicCoroutinePromise::Transformer<A> {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// CoroutineTask begin
+// Task begin
 template <typename T>
-inline CoroutineTask<T>::CoroutineTask(CoroutineTask&& other) noexcept {
+inline Task<T>::Task(Task&& other) noexcept {
   ::std::swap(_handle, other._handle);
 }
 
 template <typename T>
-inline CoroutineTask<T>& CoroutineTask<T>::operator=(
-    CoroutineTask&& other) noexcept {
+inline Task<T>& Task<T>::operator=(Task&& other) noexcept {
   ::std::swap(_handle, other._handle);
   return *this;
 }
 
 template <typename T>
-inline CoroutineTask<T>::~CoroutineTask() noexcept {
+inline Task<T>::~Task() noexcept {
   if (_handle) {
     _handle.destroy();
   }
 }
 
 template <typename T>
-inline CoroutineTask<T>& CoroutineTask<T>::set_executor(
-    BasicExecutor& executor) & noexcept {
+inline Task<T>& Task<T>::set_executor(BasicExecutor& executor) & noexcept {
   _handle.promise().set_executor(executor);
   return *this;
 }
 
 template <typename T>
-inline BasicExecutor* CoroutineTask<T>::executor() const noexcept {
+inline Task<T>&& Task<T>::set_executor(BasicExecutor& executor) && noexcept {
+  return ::std::move(set_executor(executor));
+}
+
+template <typename T>
+inline BasicExecutor* Task<T>::executor() const noexcept {
   return _handle.promise().executor();
 }
 
 template <typename T>
-inline constexpr bool CoroutineTask<T>::await_ready() noexcept {
+inline constexpr bool Task<T>::await_ready() noexcept {
   return false;
 }
 
 template <typename T>
 template <typename P>
   requires(::std::is_base_of<BasicCoroutinePromise, P>::value)
-inline ::std::coroutine_handle<> CoroutineTask<T>::await_suspend(
+inline ::std::coroutine_handle<> Task<T>::await_suspend(
     ::std::coroutine_handle<P> awaiter) noexcept {
   return await_suspend(awaiter, awaiter.promise().executor());
 }
 
 template <typename T>
-inline ::std::coroutine_handle<> CoroutineTask<T>::await_suspend(
+inline ::std::coroutine_handle<> Task<T>::await_suspend(
     ::std::coroutine_handle<> awaiter) noexcept {
   return await_suspend(awaiter, nullptr);
 }
 
 template <typename T>
-inline T CoroutineTask<T>::await_resume() noexcept {
+inline T Task<T>::await_resume() noexcept {
   return _handle.promise().value();
 }
 
 template <>
-inline void CoroutineTask<void>::await_resume() noexcept {}
+inline void Task<void>::await_resume() noexcept {}
 
 template <typename T>
-inline CoroutineTask<T>::CoroutineTask(
-    ::std::coroutine_handle<promise_type> handle) noexcept
+inline Task<T>::Task(::std::coroutine_handle<promise_type> handle) noexcept
     : _handle(handle) {}
 
 template <typename T>
-inline ::std::coroutine_handle<> CoroutineTask<T>::release() noexcept {
+inline ::std::coroutine_handle<typename Task<T>::promise_type>
+Task<T>::release() noexcept {
   return ::std::exchange(_handle, nullptr);
 }
 
 template <typename T>
-inline ::std::coroutine_handle<> CoroutineTask<T>::await_suspend(
+inline ::std::coroutine_handle<> Task<T>::await_suspend(
     ::std::coroutine_handle<> awaiter,
     BasicExecutor* awaiter_executor) noexcept {
   auto& promise = _handle.promise();
@@ -188,9 +192,14 @@ inline ::std::coroutine_handle<> CoroutineTask<T>::await_suspend(
   promise.resume(_handle);
   return ::std::noop_coroutine();
 }
-// CoroutineTask end
+// Task end
 ////////////////////////////////////////////////////////////////////////////////
 
+BABYLON_COROUTINE_NAMESPACE_END
+
+BABYLON_NAMESPACE_BEGIN
+template <typename T = void>
+using CoroutineTask = coroutine::Task<T>;
 BABYLON_NAMESPACE_END
 
 #endif // __cpp_concepts && __cpp_lib_coroutine

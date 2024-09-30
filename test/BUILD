@@ -26,18 +26,6 @@ cc_test(
 )
 
 cc_test(
-  name = 'test_coroutine',
-  srcs = ['test_coroutine.cpp'],
-  copts = BABYLON_TEST_COPTS,
-  deps = [
-    '//:coroutine',
-    '//:executor',
-    '@com_google_googletest//:gtest_main',
-    '@libcoro',
-  ]
-)
-
-cc_test(
   name = 'test_executor',
   srcs = ['test_executor.cpp'],
   copts = BABYLON_TEST_COPTS,
