@@ -92,6 +92,7 @@ cc_library(
     '//src/babylon/coroutine:task',
     '//src/babylon/concurrent:bounded_queue',
     '//src/babylon/concurrent:thread_local',
+    '@com_google_absl//absl/types:optional',
   ],
 )
 
