@@ -380,7 +380,12 @@ struct CallableArgs
 
 class Void final {
  private:
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wunused-private-field"
   char _dummy[0];
+#pragma GCC diagnostic pop
 };
 
 BABYLON_NAMESPACE_END

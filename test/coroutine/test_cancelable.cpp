@@ -97,17 +97,15 @@ TEST_F(CoroutineCancelableTest, support_void) {
       })
       .get();
   auto future = executor.execute([]() -> CoroutineTask<bool> {
-    co_return co_await Cancellable<CoroutineTask<>> {
-        []() -> CoroutineTask<> {
-          co_return;
-        }()};
+    co_return co_await Cancellable<CoroutineTask<>> {[]() -> CoroutineTask<> {
+      co_return;
+    }()};
   });
   ASSERT_TRUE(future.get());
   future = executor.execute([]() -> CoroutineTask<bool> {
-    co_return co_await Cancellable<CoroutineTask<>> {
-        []() -> CoroutineTask<> {
-          co_return;
-        }()}
+    co_return co_await Cancellable<CoroutineTask<>> {[]() -> CoroutineTask<> {
+      co_return;
+    }()}
         .on_suspend([](Cancellation token) {
           token();
         });
@@ -143,12 +141,13 @@ TEST_F(CoroutineCancelableTest, cancel_to_executor_correctly) {
     assert_in_executor(executor);
     auto result =
         co_await Cancellable<CoroutineTask<::std::string>> {
-            [&]() -> CoroutineTask<::std::string> {
+            [](::std::future<void> future,
+               ::babylon::Executor& executor2) -> CoroutineTask<::std::string> {
               assert_in_executor(executor2);
-              promise.get_future().get();
+              future.get();
               co_return "10086";
-            }()
-                         .set_executor(executor2)}
+            }(promise.get_future(), executor2)
+                                                      .set_executor(executor2)}
             .on_suspend([&](Cancellation token) {
               assert_in_executor(executor);
               cancel_promise.set_value(token);
