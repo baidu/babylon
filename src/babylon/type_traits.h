@@ -30,7 +30,7 @@ using ::absl::base_internal::invoke;
 #if !__cpp_lib_remove_cvref
 template <typename T>
 using remove_cvref_t =
-    ::std::remove_cv<typename ::std::remove_reference<T>::type>::type;
+    typename ::std::remove_cv<typename ::std::remove_reference<T>::type>::type;
 #endif // !__cpp_lib_remove_cvref
 
 #if __cpp_concepts && !__cpp_lib_concepts
