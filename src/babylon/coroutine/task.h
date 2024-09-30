@@ -73,7 +73,7 @@ struct CoroutineWrapperTask<A> {
   using type = Task<ForwardType>;
 };
 template <typename A>
-using CoroutineWrapperTaskType = CoroutineWrapperTask<A>::type;
+using CoroutineWrapperTaskType = typename CoroutineWrapperTask<A>::type;
 
 // Check if C(Args...) is a babylon coroutine, thus,
 // return Task<T>
