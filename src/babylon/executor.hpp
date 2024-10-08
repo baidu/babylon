@@ -70,7 +70,7 @@ inline Future<Executor::ResultType<C&&, Args&&...>, F> Executor::execute(
 }
 
 template <typename F, typename A>
-    requires coroutine::Awaitable<A, CoroutineTask<>::promise_type>
+  requires coroutine::Awaitable<A, CoroutineTask<>::promise_type>
 inline Future<Executor::AwaitResultType<A&&>, F> Executor::execute(
     A&& awaitable) noexcept {
   using R = AwaitResultType<A&&>;

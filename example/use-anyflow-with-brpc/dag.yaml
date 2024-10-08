@@ -1,0 +1,39 @@
+worker_number: 8
+queue_capacity: 128
+cache_size: 4
+
+vertexes:
+# "request" and "response" are builtin name for a service
+
+# like function call: [user_id, query] = Parse(request)
+- name: Parse
+  depends: {request: request}
+  emits: {user_id: user_id, query: query}
+
+# like function call: [user_profile = profile] = UserProfile(id = user_id)
+- name: UserProfile
+  depends: {id: user_id}
+  emits: {profile: user_profile}
+
+# like function call: [request_one = result] = Recall[threshold = 0.2](query = user_profile)
+- name: Recall
+  depends: {query: user_profile}
+  emits: {result: result_one}
+  option: {threshold: 0.2}
+
+# like function call: [request_two = result] = Recall[threshold = 0.6](query)
+- name: Recall
+  depends: {query: query}
+  emits: {result: result_two}
+  option: {threshold: 0.6}
+
+# like function call: result = Rank[limit = 5](result_one, result_two)
+- name: Rank
+  depends: [result_one, result_two]
+  emits: {result: result}
+  option: {limit: 5}
+
+# like function call: response = Response(result)
+- name: Response
+  depends: {result: result}
+  emits: {response: response}
