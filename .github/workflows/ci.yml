@@ -64,7 +64,6 @@ jobs:
         path: bazel-disk
         key: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-${{github.sha}}
         restore-keys: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-
-        save-always: true
     - run: sudo apt install libc++-18-dev libc++abi-18-dev
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '27.5.arenastring'/" MODULE.bazel
     - run: bazel test --compilation_mode=opt --disk_cache=bazel-disk --verbose_failures --test_output=errors --config=asan ${{matrix.compiler.flag}} ${{matrix.stdlib.flag}} ${{matrix.mutable.flag}} test/...
@@ -78,7 +77,6 @@ jobs:
         path: bazel-disk
         key: bazel-disk-aarch64-${{github.sha}}
         restore-keys: bazel-disk-aarch64-
-        save-always: true
     - run: sudo apt update
     - run: sudo apt install g++-12-aarch64-linux-gnu
     - run: sudo apt install qemu-user
@@ -94,7 +92,6 @@ jobs:
         path: bazel-disk
         key: bazel-disk-workspace-${{github.sha}}
         restore-keys: bazel-disk-workspace-
-        save-always: true
     - run: bazel test --disk_cache=bazel-disk --verbose_failures --test_output=errors --enable_bzlmod=false test/...
 
   coverage:
@@ -106,7 +103,6 @@ jobs:
         path: bazel-disk
         key: bazel-disk-coverage-${{github.sha}}
         restore-keys: bazel-disk-coverage-
-        save-always: true
     - run: bazel coverage --disk_cache=bazel-disk --verbose_failures --test_output=errors --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test/...
     - run: .github/workflows/filter_lcov.sh
     - uses: coverallsapp/github-action@v2
