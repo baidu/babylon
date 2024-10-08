@@ -8,7 +8,7 @@ load('//:copts.bzl', 'BABYLON_COPTS')
 cc_library(
   name = 'concurrent',
   deps = [
-    ':bounded_queue', ':counter', ':epoch', ':execution_queue',
+    ':bounded_queue', ':counter', ':deposit_box', ':epoch', ':execution_queue',
     ':garbage_collector', ':id_allocator', ':object_pool',
     ':sched_interface', ':thread_local', ':transient_hash_table',
     ':transient_topic', ':vector',
@@ -39,6 +39,18 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     ':thread_local',
+  ],
+)
+
+cc_library(
+  name = 'deposit_box',
+  hdrs = ['deposit_box.h'],
+  copts = BABYLON_COPTS,
+  includes = ['//src'],
+  strip_include_prefix = '//src',
+  deps = [
+    ':id_allocator',
+    '@com_google_absl//absl/types:optional',
   ],
 )
 

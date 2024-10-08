@@ -12,7 +12,8 @@ cc_library(
     ':move_only_function', ':serialization',
     ':string_view', ':time', ':type_traits',
     '//src/babylon/anyflow', '//src/babylon/concurrent',
-    '//src/babylon/logging', '//src/babylon/reusable',
+    '//src/babylon/coroutine', '//src/babylon/logging',
+    '//src/babylon/reusable',
   ],
 )
 
@@ -68,25 +69,32 @@ cc_library(
 )
 
 cc_library(
-  name = 'coroutine_and_executor',
-  srcs = ['coroutine.cpp', 'executor.cpp'],
-  hdrs = ['coroutine.h', 'current_executor.h', 'executor.h', 'executor.hpp'],
+  name = 'basic_executor',
+  srcs = ['basic_executor.cpp'],
+  hdrs = ['basic_executor.h'],
+  copts = BABYLON_COPTS,
+  includes = ['//src'],
+  strip_include_prefix = '//src',
+  deps = [
+    ':move_only_function',
+  ],
+)
+
+cc_library(
+  name = 'executor',
+  srcs = ['executor.cpp'],
+  hdrs = ['executor.h', 'executor.hpp'],
   copts = BABYLON_COPTS,
   includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
     ':future',
-    '//src/babylon/logging',
+    '//src/babylon/coroutine:task',
     '//src/babylon/concurrent:bounded_queue',
-    '@libcoro',
+    '//src/babylon/concurrent:thread_local',
+    '@com_google_absl//absl/types:optional',
   ],
 )
-
-alias(
-  name = 'coroutine',
-  actual = '//src/babylon:coroutine_and_executor',
-)
-
 
 cc_library(
   name = 'environment',
@@ -97,11 +105,6 @@ cc_library(
   deps = [
     '@com_google_absl//absl/base:core_headers',
   ],
-)
-
-alias(
-  name = 'executor',
-  actual = '//src/babylon:coroutine_and_executor',
 )
 
 cc_library(

@@ -26,6 +26,17 @@ using ::absl::apply;
 #if !__cpp_lib_invoke
 using ::absl::base_internal::invoke;
 #endif // !__cpp_lib_invoke
+
+#if !__cpp_lib_remove_cvref
+template <typename T>
+using remove_cvref_t =
+    typename ::std::remove_cv<typename ::std::remove_reference<T>::type>::type;
+#endif // !__cpp_lib_remove_cvref
+
+#if __cpp_concepts && !__cpp_lib_concepts
+template <typename C, typename... Args>
+concept invocable = is_invocable<C, Args...>::value;
+#endif
 } // namespace std
 
 #if !__cpp_lib_is_invocable
@@ -365,6 +376,16 @@ struct CallableArgs
   template <typename T, typename... Args>
   static ::std::tuple<Args...> RemoveFirst(::std::tuple<T, Args...>);
   using type = decltype(RemoveFirst(::std::declval<BaseType>()));
+};
+
+class Void final {
+ private:
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wunused-private-field"
+  char _dummy[0];
+#pragma GCC diagnostic pop
 };
 
 BABYLON_NAMESPACE_END

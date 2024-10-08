@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option cc_generic_services = true;
+
+message SearchRequest {
+  uint64 user_id = 1;
+  bytes query = 2;
+};
+
+message Result {
+  uint64 doc_id = 1;
+  float score = 2;
+};
+
+message SearchResponse {
+  repeated Result result = 1;
+};
+
+service SearchService {
+  rpc search(SearchRequest) returns (SearchResponse);
+};

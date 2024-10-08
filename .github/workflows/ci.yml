@@ -12,26 +12,34 @@ jobs:
       fail-fast: false
       matrix:
         compiler: [{name: gcc, flag: --action_env=CC=gcc-14}, {name: clang, flag: --action_env=CC=clang-18}]
-        std: [{name: c++20}, {name: c++14, flag: --cxxopt=-std=c++14 --cxxopt=-faligned-new}]
+        std: [{name: c++20}, {name: c++14, flag: --cxxopt=-std=c++14 --cxxopt=-faligned-new}, {name: c++14-coroutine, flag: --cxxopt=-faligned-new --cxxopt=-fconcepts --cxxopt=-fcoroutines}]
         stdlib: [{name: stdlibc++}, {name: libc++, flag: --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++}]
         feature: [{name: asan, flag: --config=asan}, {name: tsan, flag: --features=tsan}]
         exclude:
         - compiler: {name: gcc}
           stdlib: {name: libc++}
+        - compiler: {name: clang}
+          std: {name: c++14-coroutine}
         - std: {name: c++14}
+          feature: {name: tsan}
+        - std: {name: c++14-coroutine}
           feature: {name: tsan}
     runs-on: ubuntu-24.04
     name: basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/cache@v4
+    - uses: actions/cache/restore@v4
       with:
         path: bazel-disk
         key: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-${{github.sha}}
         restore-keys: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-
-        save-always: true
     - run: sudo apt install libc++-18-dev libc++abi-18-dev
     - run: bazel test --compilation_mode=dbg --disk_cache=bazel-disk --verbose_failures --test_output=errors ${{matrix.compiler.flag}} ${{matrix.std.flag}} ${{matrix.stdlib.flag}} ${{matrix.feature.flag}} test/...
+    - uses: actions/cache/save@v4
+      if: always()
+      with:
+        path: bazel-disk
+        key: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-${{github.sha}}
 
   arenastring:
     strategy:
@@ -51,60 +59,76 @@ jobs:
     name: arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/cache@v4
+    - uses: actions/cache/restore@v4
       with:
         path: bazel-disk
         key: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-${{github.sha}}
         restore-keys: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-
-        save-always: true
     - run: sudo apt install libc++-18-dev libc++abi-18-dev
     - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '27.5.arenastring'/" MODULE.bazel
     - run: bazel test --compilation_mode=opt --disk_cache=bazel-disk --verbose_failures --test_output=errors --config=asan ${{matrix.compiler.flag}} ${{matrix.stdlib.flag}} ${{matrix.mutable.flag}} test/...
+    - uses: actions/cache/save@v4
+      if: always()
+      with:
+        path: bazel-disk
+        key: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-${{github.sha}}
 
   aarch64:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/cache@v4
+    - uses: actions/cache/restore@v4
       with:
         path: bazel-disk
         key: bazel-disk-aarch64-${{github.sha}}
         restore-keys: bazel-disk-aarch64-
-        save-always: true
     - run: sudo apt update
     - run: sudo apt install g++-12-aarch64-linux-gnu
     - run: sudo apt install qemu-user
     - run: sudo ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/
     - run: bazel test --disk_cache=bazel-disk --verbose_failures --test_output=errors --platforms='@cross_config_toolchain//:cross' --action_env=CROSS_CC=/usr/bin/aarch64-linux-gnu-gcc-12 --features=-default_link_flags --test_env=LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib -- test/... -test/logging:test_log_statically
+    - uses: actions/cache/save@v4
+      if: always()
+      with:
+        path: bazel-disk
+        key: bazel-disk-aarch64-${{github.sha}}
 
   workspace:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/cache@v4
+    - uses: actions/cache/restore@v4
       with:
         path: bazel-disk
         key: bazel-disk-workspace-${{github.sha}}
         restore-keys: bazel-disk-workspace-
-        save-always: true
     - run: bazel test --disk_cache=bazel-disk --verbose_failures --test_output=errors --enable_bzlmod=false test/...
+    - uses: actions/cache/save@v4
+      if: always()
+      with:
+        path: bazel-disk
+        key: bazel-disk-workspace-${{github.sha}}
 
   coverage:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/cache@v4
+    - uses: actions/cache/restore@v4
       with:
         path: bazel-disk
         key: bazel-disk-coverage-${{github.sha}}
         restore-keys: bazel-disk-coverage-
-        save-always: true
     - run: bazel coverage --disk_cache=bazel-disk --verbose_failures --test_output=errors --combined_report=lcov --instrumentation_filter='src/babylon,-src/babylon/reusable/patch' test/...
     - run: .github/workflows/filter_lcov.sh
     - uses: coverallsapp/github-action@v2
       with:
         github-token: ${{github.token}}
         file: bazel-out/_coverage/_coverage_report.lcov
+    - uses: actions/cache/save@v4
+      if: always()
+      with:
+        path: bazel-disk
+        key: bazel-disk-coverage-${{github.sha}}
 
   cmake:
     runs-on: ubuntu-24.04

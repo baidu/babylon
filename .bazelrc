@@ -1,6 +1,5 @@
 common --registry=https://bcr.bazel.build
 common --registry=file://%workspace%/registry
-common --registry=https://raw.githubusercontent.com/bazelboost/registry/main
 
 build --cxxopt=-std=c++20
 

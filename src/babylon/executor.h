@@ -1,28 +1,27 @@
 #pragma once
 
+#include "babylon/basic_executor.h"           // BasicExecutor
 #include "babylon/concurrent/bounded_queue.h" // ConcurrentBoundedQueue
-#include "babylon/coroutine.h"                // CoroutineTask
+#include "babylon/concurrent/thread_local.h"  // EnumerableThreadLocal
+#include "babylon/coroutine/task.h"           // CoroutineTask
 #include "babylon/future.h"                   // Future
-#include "babylon/move_only_function.h"       // MoveOnlyFunction
-
-#if __cpp_lib_coroutine
-#include <coroutine> // std::coroutine_handle
-#endif
 
 #include <thread> // std::thread
 #include <vector> // std::vector
 
 BABYLON_NAMESPACE_BEGIN
 
-// Unified interface to run a task asynchronously. A task can be a closure of
+// Unified interface to launch a task to run asynchronously. A task can be a
+// closure of
 // - normal function
 // - member function
 // - functor object, class or lambda
 // - coroutine
 //
-// The closure packing is done in base Executor, and actual async mechanism is
-// implemented by subclasses.
-class Executor {
+// These various closure packing is done by babylon::Executor, and actual
+// asynchronous execution mechanism is provide by interface of
+// babylon::BasicExecutor.
+class Executor : public BasicExecutor {
  private:
 #if __cpp_concepts && __cpp_lib_coroutine
   // Coroutine only copy or move args... to internal state but ignore functor
@@ -33,22 +32,29 @@ class Executor {
       ::std::is_function<
           ::std::remove_pointer_t<::std::remove_reference_t<C>>>::value ||
       ::std::is_member_function_pointer<C>::value;
+
+  // Only CoroutineTask is directly support by executor, but other coroutine
+  // could also be support by wrap in a CoroutineTask. Distinguish them out to
+  // do that wrapping only when necessary.
+  template <typename C, typename... Args>
+  struct IsCoroutineTask;
+  template <typename C, typename... Args>
+  static constexpr bool IsCoroutineTaskValue =
+      IsCoroutineTask<C, Args...>::value;
 #endif // __cpp_concepts && __cpp_lib_coroutine
 
- public:
   // The **effective** result type of C(Args...), generally
   // std::invoke_result_t<C, Args...>.
   //
-  // Coroutine is a special case, for that, in specification C(Args...) need to
-  // return a task handle which more a future-like object than a meaningful
-  // value co_return-ed by the coroutine task. So instead of the handle, the
-  // **effective** result for a coroutine task is considered to be type of
-  // object as if `co_await C(Args...)` in a coroutine context.
+  // Coroutine is a special case, for that, in specification C(Args...) need
+  // to return a task handle which more a future-like object than a
+  // meaningful value co_return-ed by the coroutine task itself. So instead of
+  // the handle, the **effective** result for a coroutine task is considered to
+  // be type of object as if `co_await C(Args...)` in a coroutine context.
   template <typename C, typename... Args>
   struct Result;
   template <typename C, typename... Args>
   using ResultType = typename Result<C, Args...>::type;
-
 #if __cpp_concepts && __cpp_lib_coroutine
   template <typename A>
   struct AwaitResult;
@@ -57,17 +63,12 @@ class Executor {
 #endif // __cpp_concepts && __cpp_lib_coroutine
 
  public:
-  // Thin wrapper of std::coroutine_handle<>. Implementor can resume it just
-  // like a std::coroutine_handle<>. The difference is CurrentExecutor will be
-  // set during execution.
-  class CoroutineHandle;
-
   Executor() noexcept = default;
   Executor(Executor&&) noexcept = default;
   Executor(const Executor&) noexcept = default;
   Executor& operator=(Executor&&) noexcept = default;
   Executor& operator=(const Executor&) noexcept = default;
-  virtual ~Executor() noexcept;
+  virtual ~Executor() noexcept override = default;
 
   //////////////////////////////////////////////////////////////////////////////
   // Execute a callable with executor, return a future object associate with
@@ -79,7 +80,7 @@ class Executor {
   // like use co_await inside another coroutine.
   template <typename F = SchedInterface, typename C, typename... Args>
 #if __cpp_concepts && __cpp_lib_coroutine
-    requires(::std::is_invocable<C &&, Args && ...>::value &&
+    requires(::std::invocable<C &&, Args && ...> &&
              !CoroutineInvocable<C &&, Args && ...>)
 #endif // __cpp_concepts && __cpp_lib_coroutine
   inline Future<ResultType<C&&, Args&&...>, F> execute(C&& callable,
@@ -101,6 +102,7 @@ class Executor {
   // Await a awaitable object, just like co_await it inside a coroutine context.
   // Return a future object to wait and get that result.
   template <typename F = SchedInterface, typename A>
+    requires coroutine::Awaitable<A, CoroutineTask<>::promise_type>
   inline Future<AwaitResultType<A&&>, F> execute(A&& awaitable) noexcept;
 #endif // __cpp_concepts && __cpp_lib_coroutine
 
@@ -117,12 +119,12 @@ class Executor {
   inline int submit(C&& callable, Args&&... args) noexcept;
 #if __cpp_concepts && __cpp_lib_coroutine
   template <typename C, typename... Args>
-    requires CoroutineTaskInvocable<C&&, Args&&...> &&
+    requires Executor::IsCoroutineTaskValue<C&&, Args&&...> &&
              Executor::IsPlainFunction<C>
   inline int submit(C&& callable, Args&&... args) noexcept;
   template <typename C, typename... Args>
     requires CoroutineInvocable<C&&, Args&&...> &&
-             (!CoroutineTaskInvocable<C &&, Args && ...>) &&
+             (!Executor::IsCoroutineTaskValue<C &&, Args && ...>) &&
              Executor::IsPlainFunction<C>
   inline int submit(C&& callable, Args&&... args) noexcept;
   template <typename C, typename... Args>
@@ -132,37 +134,10 @@ class Executor {
 #endif // __cpp_concepts && __cpp_lib_coroutine
   //////////////////////////////////////////////////////////////////////////////
 
- protected:
-  // The actual async mechanism implementation. Every execute/submit interface
-  // above only do properly type-erased closure packing them self, and call this
-  // unified interface finally.
-  //
-  // A reasonable implementation will move function to destination thread and
-  // run it there.
-  //
-  // return ==0: Front-end transfer is success. The function will be called
-  // later always.
-  //        !=0: Front-end transfer is fail. The function is not moved away, and
-  //        never be called inside.
-  virtual int invoke(MoveOnlyFunction<void(void)>&& function) noexcept;
-
-  // Execute/submit interface for coroutine will packing them to a
-  // coroutine_handle first, and then call this interface. Default
-  // implementation will forward to the invoke interface for convenience. A
-  // coroutine dedicated executor may override this to reduce forward
-  // overhead.
-  //
-  // return ==0: Front-end transfer is success. The coroutine will be resumed
-  // later always.
-  //        !=0: Front-end transfer is fail. The coroutine state will keep
-  //        as-is.
-  virtual int resume(CoroutineHandle&& handle) noexcept;
-
  private:
 #if __cpp_concepts && __cpp_lib_coroutine
   template <typename T>
   inline int submit(CoroutineTask<T>&& task) noexcept;
-  inline int resume(::std::coroutine_handle<> handle) noexcept;
 #endif // __cpp_concepts && __cpp_lib_coroutine
 
   template <typename P, typename C, typename... Args>
@@ -187,11 +162,23 @@ class Executor {
   CoroutineTask<> await_apply_and_set_value(Promise<void, F> promise,
                                             C callable, T args_tuple) noexcept;
 #endif // __cpp_concepts && __cpp_lib_coroutine
+};
 
 #if __cpp_concepts && __cpp_lib_coroutine
-  friend BasicCoroutinePromise;
-#endif // __cpp_concepts && __cpp_lib_coroutine
+template <typename C, typename... Args>
+struct Executor::IsCoroutineTask {
+  static constexpr bool value = false;
 };
+template <typename C, typename... Args>
+  requires requires {
+             typename ::std::remove_cvref_t<::std::invoke_result_t<C, Args...>>;
+           }
+struct Executor::IsCoroutineTask<C, Args...> {
+  static constexpr bool value = IsSpecialization<
+      ::std::remove_cvref_t<::std::invoke_result_t<C, Args...>>,
+      CoroutineTask>::value;
+};
+#endif // __cpp_concepts && __cpp_lib_coroutine
 
 template <typename C, typename... Args>
 struct Executor::Result : public ::std::invoke_result<C, Args...> {};
@@ -199,64 +186,25 @@ struct Executor::Result : public ::std::invoke_result<C, Args...> {};
 template <typename C, typename... Args>
   requires CoroutineInvocable<C, Args...>
 struct Executor::Result<C, Args...> {
+  using type = Executor::AwaitResultType<::std::invoke_result_t<C, Args...>>;
+};
+
+template <typename A>
+struct Executor::AwaitResult {};
+template <typename A>
+  requires requires {
+             typename coroutine::AwaitResultType<A,
+                                                 CoroutineTask<>::promise_type>;
+           }
+struct Executor::AwaitResult<A> {
   using AwaitResultType =
-      CoroutineAwaitResultType<CoroutineTask<>::promise_type,
-                               ::std::invoke_result_t<C, Args...>>;
+      coroutine::AwaitResultType<A, CoroutineTask<>::promise_type>;
   using type = typename ::std::conditional<
       ::std::is_rvalue_reference<AwaitResultType>::value,
       typename ::std::remove_reference<AwaitResultType>::type,
       AwaitResultType>::type;
 };
-
-template <typename A>
-  requires requires {
-             typename CoroutineAwaitResultType<CoroutineTask<>::promise_type,
-                                               A>;
-           }
-struct Executor::AwaitResult<A> {
-  using AwaitReturnType =
-      CoroutineAwaitResultType<CoroutineTask<>::promise_type, A>;
-  using type = typename ::std::conditional<
-      ::std::is_rvalue_reference<AwaitReturnType>::value,
-      typename ::std::remove_reference<AwaitReturnType>::type,
-      AwaitReturnType>::type;
-};
 #endif // __cpp_concepts && __cpp_lib_coroutine
-
-class Executor::CoroutineHandle {
- public:
-  inline CoroutineHandle() noexcept = default;
-  inline CoroutineHandle(CoroutineHandle&&) noexcept = default;
-  inline CoroutineHandle(const CoroutineHandle&) noexcept = default;
-  inline CoroutineHandle& operator=(CoroutineHandle&&) noexcept = default;
-  inline CoroutineHandle& operator=(const CoroutineHandle&) noexcept = default;
-  inline ~CoroutineHandle() noexcept = default;
-
-#if __cpp_lib_coroutine
-  inline void resume() const noexcept;
-#endif // __cpp_lib_coroutine
-
- private:
-#if __cpp_lib_coroutine
-  inline CoroutineHandle(Executor* executor,
-                         ::std::coroutine_handle<> handle) noexcept;
-#endif // __cpp_lib_coroutine
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wunused-private-field"
-  Executor* _executor {nullptr};
-#if __cpp_lib_coroutine
-  ::std::coroutine_handle<> _handle;
-  static_assert(sizeof(_handle) == sizeof(void*), "Check ABI consistentcy");
-#else  // !__cpp_lib_coroutine
-  void* _handle {nullptr};
-#endif // !__cpp_lib_coroutine
-#pragma GCC diagnostic pop
-
-  friend Executor;
-};
 
 // Just like std::async, but replace policy to a more flexible executor.
 template <typename F = SchedInterface, typename C, typename... Args>
@@ -357,11 +305,9 @@ class ThreadPoolExecutor : public Executor {
 
  protected:
   virtual int invoke(MoveOnlyFunction<void(void)>&& function) noexcept override;
-  virtual int resume(CoroutineHandle&& handle) noexcept override;
 
  private:
   enum class TaskType {
-    COROUTINE,
     FUNCTION,
     WAKEUP,
     STOP,
@@ -369,7 +315,6 @@ class ThreadPoolExecutor : public Executor {
 
   struct Task {
     TaskType type;
-    CoroutineHandle handle;
     MoveOnlyFunction<void(void)> function;
   };
 

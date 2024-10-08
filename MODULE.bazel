@@ -13,11 +13,9 @@ module(
 # --registry=https://bcr.bazel.build
 bazel_dep(name = 'abseil-cpp', version = '20211102.0', repo_name = 'com_google_absl')
 bazel_dep(name = 'bazel_skylib', version = '1.0.3')
+bazel_dep(name = 'boost.preprocessor', version = '1.83.0')
+bazel_dep(name = 'boost.spirit', version = '1.83.0')
 bazel_dep(name = 'protobuf', version = '3.19.6', repo_name = 'com_google_protobuf')
-
-# --registry=https://raw.githubusercontent.com/bazelboost/registry/main
-bazel_dep(name = 'boost.preprocessor', version = '1.83.0.bzl.1')
-bazel_dep(name = 'boost.spirit', version = '1.83.0.bzl.2')
 ################################################################################
 
 ################################################################################

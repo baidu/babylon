@@ -382,16 +382,13 @@ TEST_F(ExecutorTest, current_executor_mark_during_execution) {
   {
     struct S {
       static void function(Executor& e) {
-        (void)e;
-        ASSERT_EQ(&e, ::babylon::CurrentExecutor::get());
+        ASSERT_TRUE(e.is_running_in());
       }
       void member_function(Executor& e) {
-        (void)e;
-        ASSERT_EQ(&e, ::babylon::CurrentExecutor::get());
+        ASSERT_TRUE(e.is_running_in());
       }
       void operator()(Executor& e) {
-        (void)e;
-        ASSERT_EQ(&e, ::babylon::CurrentExecutor::get());
+        ASSERT_TRUE(e.is_running_in());
       }
     } s;
     thread_executor.execute(S::function, ::std::ref(thread_executor)).get();
@@ -402,8 +399,7 @@ TEST_F(ExecutorTest, current_executor_mark_during_execution) {
     thread_executor
         .execute(
             [](Executor& e) {
-              (void)e;
-              ASSERT_EQ(&e, ::babylon::CurrentExecutor::get());
+              ASSERT_TRUE(e.is_running_in());
             },
             ::std::ref(thread_executor))
         .get();
@@ -412,18 +408,21 @@ TEST_F(ExecutorTest, current_executor_mark_during_execution) {
   {
     struct S {
       static ::babylon::CoroutineTask<> run(Executor& e) {
-        (void)e;
-        assert(&e == ::babylon::CurrentExecutor::get());
+        if (!e.is_running_in()) {
+          abort();
+        }
         co_return;
       }
       ::babylon::CoroutineTask<> member_run(Executor& e) {
-        (void)e;
-        assert(&e == ::babylon::CurrentExecutor::get());
+        if (!e.is_running_in()) {
+          abort();
+        }
         co_return;
       }
       ::babylon::CoroutineTask<> operator()(Executor& e) {
-        (void)e;
-        assert(&e == ::babylon::CurrentExecutor::get());
+        if (!e.is_running_in()) {
+          abort();
+        }
         co_return;
       }
     } s;
@@ -433,8 +432,9 @@ TEST_F(ExecutorTest, current_executor_mark_during_execution) {
     thread_executor
         .execute(
             [&](Executor& e) -> ::babylon::CoroutineTask<> {
-              (void)e;
-              assert(&e == ::babylon::CurrentExecutor::get());
+              if (!e.is_running_in()) {
+                abort();
+              }
               co_return;
             },
             thread_executor)

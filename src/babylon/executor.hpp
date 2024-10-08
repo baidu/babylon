@@ -1,6 +1,5 @@
 #pragma once
 
-#include "babylon/current_executor.h" // CurrentExecutor
 #include "babylon/executor.h"
 
 // clang-foramt off
@@ -10,44 +9,24 @@
 BABYLON_NAMESPACE_BEGIN
 
 ////////////////////////////////////////////////////////////////////////////////
-// Executor::CoroutineHandle begin
-#if __cpp_lib_coroutine
-inline void Executor::CoroutineHandle::resume() const noexcept {
-  CurrentExecutor::set(_executor);
-  _handle.resume();
-  CurrentExecutor::set(nullptr);
-}
-
-inline Executor::CoroutineHandle::CoroutineHandle(
-    Executor* executor, ::std::coroutine_handle<> handle) noexcept
-    : _executor {executor}, _handle {handle} {}
-#endif // __cpp_lib_coroutine
-// Executor::CoroutineHandle end
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
 // Executor begin
 template <typename F, typename C, typename... Args>
 #if __cpp_concepts && __cpp_lib_coroutine
-  requires(::std::is_invocable<C &&, Args && ...>::value &&
+  requires(::std::invocable<C &&, Args && ...> &&
            !CoroutineInvocable<C &&, Args && ...>)
 #endif // __cpp_concepts && __cpp_lib_coroutine
 inline Future<Executor::ResultType<C&&, Args&&...>, F> Executor::execute(
     C&& callable, Args&&... args) noexcept {
   using R = ResultType<C&&, Args&&...>;
   struct S {
-    Executor* executor;
     Promise<R, F> promise;
     typename ::std::decay<C>::type callable;
     ::std::tuple<typename ::std::decay<Args>::type...> args_tuple;
     void operator()() noexcept {
-      CurrentExecutor::set(executor);
       apply_and_set_value(promise, ::std::move(callable),
                           ::std::move(args_tuple));
-      CurrentExecutor::set(nullptr);
     }
-  } s {.executor {this},
-       .promise {},
+  } s {.promise {},
        .callable {::std::forward<C>(callable)},
        .args_tuple {::std::forward<Args>(args)...}};
   auto future = s.promise.get_future();
@@ -91,6 +70,7 @@ inline Future<Executor::ResultType<C&&, Args&&...>, F> Executor::execute(
 }
 
 template <typename F, typename A>
+  requires coroutine::Awaitable<A, CoroutineTask<>::promise_type>
 inline Future<Executor::AwaitResultType<A&&>, F> Executor::execute(
     A&& awaitable) noexcept {
   using R = AwaitResultType<A&&>;
@@ -109,17 +89,13 @@ template <typename C, typename... Args>
 #endif // __cpp_concepts && __cpp_lib_coroutine
 inline int Executor::submit(C&& callable, Args&&... args) noexcept {
   struct S {
-    Executor* executor;
     typename ::std::decay<C>::type callable;
     ::std::tuple<typename ::std::decay<Args>::type...> args_tuple;
     void operator()() {
-      CurrentExecutor::set(executor);
       ::std::apply(::std::move(callable), ::std::move(args_tuple));
-      CurrentExecutor::set(nullptr);
     }
   };
-  S s {.executor {this},
-       .callable {::std::forward<C>(callable)},
+  S s {.callable {::std::forward<C>(callable)},
        .args_tuple {::std::forward<Args>(args)...}};
   MoveOnlyFunction<void(void)> function {::std::move(s)};
   return invoke(::std::move(function));
@@ -127,7 +103,7 @@ inline int Executor::submit(C&& callable, Args&&... args) noexcept {
 
 #if __cpp_concepts && __cpp_lib_coroutine
 template <typename C, typename... Args>
-  requires CoroutineTaskInvocable<C&&, Args&&...> &&
+  requires Executor::IsCoroutineTaskValue<C&&, Args&&...> &&
            Executor::IsPlainFunction<C>
 inline int Executor::submit(C&& callable, Args&&... args) noexcept {
   auto task =
@@ -137,13 +113,13 @@ inline int Executor::submit(C&& callable, Args&&... args) noexcept {
 
 template <typename C, typename... Args>
   requires CoroutineInvocable<C&&, Args&&...> &&
-           (!CoroutineTaskInvocable<C &&, Args && ...>) &&
+           (!Executor::IsCoroutineTaskValue<C &&, Args && ...>) &&
            Executor::IsPlainFunction<C>
 inline int Executor::submit(C&& callable, Args&&... args) noexcept {
   using TaskType = ::std::invoke_result_t<C&&, Args&&...>;
   struct S {
     static CoroutineTask<> wrapper(TaskType task) {
-      co_await task;
+      co_await ::std::move(task);
     }
   };
   auto task =
@@ -169,11 +145,10 @@ inline int Executor::submit(C&& callable, Args&&... args) noexcept {
 template <typename T>
 inline int Executor::submit(CoroutineTask<T>&& task) noexcept {
   task.set_executor(*this);
-  return resume(task.release());
-}
-
-inline int Executor::resume(::std::coroutine_handle<> handle) noexcept {
-  auto ret = resume({this, handle});
+  auto handle = task.release();
+  auto ret = invoke([handle] {
+    handle.resume();
+  });
   if (ABSL_PREDICT_FALSE(ret != 0)) {
     handle.destroy();
   }
