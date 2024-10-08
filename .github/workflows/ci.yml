@@ -28,14 +28,18 @@ jobs:
     name: basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/cache@v4
+    - uses: actions/cache/restore@v4
       with:
         path: bazel-disk
         key: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-${{github.sha}}
         restore-keys: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-
-        save-always: true
     - run: sudo apt install libc++-18-dev libc++abi-18-dev
     - run: bazel test --compilation_mode=dbg --disk_cache=bazel-disk --verbose_failures --test_output=errors ${{matrix.compiler.flag}} ${{matrix.std.flag}} ${{matrix.stdlib.flag}} ${{matrix.feature.flag}} test/...
+    - uses: actions/cache/save@v4
+      if: always()
+      with:
+        path: bazel-disk
+        key: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-${{github.sha}}
 
   arenastring:
     strategy:
