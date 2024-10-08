@@ -15,6 +15,7 @@ jobs:
         - depend-use-cmake-find
         - depend-use-cmake-subdir
         - depend-use-workspace
+        - use-anyflow-with-brpc
         - use-arena-with-brpc
         - use-async-logger
         - use-counter-with-bvar
