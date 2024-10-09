@@ -15,7 +15,7 @@
 ```c++
 #include <babylon/concurrent/bounded_queue.h>
 
-using ::baidu::feed::mlarch::babylon::ConcurrentBoundedQueue;
+using ::babylon::ConcurrentBoundedQueue;
 // 显式定义一个队列
 using Queue = ConcurrentBoundedQueue<::std::string>;
 Queue queue;
