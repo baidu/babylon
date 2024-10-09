@@ -7,13 +7,25 @@ load('//:copts.bzl', 'BABYLON_COPTS')
 cc_library(
   name = 'coroutine',
   deps = [
-    'cancelable', ':promise', ':task', 'traits',
+    'cancelable', ':futex', ':promise', ':task', 'traits',
   ],
 )
 
 cc_library(
   name = 'cancelable',
   hdrs = ['cancelable.h'],
+  copts = BABYLON_COPTS,
+  includes = ['//src'],
+  strip_include_prefix = '//src',
+  deps = [
+    ':promise',
+    '//src/babylon/concurrent:deposit_box',
+  ],
+)
+
+cc_library(
+  name = 'futex',
+  hdrs = ['futex.h'],
   copts = BABYLON_COPTS,
   includes = ['//src'],
   strip_include_prefix = '//src',
