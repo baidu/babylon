@@ -4,10 +4,6 @@
 
 #if __cpp_concepts && __cpp_lib_coroutine
 
-#if __cpp_lib_concepts
-#include "coro/coro.hpp"
-#endif // __cpp_lib_concepts
-
 #include "gtest/gtest.h"
 
 #include <future>
