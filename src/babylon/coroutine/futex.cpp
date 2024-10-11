@@ -92,14 +92,12 @@ bool Futex::add_awaiter(Node* node, uint64_t expected_value) noexcept {
 }
 
 void Futex::remove_awaiter(Node* node) noexcept {
+  ::std::lock_guard<::std::mutex> lock {_mutex};
+  // Cleared prev means already unlinked
   if (node->prev) {
-    ::std::lock_guard<::std::mutex> lock {_mutex};
-    // Cleared prev means already unlinked
-    if (node->prev) {
-      node->prev->next = node->next;
-      if (node->next) {
-        node->next->prev = node->prev;
-      }
+    node->prev->next = node->next;
+    if (node->next) {
+      node->next->prev = node->prev;
     }
   }
 }
