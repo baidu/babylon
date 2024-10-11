@@ -11,8 +11,8 @@ cc_test(
   deps = [
     '//:coroutine',
     '//:executor',
+    '//:logging',
     '@com_google_googletest//:gtest_main',
-    '@libcoro',
   ]
 )
 
@@ -23,6 +23,7 @@ cc_test(
   deps = [
     '//:coroutine',
     '//:executor',
+    '//:logging',
     '@com_google_googletest//:gtest_main',
   ]
 )

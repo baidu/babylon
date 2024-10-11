@@ -43,10 +43,14 @@ AlwaysUseNewThreadExecutor& AlwaysUseNewThreadExecutor::instance() noexcept {
   return executor;
 }
 
-AlwaysUseNewThreadExecutor::~AlwaysUseNewThreadExecutor() noexcept {
+void AlwaysUseNewThreadExecutor::join() noexcept {
   while (_running.load(::std::memory_order_acquire) > 0) {
     ::usleep(1000);
   }
+}
+
+AlwaysUseNewThreadExecutor::~AlwaysUseNewThreadExecutor() noexcept {
+  join();
 }
 
 int AlwaysUseNewThreadExecutor::invoke(

@@ -1,5 +1,6 @@
 #include "babylon/coroutine/cancelable.h"
 #include "babylon/executor.h"
+#include "babylon/logging/logger.h"
 
 #if __cpp_concepts && __cpp_lib_coroutine
 
@@ -15,10 +16,11 @@ using ::babylon::CoroutineTask;
 using ::babylon::Executor;
 using ::babylon::VersionedValue;
 using ::babylon::coroutine::Cancellable;
-using ::babylon::coroutine::Cancellation;
+using Cancellation = ::babylon::coroutine::BasicCancellable::Cancellation;
 
 struct CoroutineCancelableTest : public ::testing::Test {
   virtual void SetUp() override {
+    executor.set_worker_number(8);
     executor.start();
   }
 
@@ -161,4 +163,46 @@ TEST_F(CoroutineCancelableTest, cancel_to_executor_correctly) {
   promise.set_value();
   ASSERT_FALSE(future.get());
 }
+
+TEST_F(CoroutineCancelableTest, concurrent_finish_and_cancel) {
+  auto& executor2 = ::babylon::AlwaysUseNewThreadExecutor::instance();
+  //::babylon::ThreadPoolExecutor executor2;
+  // executor2.start();
+
+  ::std::vector<::std::promise<Cancellation>> promises {100};
+  ::std::vector<::std::future<Cancellation>> futures {promises.size()};
+  for (size_t i = 0; i < promises.size(); i++) {
+    futures[(i + 1) % promises.size()] = promises[i].get_future();
+  }
+
+  ::std::atomic<size_t> finished {0};
+  ::std::atomic<size_t> canceled {0};
+  ::babylon::CountDownLatch<> latch {promises.size()};
+  for (size_t i = 0; i < promises.size(); i++) {
+    executor.submit([&, i]() -> CoroutineTask<> {
+      auto result =
+          co_await Cancellable<CoroutineTask<::std::string>> {
+              [](::std::future<Cancellation>& future)
+                  -> CoroutineTask<::std::string> {
+                if (future.valid()) {
+                  future.get()();
+                }
+                co_return "10086";
+              }(futures[i])
+                         .set_executor(executor2)}
+              .on_suspend([&, i](Cancellation token) {
+                promises[i].set_value(token);
+              });
+      if (result) {
+        finished++;
+      } else {
+        canceled++;
+      }
+      latch.count_down();
+    });
+  }
+  latch.get_future().get();
+  BABYLON_LOG(INFO) << "finished " << finished << " canceled " << canceled;
+}
+
 #endif // __cpp_concepts && __cpp_lib_coroutine

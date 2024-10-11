@@ -6,15 +6,46 @@
 
 BABYLON_NAMESPACE_BEGIN
 
+// DepositBox is a container design for multiple visitor compete ownership for
+// item put into it beforehand
 template <typename T>
 class DepositBox {
  public:
+  class Accessor;
+
   inline static DepositBox& instance() noexcept;
 
+  // Construct a new item as T(args...) and get an id back. This id is used by
+  // take function, to retrieve the item back, like a receipt.
+  //
+  // Object is reused between emplace -> take -> emplace cycle. Each time
+  // reused, an id of same value but different version is returned. An already
+  // taken id of old version is safely used for take function, and ensured to
+  // get empty accessor back no matter the same slot is resued or not.
   template <typename... Args>
   inline VersionedValue<uint32_t> emplace(Args&&... args) noexcept;
 
-  inline ::absl::optional<T> take(VersionedValue<uint32_t> id) noexcept;
+  // Get an accessor by id returned by emplace. Same id can be safe to called
+  // multiple times from different thread concurrently. Only the first call will
+  // get a valid accessor back. Later ones all get empty accessor, even after
+  // the slot is released and reused again.
+  //
+  // Slot to store item is keep valid in accesor's scope. After the accessor
+  // is destructed, slot and stored item is recycled and should not be
+  // accessed again for this round.
+  inline Accessor take(VersionedValue<uint32_t> id) noexcept;
+
+  // Used to retrieve item back by id just like take function, in a non RAII
+  // way. Useful when take in batch.
+  inline T* take_released(VersionedValue<uint32_t> id) noexcept;
+  inline void finish_released(VersionedValue<uint32_t> id) noexcept;
+
+  // The **unsafe** way to get item instead of take it. Caller must ensure that
+  // no other visitor could exist right now.
+  //
+  // Useful when you need to modify item just after emplace, before the id
+  // is shared to others.
+  inline T& unsafe_get(VersionedValue<uint32_t> id) noexcept;
 
  private:
   struct Slot {
@@ -34,6 +65,78 @@ class DepositBox {
 };
 
 template <typename T>
+class DepositBox<T>::Accessor {
+ public:
+  inline Accessor() noexcept = default;
+  inline Accessor(Accessor&&) noexcept;
+  inline Accessor(const Accessor&) noexcept = delete;
+  inline Accessor& operator=(Accessor&&) noexcept;
+  inline Accessor& operator=(const Accessor&) noexcept = delete;
+  inline ~Accessor() noexcept;
+
+  inline operator bool() const noexcept;
+  inline T* operator->() noexcept;
+  inline T& operator*() noexcept;
+
+ private:
+  inline Accessor(DepositBox* box, T* object,
+                  VersionedValue<uint32_t> id) noexcept;
+
+  DepositBox* _box {nullptr};
+  T* _object {nullptr};
+  VersionedValue<uint32_t> _id {UINT64_MAX};
+
+  friend DepositBox;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// DepositBox::Accessor begin
+template <typename T>
+inline DepositBox<T>::Accessor::Accessor(Accessor&& other) noexcept
+    : Accessor {other._box, ::std::exchange(other._object, nullptr),
+                other._id} {}
+
+template <typename T>
+inline typename DepositBox<T>::Accessor& DepositBox<T>::Accessor::operator=(
+    Accessor&& other) noexcept {
+  ::std::swap(_box, other._box);
+  ::std::swap(_object, other._object);
+  ::std::swap(_id, other._id);
+  return *this;
+}
+
+template <typename T>
+inline DepositBox<T>::Accessor::~Accessor() noexcept {
+  if (_object) {
+    _box->finish_released(_id);
+  }
+}
+
+template <typename T>
+inline DepositBox<T>::Accessor::operator bool() const noexcept {
+  return _object;
+}
+
+template <typename T>
+inline T* DepositBox<T>::Accessor::operator->() noexcept {
+  return _object;
+}
+
+template <typename T>
+inline T& DepositBox<T>::Accessor::operator*() noexcept {
+  return *_object;
+}
+
+template <typename T>
+inline DepositBox<T>::Accessor::Accessor(DepositBox* box, T* object,
+                                         VersionedValue<uint32_t> id) noexcept
+    : _box {box}, _object {object}, _id {id} {}
+// DepositBox::Accessor end
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// DepositBox begin
+template <typename T>
 inline DepositBox<T>& DepositBox<T>::instance() noexcept {
   static DepositBox<T> object;
   return object;
@@ -51,16 +154,33 @@ inline VersionedValue<uint32_t> DepositBox<T>::emplace(
 }
 
 template <typename T>
-inline ::absl::optional<T> DepositBox<T>::take(
+inline typename DepositBox<T>::Accessor DepositBox<T>::take(
     VersionedValue<uint32_t> id) noexcept {
+  return {this, take_released(id), id};
+}
+
+template <typename T>
+inline T* DepositBox<T>::take_released(VersionedValue<uint32_t> id) noexcept {
   auto& slot = _slots.ensure(id.value);
   if (slot.version.compare_exchange_strong(id.version, id.version + 1,
                                            ::std::memory_order_relaxed)) {
-    ::absl::optional<T> result = ::std::move(slot.object);
-    _slot_id_allocator.deallocate(id.value);
-    return result;
+    return &*(slot.object);
   }
-  return {};
+  return nullptr;
 }
+
+template <typename T>
+inline void DepositBox<T>::finish_released(
+    VersionedValue<uint32_t> id) noexcept {
+  _slot_id_allocator.deallocate(id.value);
+}
+
+template <typename T>
+inline T& DepositBox<T>::unsafe_get(VersionedValue<uint32_t> id) noexcept {
+  auto& slot = _slots.ensure(id.value);
+  return *slot.object;
+}
+// DepositBox end
+////////////////////////////////////////////////////////////////////////////////
 
 BABYLON_NAMESPACE_END

@@ -18,13 +18,14 @@ cc_library(
   includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
-    ':promise',
+    ':task',
     '//src/babylon/concurrent:deposit_box',
   ],
 )
 
 cc_library(
   name = 'futex',
+  srcs = ['futex.cpp'],
   hdrs = ['futex.h'],
   copts = BABYLON_COPTS,
   includes = ['//src'],
