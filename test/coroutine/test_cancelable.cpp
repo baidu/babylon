@@ -61,8 +61,9 @@ TEST_F(CoroutineCancelableTest, cancel_before_finish) {
   auto token = cancel_promise.get_future().get();
   ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
   ASSERT_TRUE(token());
-  promise.set_value();
   ASSERT_FALSE(future.get());
+  promise.set_value();
+  executor.stop();
 }
 
 TEST_F(CoroutineCancelableTest, cancel_after_finish) {
@@ -156,8 +157,9 @@ TEST_F(CoroutineCancelableTest, cancel_to_executor_correctly) {
   auto token = cancel_promise.get_future().get();
   ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
   ASSERT_TRUE(token());
-  promise.set_value();
   ASSERT_FALSE(future.get());
+  promise.set_value();
+  executor2.stop();
 }
 
 TEST_F(CoroutineCancelableTest, concurrent_finish_and_cancel) {
