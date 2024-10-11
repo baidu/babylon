@@ -235,6 +235,8 @@ struct AlwaysUseNewThreadExecutor : public Executor {
  public:
   static AlwaysUseNewThreadExecutor& instance() noexcept;
 
+  void join() noexcept;
+
  protected:
   virtual int invoke(MoveOnlyFunction<void(void)>&& function) noexcept override;
 

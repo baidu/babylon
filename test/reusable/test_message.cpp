@@ -12,10 +12,6 @@ using ::absl::strings_internal::STLStringResizeUninitialized;
 using ::babylon::ArenaExample;
 using ::babylon::SwissManager;
 
-const ::std::string long_string =
-    ::std::string(::std::string().capacity() + 10, 'x');
-const size_t default_string_capacity = ::std::string().capacity();
-
 struct MockPageAllocator : public ::babylon::NewDeletePageAllocator {
   virtual ~MockPageAllocator() noexcept override {
     for (size_t i = 0; i < free_pages.size(); ++i) {
@@ -43,6 +39,10 @@ struct ReusableMessage : public ::testing::Test {
     manager.resource().set_page_allocator(allocator);
     manager.set_recreate_interval(1);
   }
+
+  const ::std::string long_string =
+      ::std::string(::std::string().capacity() + 10, 'x');
+  const size_t default_string_capacity = ::std::string().capacity();
 
   MockPageAllocator allocator;
   SwissManager manager;

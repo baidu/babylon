@@ -16,6 +16,7 @@ class BasicCancellable {
   struct Optional;
   template <typename T>
   using OptionalType = typename Optional<T>::type;
+  class Cancellation;
 
   // Setup a coroutine_handle as a callback, will be resumed after finish or
   // cancel.
@@ -62,7 +63,7 @@ struct BasicCancellable::Optional<void> {
 
 // Handle get back from Cancellable::on_suspend, Use operator() to trigger
 // cancellation.
-class Cancellation {
+class BasicCancellable::Cancellation {
  public:
   inline Cancellation() noexcept = default;
   inline Cancellation(Cancellation&&) noexcept = default;
@@ -83,6 +84,28 @@ class Cancellation {
 };
 
 // Wrap an awaitable A to make it cancelable.
+//
+// Cancellable<A> can be co_await-ed just like A it self, but get an optional<T>
+// instead. Additionally, a callback can be registered with on_suspend. When
+// suspend happen in co_await, this callback will be called with a cancellation
+// token.
+//
+// This cancellation token can be saved and used later to resume that
+// suspension, before the inner awaitable A finished. If resumed by
+// cancellation, the result optional<T> is empty.
+//
+// Also, it is safe to do cancellation after inner awaitable A finished. The
+// resumption will happen only once.
+//
+// The typical usage of Cancellable is to add timeout support for co_await, by
+// sending the cancellation token to a timer. E.g.
+// replace:
+// T result = co_await awaitable;
+// to:
+// optional<T> result = co_await
+// Cancellable<A>(awaitable).on_suspend([](Cancellation token) {
+//   on_timer(token, 100ms);
+// });
 template <typename A>
 class Cancellable : public BasicCancellable {
  public:
@@ -91,11 +114,19 @@ class Cancellable : public BasicCancellable {
 
   inline explicit Cancellable(A awaitable) noexcept;
 
+  // Called as callable(Cancellation) when co_await suspend current coroutine.
+  // Received Cancellation can be invoked to cancel this co_await, at **any**
+  // time, even inside the callback it self or long after awaitable finished.
+  //
+  // Usually it can be send to a timer and be called unconditionally after
+  // arbitrary period. The co_await will canceled if not finished after that
+  // period, or the cancellation will just no-op.
   template <typename C>
   inline Cancellable<A>& on_suspend(C&& callable) & noexcept;
   template <typename C>
   inline Cancellable<A>&& on_suspend(C&& callable) && noexcept;
 
+  // Cancellable it self is awaitable by proxy to awaitable A inside.
   inline constexpr bool await_ready() noexcept;
   template <typename P>
     requires(::std::is_base_of<BasicCoroutinePromise, P>::value)
@@ -138,18 +169,18 @@ inline BasicCoroutinePromise* BasicCancellable::proxy_promise() noexcept {
 }
 
 inline bool BasicCancellable::cancel(VersionedValue<uint32_t> id) noexcept {
-  auto taken = DepositBox<BasicCancellable*>::instance().take(id);
-  if (taken) {
-    (*taken)->do_cancel();
+  auto accessor = DepositBox<BasicCancellable*>::instance().take(id);
+  if (accessor) {
+    (*accessor)->do_cancel();
     return true;
   }
   return false;
 }
 
 inline bool BasicCancellable::resume(VersionedValue<uint32_t> id) noexcept {
-  auto taken = DepositBox<BasicCancellable*>::instance().take(id);
-  if (taken) {
-    (*taken)->do_resume();
+  auto accessor = DepositBox<BasicCancellable*>::instance().take(id);
+  if (accessor) {
+    (*accessor)->do_resume();
     return true;
   }
   return false;
@@ -172,11 +203,12 @@ inline void BasicCancellable::do_resume() noexcept {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Cancellation begin
-inline bool Cancellation::operator()() const noexcept {
+inline bool BasicCancellable::Cancellation::operator()() const noexcept {
   return BasicCancellable::cancel(_id);
 }
 
-inline Cancellation::Cancellation(VersionedValue<uint32_t> id) noexcept
+inline BasicCancellable::Cancellation::Cancellation(
+    VersionedValue<uint32_t> id) noexcept
     : _id {id} {}
 // Cancellation end
 ////////////////////////////////////////////////////////////////////////////////
