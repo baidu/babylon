@@ -138,7 +138,12 @@ inline DepositBox<T>::Accessor::Accessor(DepositBox* box, T* object,
 // DepositBox begin
 template <typename T>
 inline DepositBox<T>& DepositBox<T>::instance() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
   static DepositBox<T> object;
+#pragma GCC diagnostic pop
   return object;
 }
 

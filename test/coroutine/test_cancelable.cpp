@@ -50,10 +50,10 @@ TEST_F(CoroutineCancelableTest, cancel_before_finish) {
   ::std::promise<Cancellation> cancel_promise;
   auto future = executor.execute([&]() -> CoroutineTask<bool> {
     co_return co_await Cancellable<CoroutineTask<::std::string>> {
-        [&]() -> CoroutineTask<::std::string> {
+        [](::std::promise<void>& promise) -> CoroutineTask<::std::string> {
           promise.get_future().get();
           co_return "10086";
-        }()}
+        }(promise)}
         .on_suspend([&](Cancellation token) {
           cancel_promise.set_value(token);
         });
@@ -162,8 +162,6 @@ TEST_F(CoroutineCancelableTest, cancel_to_executor_correctly) {
 
 TEST_F(CoroutineCancelableTest, concurrent_finish_and_cancel) {
   auto& executor2 = ::babylon::AlwaysUseNewThreadExecutor::instance();
-  //::babylon::ThreadPoolExecutor executor2;
-  // executor2.start();
 
   ::std::vector<::std::promise<Cancellation>> promises {100};
   ::std::vector<::std::future<Cancellation>> futures {promises.size()};
@@ -198,6 +196,7 @@ TEST_F(CoroutineCancelableTest, concurrent_finish_and_cancel) {
     });
   }
   latch.get_future().get();
+  executor2.join();
   BABYLON_LOG(INFO) << "finished " << finished << " canceled " << canceled;
 }
 
