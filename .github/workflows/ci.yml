@@ -24,7 +24,7 @@ jobs:
           feature: {name: tsan}
         - std: {name: c++14-coroutine}
           feature: {name: tsan}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     name: basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}
     steps:
     - uses: actions/checkout@v4
@@ -55,7 +55,7 @@ jobs:
           mutable: {name: half}
         - compiler: {name: clang}
           mutable: {name: full}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     name: arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}
     steps:
     - uses: actions/checkout@v4
@@ -74,7 +74,7 @@ jobs:
         key: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-${{github.sha}}
 
   aarch64:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache/restore@v4
@@ -94,7 +94,7 @@ jobs:
         key: bazel-disk-aarch64-${{github.sha}}
 
   workspace:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache/restore@v4
@@ -110,7 +110,7 @@ jobs:
         key: bazel-disk-workspace-${{github.sha}}
 
   coverage:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache/restore@v4
@@ -131,7 +131,7 @@ jobs:
         key: bazel-disk-coverage-${{github.sha}}
 
   cmake:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: hendrikmuhs/ccache-action@v1.2
