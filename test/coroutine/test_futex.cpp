@@ -79,14 +79,14 @@ TEST_F(CoroutineFutexTest, wakeup_in_reverse_order) {
   auto future1 = executor.execute([&]() -> Task<> {
     co_return co_await futex.wait(10086);
   });
+  ASSERT_FALSE(future1.wait_for(::std::chrono::milliseconds {100}));
   auto future2 = executor.execute([&]() -> Task<> {
     co_return co_await futex.wait(10086);
   });
+  ASSERT_FALSE(future2.wait_for(::std::chrono::milliseconds {100}));
   auto future3 = executor.execute([&]() -> Task<> {
     co_return co_await futex.wait(10086);
   });
-  ASSERT_FALSE(future1.wait_for(::std::chrono::milliseconds {100}));
-  ASSERT_FALSE(future2.wait_for(::std::chrono::milliseconds {100}));
   ASSERT_FALSE(future3.wait_for(::std::chrono::milliseconds {100}));
   ASSERT_EQ(1, futex.wake_one());
   future3.get();

@@ -1,5 +1,7 @@
 #include "babylon/coroutine/futex.h"
 
+#if __cpp_concepts && __cpp_lib_coroutine
+
 BABYLON_COROUTINE_NAMESPACE_BEGIN
 
 int Futex::wake_one() noexcept {
@@ -103,3 +105,5 @@ void Futex::remove_awaiter(Node* node) noexcept {
 }
 
 BABYLON_COROUTINE_NAMESPACE_END
+
+#endif // __cpp_concepts && __cpp_lib_coroutine
