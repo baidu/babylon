@@ -1,9 +1,8 @@
 common --registry=https://bcr.bazel.build
 common --registry=file://%workspace%/registry
 
-build --cxxopt=-std=c++20
-
-test --//:werror --features external_include_paths
+test --//:werror
+# --features external_include_paths
 
 # SwissMemoryResource's patch violate odr rule. But still keep same struct with same defination and same size
 # change detect_odr_violation to level 1 to check that
