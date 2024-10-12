@@ -1,8 +1,9 @@
 common --registry=https://bcr.bazel.build
 common --registry=file://%workspace%/registry
 
-test --//:werror
-# --features external_include_paths
+# Include attribute is not properly set in abseil-cpp.
+# Enable external_include_paths globally make them include with -isystem.
+test --//:werror --features external_include_paths
 
 # SwissMemoryResource's patch violate odr rule. But still keep same struct with same defination and same size
 # change detect_odr_violation to level 1 to check that
@@ -10,7 +11,7 @@ test --test_env=ASAN_OPTIONS=detect_odr_violation=1
 
 # There are bugs about -fsanitize=address and -Wuninitialized
 # as mentioned in https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105616
-test:asan --features=asan --copt=-Wno-maybe-uninitialized --copt=-Wno-unknown-warning-option
+test:asan --features=asan
 
 test:arenastring --//test/proto:arenastring
 test:mutable-donated-string --config=arenastring --copt=-DGOOGLE_PROTOBUF_MUTABLE_DONATED_STRING=1
