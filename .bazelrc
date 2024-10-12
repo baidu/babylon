@@ -1,6 +1,8 @@
 common --registry=https://bcr.bazel.build
 common --registry=file://%workspace%/registry
 
+test --cxxopt=-faligned-new
+
 # Include attribute is not properly set in abseil-cpp.
 # Enable external_include_paths globally make them include with -isystem.
 test --//:werror --features external_include_paths

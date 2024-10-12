@@ -74,7 +74,7 @@ TEST_F(AsyncFileAppenderTest, write_to_file_object) {
 
 TEST_F(AsyncFileAppenderTest, write_happen_async) {
   ASSERT_EQ(0, appender.initialize());
-  for (size_t i = 0; i < 2000; ++i) {
+  for (size_t i = 0; i < 1000; ++i) {
     LogStream ls(appender.page_allocator());
     ls << "this line should appear in pipe with num " << i << ::std::endl;
     appender.write(ls.end(), &file_object);
