@@ -69,7 +69,7 @@ jobs:
         path: bazel-disk
         key: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-${{github.sha}}
 
-  c++14-coroutine:
+  cpp14-coroutine:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
