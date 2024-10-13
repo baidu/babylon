@@ -12,17 +12,13 @@ jobs:
       fail-fast: false
       matrix:
         compiler: [{name: gcc, flag: --action_env=CC=gcc-14}, {name: clang, flag: --action_env=CC=clang-18}]
-        std: [{name: c++20, flag: --cxxopt=-std=c++20}, {name: c++14, flag: --cxxopt=-std=c++14}, {name: c++14-coroutine, flag: --cxxopt=-std=c++14 --cxxopt=-fcoroutines --cxxopt=-fconcepts}]
+        std: [{name: c++20, flag: --cxxopt=-std=c++20}, {name: c++14, flag: --cxxopt=-std=c++14 -cxxopt=-faligned-new}]
         stdlib: [{name: stdlibc++}, {name: libc++, flag: --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++}]
         feature: [{name: asan, flag: --config=asan}, {name: tsan, flag: --features=tsan}]
         exclude:
         - compiler: {name: gcc}
           stdlib: {name: libc++}
-        - compiler: {name: clang}
-          std: {name: c++14-coroutine}
         - std: {name: c++14}
-          feature: {name: tsan}
-        - std: {name: c++14-coroutine}
           feature: {name: tsan}
     runs-on: ubuntu-latest
     name: basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}
@@ -72,6 +68,22 @@ jobs:
       with:
         path: bazel-disk
         key: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-${{github.sha}}
+
+  c++14-coroutine:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache/restore@v4
+      with:
+        path: bazel-disk
+        key: bazel-disk-c++14-coroutine-${{github.sha}}
+        restore-keys: bazel-disk-c++14-coroutine-
+    - run: bazel test --disk_cache=bazel-disk --verbose_failures --test_output=errors --action_env=CC=gcc-13 --cxxopt=-std=c++14 --cxxopt=-fcoroutines --cxxopt=-fconcepts test/...
+    - uses: actions/cache/save@v4
+      if: always()
+      with:
+        path: bazel-disk
+        key: bazel-disk-c++14-coroutine-${{github.sha}}
 
   aarch64:
     runs-on: ubuntu-latest
