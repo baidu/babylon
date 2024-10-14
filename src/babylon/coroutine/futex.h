@@ -15,6 +15,13 @@ class Futex {
   class Awaitable;
   class Cancellation;
 
+  inline Futex() noexcept = default;
+  Futex(Futex&&) = delete;
+  Futex(const Futex&&) = delete;
+  Futex& operator=(Futex&&) = delete;
+  Futex& operator=(const Futex&&) = delete;
+  inline ~Futex() noexcept = default;
+
   // Get the futex word to manipulate
   inline uint64_t& value() noexcept;
   inline ::std::atomic<uint64_t>& atomic_value() noexcept;
