@@ -4,6 +4,7 @@
 
 - [bounded_queue](bounded_queue.md)
 - [counter](counter.md)
+- [deposit_box](deposit_box.md)
 - [epoch](epoch.md)
 - [execution_queue](execution_queue.md)
 - [garbage_collector](garbage_collector.md)
