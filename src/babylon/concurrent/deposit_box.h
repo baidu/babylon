@@ -166,7 +166,7 @@ inline typename DepositBox<T>::Accessor DepositBox<T>::take(
 
 template <typename T>
 inline T* DepositBox<T>::take_released(VersionedValue<uint32_t> id) noexcept {
-  auto& slot = _slots.ensure(id.value);
+  auto& slot = _slots[id.value];
   if (slot.version.compare_exchange_strong(id.version, id.version + 1,
                                            ::std::memory_order_relaxed)) {
     return &*(slot.object);
@@ -182,7 +182,7 @@ inline void DepositBox<T>::finish_released(
 
 template <typename T>
 inline T& DepositBox<T>::unsafe_get(VersionedValue<uint32_t> id) noexcept {
-  auto& slot = _slots.ensure(id.value);
+  auto& slot = _slots[id.value];
   return *slot.object;
 }
 // DepositBox end
