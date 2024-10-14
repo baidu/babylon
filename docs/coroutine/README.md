@@ -16,5 +16,6 @@
 ## 子模块文档
 
 - [task](task.md)
+- [future_awaitable](future_awaitable.md)
 - [cancellable](cancellable.md)
 - [futex](futex.md)

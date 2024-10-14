@@ -72,6 +72,15 @@ Task<...> some_coroutine(...) {
   // some_coroutine依然会回到原先其绑定的executor执行
   ...
 }
+
+//////////////////////////////// 高级用法 //////////////////////////////////
+
+// 默认coroutine的执行状态本体随task一同销毁，可以主动release释放并得到句柄
+std::coroutine_handle<...> handle = some_coroutine(...).release();
+// 可以将句柄传输给其他线程并执行，这也是Executor内部的做法
+handle.resume();
+// 注意无需调用destroy，对于非co_await作为子协程拉起的情况，运行结束后会自动销毁
+// handle.destroy();
 ```
 
 ### Task co_await custom type
