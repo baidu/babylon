@@ -2,7 +2,7 @@
 
 ## 原理
 
-标准[coroutine](https://en.cppreference.com/w/cpp/language/coroutines)机制中的`co_await`相当于`std::future::get`方法，即等待目标awaitable完成，并在之后才能恢复执行；但有时需要让等待具备提前结束的能力，最为典型的场景是timeout这类场景；
+标准[coroutine](https://en.cppreference.com/w/cpp/language/coroutines)机制中的`co_await`相当于[std::future::get](https://en.cppreference.com/w/cpp/thread/future/get)方法，即等待目标awaitable完成，并在之后才能恢复执行；但有时需要让等待具备提前结束的能力，最为典型的场景是timeout这类场景；
 
 ![](images/cancellable.png)
 
