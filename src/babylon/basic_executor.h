@@ -3,7 +3,7 @@
 #include "babylon/move_only_function.h" // MoveOnlyFunction
 
 BABYLON_COROUTINE_NAMESPACE_BEGIN
-class BasicCoroutinePromise;
+class BasicPromise;
 BABYLON_COROUTINE_NAMESPACE_END
 
 BABYLON_NAMESPACE_BEGIN
@@ -45,8 +45,8 @@ class BasicExecutor {
 
   virtual ~BasicExecutor() noexcept;
 
-  friend coroutine::BasicCoroutinePromise; // invoke
-  friend class Executor;                   // inherited by Executor only
+  friend coroutine::BasicPromise; // invoke
+  friend class Executor;          // inherited by Executor only
 };
 
 class BasicExecutor::RunnerScope {

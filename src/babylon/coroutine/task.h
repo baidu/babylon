@@ -26,7 +26,7 @@ class Task {
   // Protocol to be an awaitable
   inline static constexpr bool await_ready() noexcept;
   template <typename P>
-    requires(::std::is_base_of<BasicCoroutinePromise, P>::value)
+    requires(::std::is_base_of<BasicPromise, P>::value)
   inline ::std::coroutine_handle<> await_suspend(
       std::coroutine_handle<P> awaiter) noexcept;
   inline ::std::coroutine_handle<> await_suspend(
@@ -49,12 +49,12 @@ class Task {
 
   ::std::coroutine_handle<promise_type> _handle;
 
-  friend BasicCoroutinePromise;
+  friend BasicPromise;
   friend class Executor;
 };
 
 template <typename T>
-class Task<T>::promise_type : public CoroutinePromise<T> {
+class Task<T>::promise_type : public Promise<T> {
  public:
   inline Task<T> get_return_object() noexcept {
     return {::std::coroutine_handle<promise_type>::from_promise(*this)};
@@ -62,18 +62,18 @@ class Task<T>::promise_type : public CoroutinePromise<T> {
 };
 
 template <typename A>
-struct CoroutineWrapperTask {};
+struct WrapperTask {};
 template <typename A>
-  requires requires { typename AwaitResultType<void, A>; }
-struct CoroutineWrapperTask<A> {
-  using ResultType = AwaitResultType<void, A>;
+  requires requires { typename AwaitResultType<A, void>; }
+struct WrapperTask<A> {
+  using ResultType = AwaitResultType<A, void>;
   using ForwardType = typename ::std::conditional<
       ::std::is_rvalue_reference<ResultType>::value,
       typename ::std::remove_reference<ResultType>::type, ResultType>::type;
   using type = Task<ForwardType>;
 };
 template <typename A>
-using CoroutineWrapperTaskType = typename CoroutineWrapperTask<A>::type;
+using WrapperTaskType = typename WrapperTask<A>::type;
 
 // Check if C(Args...) is a babylon coroutine, thus,
 // return Task<T>
@@ -83,9 +83,9 @@ concept TaskInvocable =
     IsSpecialization<::std::invoke_result_t<C, Args...>, Task>::value;
 
 template <typename T>
-class BasicCoroutinePromise::Transformer<Task<T>> {
+class BasicPromise::Transformer<Task<T>> {
  public:
-  inline static Task<T>&& await_transform(BasicCoroutinePromise& promise,
+  inline static Task<T>&& await_transform(BasicPromise& promise,
                                           Task<T>&& task) {
     if (!task.executor()) {
       task.set_executor(*promise.executor());
@@ -95,13 +95,13 @@ class BasicCoroutinePromise::Transformer<Task<T>> {
 };
 
 template <typename A>
-  requires requires { typename CoroutineWrapperTaskType<A&&>; }
-class BasicCoroutinePromise::Transformer<A> {
+  requires requires { typename WrapperTaskType<A&&>; }
+class BasicPromise::Transformer<A> {
  public:
-  inline static CoroutineWrapperTaskType<A&&> await_transform(
-      BasicCoroutinePromise&, A&& awaitable) noexcept {
-    return [](A&& inner_awaitable) -> CoroutineWrapperTaskType<A&&> {
-      co_return co_await BasicCoroutinePromise::NoTransformation<A> {
+  inline static WrapperTaskType<A&&> await_transform(BasicPromise&,
+                                                     A&& awaitable) noexcept {
+    return [](A&& inner_awaitable) -> WrapperTaskType<A&&> {
+      co_return co_await BasicPromise::NoTransformation<A> {
           ::std::forward<A>(inner_awaitable)};
     }(::std::forward<A>(awaitable));
   }
@@ -150,7 +150,7 @@ inline constexpr bool Task<T>::await_ready() noexcept {
 
 template <typename T>
 template <typename P>
-  requires(::std::is_base_of<BasicCoroutinePromise, P>::value)
+  requires(::std::is_base_of<BasicPromise, P>::value)
 inline ::std::coroutine_handle<> Task<T>::await_suspend(
     ::std::coroutine_handle<P> awaiter) noexcept {
   return await_suspend(awaiter, awaiter.promise().executor());

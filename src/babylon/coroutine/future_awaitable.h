@@ -1,6 +1,6 @@
 #pragma once
 
-#include "babylon/coroutine/promise.h" // BasicCoroutinePromise
+#include "babylon/coroutine/promise.h" // BasicPromise
 #include "babylon/future.h"            // Future
 
 #if __cpp_concepts && __cpp_lib_coroutine
@@ -20,7 +20,7 @@ class BasicFutureAwaitable {
   }
 
   template <typename P>
-    requires(::std::is_base_of<BasicCoroutinePromise, P>::value)
+    requires(::std::is_base_of<BasicPromise, P>::value)
   inline void await_suspend(::std::coroutine_handle<P> handle) noexcept {
     _future.on_finish([handle] {
       handle.promise().resume(handle);
@@ -60,13 +60,13 @@ class SharedFutureAwaitable : public BasicFutureAwaitable<T, F> {
 };
 
 template <typename T, typename F>
-class BasicCoroutinePromise::Transformer<Future<T, F>> {
+class BasicPromise::Transformer<Future<T, F>> {
  public:
-  static FutureAwaitable<T, F> await_transform(BasicCoroutinePromise&,
+  static FutureAwaitable<T, F> await_transform(BasicPromise&,
                                                Future<T, F>&& future) {
     return ::std::move(future);
   }
-  static SharedFutureAwaitable<T, F> await_transform(BasicCoroutinePromise&,
+  static SharedFutureAwaitable<T, F> await_transform(BasicPromise&,
                                                      Future<T, F>& future) {
     return future;
   }

@@ -10,18 +10,18 @@
 
 BABYLON_COROUTINE_NAMESPACE_BEGIN
 
-// Common part of CoroutineTask<T>::promise_type
-class BasicCoroutinePromise {
+// Common part of Task<T>::promise_type
+class BasicPromise {
  public:
   // Resume or direct switch to awaiter if there is one.
   class FinalAwaitable;
 
-  // Extend point for BasicCoroutinePromise::await_transform.
+  // Extend point for BasicPromise::await_transform.
   //
   // To make a type A awaitable, we can specialization like this:
   // template <>
-  // class BasicCoroutinePromise::Transformer<A> {
-  //   B await_transform(BasicCoroutinePromise&, A&&) {
+  // class BasicPromise::Transformer<A> {
+  //   B await_transform(BasicPromise&, A&&) {
   //     ...
   //   }
   // };
@@ -74,8 +74,8 @@ class BasicCoroutinePromise {
   // Use Transformer do real transform
   template <typename A>
     requires requires {
-               BasicCoroutinePromise::Transformer<::std::remove_cvref_t<A>>::
-                   await_transform(::std::declval<BasicCoroutinePromise&>(),
+               BasicPromise::Transformer<::std::remove_cvref_t<A>>::
+                   await_transform(::std::declval<BasicPromise&>(),
                                    ::std::declval<A&&>());
              }
   inline auto await_transform(A&& awaitable) noexcept;
@@ -89,9 +89,9 @@ class BasicCoroutinePromise {
   BasicExecutor* _awaiter_executor {nullptr};
 };
 
-class BasicCoroutinePromise::FinalAwaitable {
+class BasicPromise::FinalAwaitable {
  public:
-  inline FinalAwaitable(BasicCoroutinePromise* promise) noexcept;
+  inline FinalAwaitable(BasicPromise* promise) noexcept;
 
   inline constexpr bool await_ready() const noexcept;
   inline ::std::coroutine_handle<> await_suspend(
@@ -99,11 +99,11 @@ class BasicCoroutinePromise::FinalAwaitable {
   inline void await_resume() const noexcept;
 
  private:
-  BasicCoroutinePromise* _promise {nullptr};
+  BasicPromise* _promise {nullptr};
 };
 
 template <typename A>
-class BasicCoroutinePromise::NoTransformation {
+class BasicPromise::NoTransformation {
  public:
   inline NoTransformation(A awaitable) noexcept;
   inline operator A() noexcept;
@@ -112,19 +112,17 @@ class BasicCoroutinePromise::NoTransformation {
   A _awaitable;
 };
 template <typename A>
-class BasicCoroutinePromise::Transformer<
-    BasicCoroutinePromise::NoTransformation<A>> {
+class BasicPromise::Transformer<BasicPromise::NoTransformation<A>> {
  public:
   inline static A await_transform(
-      BasicCoroutinePromise&,
-      BasicCoroutinePromise::NoTransformation<A>&& awaitable) {
+      BasicPromise&, BasicPromise::NoTransformation<A>&& awaitable) {
     return awaitable;
   }
 };
 
-class BasicCoroutinePromise::Resumption {
+class BasicPromise::Resumption {
  public:
-  inline Resumption(BasicCoroutinePromise* promise,
+  inline Resumption(BasicPromise* promise,
                     ::std::coroutine_handle<> handle) noexcept
       : _promise {promise}, _handle {handle} {}
 
@@ -137,12 +135,12 @@ class BasicCoroutinePromise::Resumption {
   }
 
  private:
-  BasicCoroutinePromise* _promise;
+  BasicPromise* _promise;
   ::std::coroutine_handle<> _handle;
 };
 
 template <typename T>
-class CoroutinePromise : public BasicCoroutinePromise {
+class Promise : public BasicPromise {
  private:
   using RemoveReferenceType = typename ::std::remove_reference<T>::type;
   using PromiseValueType =
@@ -162,25 +160,24 @@ class CoroutinePromise : public BasicCoroutinePromise {
 };
 
 template <>
-class CoroutinePromise<void> : public BasicCoroutinePromise {
+class Promise<void> : public BasicPromise {
  public:
   inline static constexpr void return_void() noexcept;
   inline static constexpr Void value() noexcept;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// BasicCoroutinePromise::FinalAwaitable begin
-inline BasicCoroutinePromise::FinalAwaitable::FinalAwaitable(
-    BasicCoroutinePromise* promise) noexcept
+// BasicPromise::FinalAwaitable begin
+inline BasicPromise::FinalAwaitable::FinalAwaitable(
+    BasicPromise* promise) noexcept
     : _promise {promise} {}
 
-inline constexpr bool BasicCoroutinePromise::FinalAwaitable::await_ready()
+inline constexpr bool BasicPromise::FinalAwaitable::await_ready()
     const noexcept {
   return false;
 }
 
-inline ::std::coroutine_handle<>
-BasicCoroutinePromise::FinalAwaitable::await_suspend(
+inline ::std::coroutine_handle<> BasicPromise::FinalAwaitable::await_suspend(
     ::std::coroutine_handle<> handle) const noexcept {
   auto awaiter = _promise->awaiter();
   if (awaiter) {
@@ -194,91 +191,85 @@ BasicCoroutinePromise::FinalAwaitable::await_suspend(
   return ::std::noop_coroutine();
 }
 
-inline void BasicCoroutinePromise::FinalAwaitable::await_resume()
-    const noexcept {}
-// BasicCoroutinePromise::FinalAwaitable end
+inline void BasicPromise::FinalAwaitable::await_resume() const noexcept {}
+// BasicPromise::FinalAwaitable end
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// BasicCoroutinePromise::NoTransformation begin
+// BasicPromise::NoTransformation begin
 template <typename A>
-inline BasicCoroutinePromise::NoTransformation<A>::NoTransformation(
-    A awaitable) noexcept
+inline BasicPromise::NoTransformation<A>::NoTransformation(A awaitable) noexcept
     : _awaitable {::std::forward<A>(awaitable)} {}
 
 template <typename A>
-inline BasicCoroutinePromise::NoTransformation<A>::operator A() noexcept {
+inline BasicPromise::NoTransformation<A>::operator A() noexcept {
   return ::std::forward<A>(_awaitable);
 }
-// BasicCoroutinePromise::NoTransformation end
+// BasicPromise::NoTransformation end
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// BasicCoroutinePromise begin
-inline constexpr ::std::suspend_always BasicCoroutinePromise::initial_suspend()
+// BasicPromise begin
+inline constexpr ::std::suspend_always BasicPromise::initial_suspend()
     const noexcept {
   return {};
 }
 
-inline BasicCoroutinePromise::FinalAwaitable
-BasicCoroutinePromise::final_suspend() noexcept {
+inline BasicPromise::FinalAwaitable BasicPromise::final_suspend() noexcept {
   return {this};
 }
 
-inline void BasicCoroutinePromise::unhandled_exception() noexcept {
+inline void BasicPromise::unhandled_exception() noexcept {
   ::abort();
 }
 
-inline void BasicCoroutinePromise::set_executor(
-    BasicExecutor& executor) noexcept {
+inline void BasicPromise::set_executor(BasicExecutor& executor) noexcept {
   _executor = &executor;
 }
 
-inline BasicExecutor* BasicCoroutinePromise::executor() const noexcept {
+inline BasicExecutor* BasicPromise::executor() const noexcept {
   return _executor;
 }
 
-inline void BasicCoroutinePromise::set_awaiter(
+inline void BasicPromise::set_awaiter(
     ::std::coroutine_handle<> awaiter,
     BasicExecutor* awaiter_executor) noexcept {
   _awaiter = awaiter;
   _awaiter_executor = awaiter_executor;
 }
 
-inline bool BasicCoroutinePromise::awaiter_inplace_resumable() const noexcept {
+inline bool BasicPromise::awaiter_inplace_resumable() const noexcept {
   return _awaiter_executor == nullptr || _awaiter_executor->is_running_in();
 }
 
-inline ::std::coroutine_handle<> BasicCoroutinePromise::awaiter()
-    const noexcept {
+inline ::std::coroutine_handle<> BasicPromise::awaiter() const noexcept {
   return _awaiter;
 }
 
-inline void BasicCoroutinePromise::resume_awaiter() noexcept {
+inline void BasicPromise::resume_awaiter() noexcept {
   resume_in_executor(_awaiter_executor, _awaiter);
 }
 
-inline bool BasicCoroutinePromise::inplace_resumable() const noexcept {
+inline bool BasicPromise::inplace_resumable() const noexcept {
   return _executor == nullptr || _executor->is_running_in();
 }
 
-inline void BasicCoroutinePromise::resume(
-    ::std::coroutine_handle<> handle) noexcept {
+inline void BasicPromise::resume(::std::coroutine_handle<> handle) noexcept {
   resume_in_executor(_executor, handle);
 }
 
 template <typename A>
   requires requires {
-             BasicCoroutinePromise::Transformer<::std::remove_cvref_t<A>>::
-                 await_transform(::std::declval<BasicCoroutinePromise&>(),
+             BasicPromise::Transformer<::std::remove_cvref_t<A>>::
+                 await_transform(::std::declval<BasicPromise&>(),
                                  ::std::declval<A&&>());
            }
-inline auto BasicCoroutinePromise::await_transform(A&& awaitable) noexcept {
+inline auto BasicPromise::await_transform(A&& awaitable) noexcept {
   return Transformer<::std::remove_cvref_t<A>>::await_transform(
       *this, ::std::forward<A>(awaitable));
 }
 
-inline void BasicCoroutinePromise::resume_in_executor(
+inline void BasicPromise::resume_in_executor(
     BasicExecutor* executor, ::std::coroutine_handle<> handle) noexcept {
   auto ret = executor->invoke([handle] {
     handle.resume();
@@ -287,38 +278,38 @@ inline void BasicCoroutinePromise::resume_in_executor(
     handle.resume();
   }
 }
-// BasicCoroutinePromise end
+// BasicPromise end
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// CoroutinePromise begin
+// Promise begin
 template <typename T>
 template <typename U>
-inline void CoroutinePromise<T>::return_value(U&& value) noexcept {
+inline void Promise<T>::return_value(U&& value) noexcept {
   _value.emplace(::std::forward<U>(value));
 }
 
 template <typename T>
-inline void CoroutinePromise<T>::return_value(T& value) noexcept {
+inline void Promise<T>::return_value(T& value) noexcept {
   _value.emplace(value);
 }
 
-inline constexpr void CoroutinePromise<void>::return_void() noexcept {}
+inline constexpr void Promise<void>::return_void() noexcept {}
 
 template <typename T>
-inline T& CoroutinePromise<T>::value() & noexcept {
+inline T& Promise<T>::value() & noexcept {
   return *_value;
 }
 
 template <typename T>
-inline T&& CoroutinePromise<T>::value() && noexcept {
+inline T&& Promise<T>::value() && noexcept {
   return ::std::move(*_value);
 }
 
-inline constexpr Void CoroutinePromise<void>::value() noexcept {
+inline constexpr Void Promise<void>::value() noexcept {
   return {};
 }
-// BasicCoroutinePromise end
+// BasicPromise end
 ////////////////////////////////////////////////////////////////////////////////
 
 BABYLON_COROUTINE_NAMESPACE_END

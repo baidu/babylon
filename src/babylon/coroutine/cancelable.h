@@ -27,8 +27,8 @@ class BasicCancellable {
   // Setup the proxy coroutine. Awaitee of Cancellable will be add to proxy
   // coroutine only when resume successfully. Otherwise the awaitee will
   // directly resume on cancel, leave proxy coroutine standalone.
-  inline void set_proxy_promise(BasicCoroutinePromise* proxy_promise) noexcept;
-  inline BasicCoroutinePromise* proxy_promise() noexcept;
+  inline void set_proxy_promise(BasicPromise* proxy_promise) noexcept;
+  inline BasicPromise* proxy_promise() noexcept;
 
   // Use id returned by emplace to resume/cancel without **this** object.
   // An id can only be resume/cancel only once, first one success and is safe to
@@ -43,8 +43,8 @@ class BasicCancellable {
   inline void do_cancel() noexcept;
   inline void do_resume() noexcept;
 
-  BasicCoroutinePromise* _proxy_promise {nullptr};
-  BasicCoroutinePromise* _promise {nullptr};
+  BasicPromise* _proxy_promise {nullptr};
+  BasicPromise* _promise {nullptr};
   ::std::coroutine_handle<> _handle;
   bool _canceled {false};
 };
@@ -109,7 +109,7 @@ class BasicCancellable::Cancellation {
 template <typename A>
 class Cancellable : public BasicCancellable {
  public:
-  using ResultType = AwaitResultType<A, BasicCoroutinePromise>;
+  using ResultType = AwaitResultType<A, BasicPromise>;
   using OptionalResultType = OptionalType<ResultType>;
 
   inline explicit Cancellable(A awaitable) noexcept;
@@ -129,21 +129,21 @@ class Cancellable : public BasicCancellable {
   // Cancellable it self is awaitable by proxy to awaitable A inside.
   inline constexpr bool await_ready() noexcept;
   template <typename P>
-    requires(::std::is_base_of<BasicCoroutinePromise, P>::value)
+    requires(::std::is_base_of<BasicPromise, P>::value)
   inline ::std::coroutine_handle<> await_suspend(
       ::std::coroutine_handle<P> handle) noexcept;
   inline OptionalResultType await_resume() noexcept;
 
  private:
   A _awaitable;
-  CoroutineTask<ResultType> _task;
+  Task<ResultType> _task;
   MoveOnlyFunction<void(Cancellation&&)> _on_suspend;
 };
 
 template <typename A>
-class BasicCoroutinePromise::Transformer<Cancellable<A>> {
+class BasicPromise::Transformer<Cancellable<A>> {
  public:
-  inline static Cancellable<A>&& await_transform(BasicCoroutinePromise&,
+  inline static Cancellable<A>&& await_transform(BasicPromise&,
                                                  Cancellable<A>&& awaitable) {
     return ::std::move(awaitable);
   }
@@ -160,11 +160,11 @@ inline VersionedValue<uint32_t> BasicCancellable::emplace(
 }
 
 inline void BasicCancellable::set_proxy_promise(
-    BasicCoroutinePromise* proxy_promise) noexcept {
+    BasicPromise* proxy_promise) noexcept {
   _proxy_promise = proxy_promise;
 }
 
-inline BasicCoroutinePromise* BasicCancellable::proxy_promise() noexcept {
+inline BasicPromise* BasicCancellable::proxy_promise() noexcept {
   return _proxy_promise;
 }
 
@@ -239,12 +239,12 @@ inline constexpr bool Cancellable<A>::await_ready() noexcept {
 
 template <typename A>
 template <typename P>
-  requires(::std::is_base_of<BasicCoroutinePromise, P>::value)
+  requires(::std::is_base_of<BasicPromise, P>::value)
 inline ::std::coroutine_handle<> Cancellable<A>::await_suspend(
     ::std::coroutine_handle<P> handle) noexcept {
   auto id = emplace(handle);
   _task = [](A awaitable,
-             VersionedValue<uint32_t> id) -> CoroutineTask<ResultType> {
+             VersionedValue<uint32_t> id) -> Task<ResultType> {
     struct S {
       inline ~S() noexcept {
         resume(id);

@@ -82,7 +82,7 @@ using AwaiterType = typename AwaiterFrom<A, P>::type;
 // }
 //
 // Then decltype(x) is:
-// CoroutineAwaitableType<SomeTaskType::promise_type, decltype(awaitee_object)>
+// AwaitableType<SomeTaskType::promise_type, decltype(awaitee_object)>
 template <typename A, typename P = void>
 using AwaitResultType =
     decltype(::std::declval<AwaiterType<A, P>>().await_resume());

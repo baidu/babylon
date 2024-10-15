@@ -69,7 +69,7 @@ class Futex::Awaitable {
 
   inline bool await_ready() noexcept;
   template <typename P>
-    requires(::std::is_base_of<BasicCoroutinePromise, P>::value)
+    requires(::std::is_base_of<BasicPromise, P>::value)
   inline bool await_suspend(::std::coroutine_handle<P> handle) noexcept;
   inline static constexpr void await_resume() noexcept;
 
@@ -106,15 +106,15 @@ class Futex::Cancellation {
 struct Futex::Node : public Futex::BasicNode {
   Futex* futex {nullptr};
   VersionedValue<uint32_t> id {0};
-  BasicCoroutinePromise* promise {nullptr};
+  BasicPromise* promise {nullptr};
   ::std::coroutine_handle<> handle;
 };
 
 template <>
-class BasicCoroutinePromise::Transformer<Futex::Awaitable> {
+class BasicPromise::Transformer<Futex::Awaitable> {
  public:
   inline static Futex::Awaitable&& await_transform(
-      BasicCoroutinePromise&, Futex::Awaitable&& awaitable) {
+      BasicPromise&, Futex::Awaitable&& awaitable) {
     return ::std::move(awaitable);
   }
 };
@@ -138,7 +138,7 @@ inline bool Futex::Awaitable::await_ready() noexcept {
 }
 
 template <typename P>
-  requires(::std::is_base_of<BasicCoroutinePromise, P>::value)
+  requires(::std::is_base_of<BasicPromise, P>::value)
 inline bool Futex::Awaitable::await_suspend(
     ::std::coroutine_handle<P> handle) noexcept {
   auto& box = DepositBox<Node>::instance();

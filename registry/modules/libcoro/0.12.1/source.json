@@ -1,9 +1,0 @@
-{
-  "url": "https://github.com/jbaldwin/libcoro/archive/refs/tags/v0.12.1.tar.gz",
-  "strip_prefix": "libcoro-0.12.1",
-  "integrity": "sha256-LLb0X8c9rWAIzJMNkpOXhWhINeA7Et9CK5j8q545Ot0=",
-  "overlay": {
-    "MODULE.bazel": "sha256-qMTe85CeeBmQXe2lUdrFXVu1K6oMPJ7CiwGGPbd1+A0=",
-    "BUILD": "sha256-et8EWyLNFl1uG3Zq+wsCOQyGkTFir9XXQEfwSki+ocI="
-  }
-}

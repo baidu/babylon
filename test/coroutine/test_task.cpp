@@ -2,16 +2,72 @@
 
 #if __cpp_concepts && __cpp_lib_coroutine
 
-#if __cpp_lib_concepts
-#include "coro/coro.hpp"
-#endif // __cpp_lib_concepts
-
 #include "gtest/gtest.h"
 
 #include <future>
 
 using ::babylon::CoroutineTask;
 using ::babylon::Executor;
+
+template <typename T>
+struct SimpleTask {
+  struct FinalAwaitable {
+    bool await_ready() noexcept {
+      return false;
+    }
+    ::std::coroutine_handle<> await_suspend(
+        ::std::coroutine_handle<>) noexcept {
+      return awaiter;
+    }
+    void await_resume() noexcept {
+      return;
+    }
+    ::std::coroutine_handle<> awaiter;
+  };
+  struct promise_type {
+    SimpleTask get_return_object() {
+      return {::std::coroutine_handle<promise_type>::from_promise(*this)};
+    }
+    ::std::suspend_always initial_suspend() noexcept {
+      return {};
+    }
+    FinalAwaitable final_suspend() noexcept {
+      return {.awaiter = awaiter};
+    }
+    void unhandled_exception() {
+      assert(false);
+    }
+    void return_value(T&& value) {
+      this->value = value;
+    }
+    T value;
+    ::std::coroutine_handle<> awaiter {::std::noop_coroutine()};
+  };
+  SimpleTask(::std::coroutine_handle<promise_type> handle) {
+    this->handle = handle;
+  }
+  SimpleTask(SimpleTask&& other) {
+    handle = ::std::exchange(other.handle, nullptr);
+  }
+  ~SimpleTask() {
+    if (handle) {
+      handle.destroy();
+      handle = nullptr;
+    }
+  }
+  bool await_ready() noexcept {
+    return false;
+  }
+  ::std::coroutine_handle<> await_suspend(
+      ::std::coroutine_handle<> awaiter) noexcept {
+    handle.promise().awaiter = awaiter;
+    return handle;
+  }
+  inline T await_resume() noexcept {
+    return ::std::move(handle.promise().value);
+  }
+  ::std::coroutine_handle<promise_type> handle;
+};
 
 struct CoroutineTest : public ::testing::Test {
   virtual void SetUp() override {
@@ -69,11 +125,6 @@ TEST_F(CoroutineTest, task_detach_coroutine_after_submit) {
       s->get();
       co_return;
     }(S {new ::std::future<void> {promise.get_future()}});
-    // bool x = ::babylon::coroutine::Awaitable<decltype(::std::move(task)),
-    // CoroutineTask<>::promise_type>; x =
-    // ::babylon::coroutine::Awaitable<decltype(task),
-    // CoroutineTask<>::promise_type>; ASSERT_TRUE(x); using X =
-    // Future<::babylon::Executor::AwaitResultType<decltype(::std::move(task))>>;
     future = executor.execute(::std::move(task));
     ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
   }
@@ -84,7 +135,6 @@ TEST_F(CoroutineTest, task_detach_coroutine_after_submit) {
   ASSERT_EQ(1, destroy_times);
 }
 
-/*
 TEST_F(CoroutineTest, coroutine_awaiter_destroy_after_awaitee_resume_it) {
   using S = P<::std::future<void>>;
   ::std::promise<void> promise;
@@ -161,75 +211,58 @@ TEST_F(CoroutineTest, future_is_shared_awaitable) {
   ASSERT_EQ("10086", future2.get());
 }
 
-#if __cpp_lib_concepts
+TEST_F(CoroutineTest, non_babylon_coroutine_task_is_executable) {
+  auto future = executor.execute([&]() -> SimpleTask<::std::string> {
+    assert_in_executor(executor);
+    co_return "10086";
+  });
+  ASSERT_EQ("10086", future.get());
+}
+
 TEST_F(CoroutineTest, non_babylon_coroutine_task_is_awaitable) {
-  ::coro::thread_pool pool {::coro::thread_pool::options {.thread_count = 1}};
   ::std::promise<::std::string> promise;
-  auto future = executor.execute(
-      [&](::std::future<::std::string> future) -> CoroutineTask<::std::string> {
-        co_return co_await [&](::std::future<::std::string> future)
-                               -> coro::task<::std::string> {
-          co_await pool.schedule();
-          co_return future.get();
-        }(::std::move(future));
-      },
-      promise.get_future());
+  auto future = executor.execute([&]() -> CoroutineTask<::std::string> {
+    co_return co_await [&]() -> SimpleTask<::std::string> {
+      co_return promise.get_future().get();
+    }();
+  });
   ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
   promise.set_value("10086");
   ASSERT_EQ("10086", future.get());
 }
 
 TEST_F(CoroutineTest, awaitable_by_non_babylon_coroutine_task) {
-  ::coro::thread_pool pool {::coro::thread_pool::options {.thread_count = 1}};
+  ::babylon::ThreadPoolExecutor executor2;
+  executor2.start();
+
   ::std::promise<::std::string> promise;
-  auto task =
-      [&](::std::future<::std::string> future) -> coro::task<::std::string> {
-    co_await pool.schedule();
-    co_return co_await [&](::std::future<::std::string> future)
-                           -> CoroutineTask<::std::string> {
-      co_return future.get();
-    }(::std::move(future));
-  };
+  auto future = executor.execute([&]() -> SimpleTask<::std::string> {
+    assert_in_executor(executor);
+    auto result = co_await [&]() -> CoroutineTask<::std::string> {
+      assert_in_executor(executor2);
+      co_return promise.get_future().get();
+    }()
+                                        .set_executor(executor2);
+    assert_in_executor(executor2);
+    co_return result;
+  });
+  ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
   promise.set_value("10086");
-  ASSERT_EQ("10086", ::coro::sync_wait(task(promise.get_future())));
+  ASSERT_EQ("10086", future.get());
 }
 
 TEST_F(CoroutineTest, future_awaitable_by_non_babylon_coroutine_task) {
-  ::coro::thread_pool pool {::coro::thread_pool::options {.thread_count = 1}};
   ::babylon::Promise<::std::string> promise;
-  auto task = [&](::babylon::Future<::std::string> future)
-      -> coro::task<::std::string> {
-    co_await pool.schedule();
-    co_return co_await ::babylon::FutureAwaitable<::std::string>(
-        ::std::move(future));
-  };
+  auto future = executor.execute([&]() -> SimpleTask<::std::string> {
+    assert_in_executor(executor);
+    auto result = co_await ::babylon::coroutine::FutureAwaitable<::std::string>(
+        promise.get_future());
+    assert_not_in_executor(executor);
+    co_return result;
+  });
+  ASSERT_FALSE(future.wait_for(::std::chrono::milliseconds {100}));
   promise.set_value("10086");
-  ASSERT_EQ("10086", ::coro::sync_wait(task(promise.get_future())));
+  ASSERT_EQ("10086", future.get());
 }
-
-TEST_F(CoroutineTest, return_to_executor_when_resume_by_non_babylon_coroutine) {
-  ::coro::thread_pool pool {::coro::thread_pool::options {.thread_count = 1}};
-  executor
-      .execute([&]() -> CoroutineTask<> {
-        assert_in_executor(executor);
-        co_await [&]() -> coro::task<> {
-          assert_in_executor(executor);
-          co_await pool.schedule();
-          assert_not_in_executor(executor);
-          co_await [&]() -> CoroutineTask<> {
-            assert_in_executor(executor);
-            co_return;
-          }()
-                                .set_executor(executor);
-          assert_in_executor(executor);
-          co_await pool.schedule();
-          assert_not_in_executor(executor);
-        }();
-        assert_in_executor(executor);
-      })
-      .get();
-}
-#endif // __cpp_lib_concepts
-*/
 
 #endif // __cpp_concepts && __cpp_lib_coroutine
