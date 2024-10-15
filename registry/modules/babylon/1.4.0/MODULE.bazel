@@ -1,0 +1,36 @@
+module(
+  name = 'babylon',
+  version = '1.4.0',
+  compatibility_level = 1,
+)
+
+################################################################################
+# LOWER BOUND dependency versions.
+# Bzlmod follows MVS:
+# https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
+# Thus the highest version in their module graph is resolved.
+bazel_dep(name = 'abseil-cpp', version = '20220623.1', repo_name = 'com_google_absl')
+bazel_dep(name = 'bazel_skylib', version = '1.0.3')
+bazel_dep(name = 'boost.preprocessor', version = '1.83.0')
+bazel_dep(name = 'boost.spirit', version = '1.83.0')
+bazel_dep(name = 'protobuf', version = '3.19.6', repo_name = 'com_google_protobuf')
+################################################################################
+
+################################################################################
+# test only dependency
+single_version_override(module_name = 'abseil-cpp', version = '20240722.0')
+single_version_override(module_name = 'protobuf', version = '27.5')
+bazel_dep(name = 'googletest', version = '1.15.2', repo_name = 'com_google_googletest', dev_dependency = True)
+bazel_dep(name = 'platforms', version = '0.0.10', dev_dependency = True)
+bazel_dep(name = 'rules_cc', version = '0.0.9', dev_dependency = True)
+bazel_dep(name = 'rules_cuda', version = '0.2.3', dev_dependency = True)
+
+# cuda toolchain
+cuda = use_extension('@rules_cuda//cuda:extensions.bzl', 'toolchain', dev_dependency = True)
+cuda.local_toolchain()
+
+# cross compile toolchain
+cross_config = use_extension('//:bazel/cross_toolchain.bzl', 'cross_config', dev_dependency = True)
+use_repo(cross_config, 'cross_config_toolchain')
+register_toolchains('@cross_config_toolchain//:cross-toolchain', dev_dependency = True)
+################################################################################
