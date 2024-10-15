@@ -35,6 +35,9 @@ if(BUILD_DEPS)
     URL "https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz"
     URL_HASH SHA256=8ad598c73ad796e0d8280b082cebd82a630d73e73cd3c70057938a6501bba5d7
   )
+  if(BUILD_TESTING AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    FetchContent_MakeAvailable(googletest)
+  endif()
   set(protobuf_BUILD_TESTS OFF)
   set(ABSL_ENABLE_INSTALL ON)
   set(BOOST_INCLUDE_LIBRARIES preprocessor spirit)
