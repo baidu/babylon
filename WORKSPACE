@@ -48,14 +48,6 @@ load("@bazel_features//:deps.bzl", "bazel_features_deps")
 bazel_features_deps()
 
 http_archive(
-  name = 'libcoro',
-  urls = ['https://github.com/jbaldwin/libcoro/archive/refs/tags/v0.12.1.tar.gz'],
-  strip_prefix = 'libcoro-0.12.1',
-  sha256 = '2cb6f45fc73dad6008cc930d92939785684835e03b12df422b98fcab9e393add',
-  build_file = '@//:registry/modules/libcoro/0.12.1/overlay/BUILD',
-)
-
-http_archive(
   name = 'rules_cuda',
   urls = ['https://github.com/bazel-contrib/rules_cuda/releases/download/v0.2.3/rules_cuda-v0.2.3.tar.gz'],
   strip_prefix = 'rules_cuda-v0.2.3',

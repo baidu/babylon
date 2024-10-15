@@ -35,17 +35,6 @@ if(BUILD_DEPS)
     URL "https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz"
     URL_HASH SHA256=8ad598c73ad796e0d8280b082cebd82a630d73e73cd3c70057938a6501bba5d7
   )
-  FetchContent_Declare(
-    libcoro
-    URL "https://github.com/jbaldwin/libcoro/archive/refs/tags/v0.12.1.tar.gz"
-    URL_HASH SHA256=2cb6f45fc73dad6008cc930d92939785684835e03b12df422b98fcab9e393add
-  )
-  if(BUILD_TESTING AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    set(LIBCORO_FEATURE_NETWORKING OFF)
-    set(LIBCORO_BUILD_TESTS OFF)
-    set(LIBCORO_BUILD_EXAMPLES OFF)
-    FetchContent_MakeAvailable(googletest libcoro)
-  endif()
   set(protobuf_BUILD_TESTS OFF)
   set(ABSL_ENABLE_INSTALL ON)
   set(BOOST_INCLUDE_LIBRARIES preprocessor spirit)
@@ -126,7 +115,6 @@ if(BUILD_TESTING AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     target_link_libraries("${TARGET_NAME}" babylon_test_proto)
     target_link_libraries("${TARGET_NAME}" babylon)
     target_link_libraries("${TARGET_NAME}" GTest::gtest_main)
-    target_link_libraries("${TARGET_NAME}" libcoro)
     gtest_discover_tests("${TARGET_NAME}")
   endforeach()
 

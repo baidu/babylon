@@ -1,6 +1,3 @@
-common --registry=https://bcr.bazel.build
-common --registry=file://%workspace%/registry
-
 build --cxxopt=-faligned-new
 
 # Include attribute is not properly set in abseil-cpp.
