@@ -11,7 +11,7 @@ module(
 # Thus the highest version in their module graph is resolved.
 
 # --registry=https://bcr.bazel.build
-bazel_dep(name = 'abseil-cpp', version = '20211102.0', repo_name = 'com_google_absl')
+bazel_dep(name = 'abseil-cpp', version = '20220623.1', repo_name = 'com_google_absl')
 bazel_dep(name = 'bazel_skylib', version = '1.0.3')
 bazel_dep(name = 'boost.preprocessor', version = '1.83.0')
 bazel_dep(name = 'boost.spirit', version = '1.83.0')
