@@ -7,9 +7,8 @@ include(CMakePackageConfigHelpers)  # for write_basic_package_version_file
 
 option(BUILD_DEPS "Use FetchContent download and build dependencies" OFF)
 
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+if(BUILD_TESTING AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   set(CMAKE_CXX_STANDARD 20)
-  set(BUILD_TESTING ON)
 endif()
 
 if(BUILD_DEPS)
