@@ -23,7 +23,7 @@ jobs:
         - use-execution-queue
         - use-with-bthread
         - use-with-glog
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     name: ${{matrix.name}}
     steps:
     - uses: actions/checkout@v4
