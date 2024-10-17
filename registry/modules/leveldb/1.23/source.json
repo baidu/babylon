@@ -4,6 +4,9 @@
   "integrity": "sha256-mjf4phdPCb1iK8cjtViB3FQc1QdHy9CIMcKoLWIPbXY=",
   "patch_strip": 1,
   "patches": {
-    "add-build.patch": "sha256-gwN67RMJVwmzg1C3gOI+kJqFCrWpi2bAgxsSXin1MpI="
+    "modify-cmakelist.patch": "sha256-wRlhYk8ADW3HpTNeOTVnSNC/Puz6P2RYtp+3sLOBhwg="
+  },
+  "overlay": {
+    "BUILD": "sha256-85nEZ7MgnlJwej0UKssVFGIFVi/PNvWDYrRTQG/A1IQ="
   }
 }

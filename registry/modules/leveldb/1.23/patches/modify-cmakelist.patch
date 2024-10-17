@@ -1,0 +1,15 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f8285b8..1bf7b99 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -38,8 +38,9 @@ include(CheckIncludeFile)
+ check_include_file("unistd.h" HAVE_UNISTD_H)
+ 
+ include(CheckLibraryExists)
++include(CheckIncludeFileCXX)
+ check_library_exists(crc32c crc32c_value "" HAVE_CRC32C)
+-check_library_exists(snappy snappy_compress "" HAVE_SNAPPY)
++check_include_file_cxx("snappy.h" HAVE_SNAPPY)
+ check_library_exists(tcmalloc malloc "" HAVE_TCMALLOC)
+ 
+ include(CheckCXXSymbolExists)

@@ -1,0 +1,24 @@
+diff --git a/lib/cpp/src/thrift/protocol/TJSONProtocol.cpp b/lib/cpp/src/thrift/protocol/TJSONProtocol.cpp
+index 3805869a9..f72d40e12 100644
+--- a/lib/cpp/src/thrift/protocol/TJSONProtocol.cpp
++++ b/lib/cpp/src/thrift/protocol/TJSONProtocol.cpp
+@@ -19,9 +19,8 @@
+ 
+ #include <thrift/protocol/TJSONProtocol.h>
+ 
+-#include <boost/locale.hpp>
+-
+ #include <cmath>
++#include <codecvt>
+ #include <limits>
+ #include <locale>
+ #include <sstream>
+@@ -773,7 +772,7 @@ uint32_t TJSONProtocol::readJSONString(std::string& str, bool skipContext) {
+           }
+           codeunits.push_back(cp);
+           codeunits.push_back(0);
+-          str += boost::locale::conv::utf_to_utf<char>(codeunits.data());
++          str += std::wstring_convert<std::codecvt_utf8_utf16<uint16_t>, uint16_t>{}.to_bytes(codeunits.data());
+           codeunits.clear();
+         }
+         continue;

@@ -1,0 +1,12 @@
+{
+  "url": "https://github.com/apache/thrift/archive/refs/tags/v0.21.0.tar.gz",
+  "strip_prefix": "thrift-0.21.0",
+  "integrity": "sha256-MeRt6Wp7Nri4pFfOzS7oJm+BqD+OI4qdMk2Mb0KnF7w=",
+  "patch_strip": 1,
+  "patches": {
+    "remove-boost-locale.patch": "sha256-u2DLpm5+69nuZx98fj6lt97AsYnnoQH6IXu54K6FL8M="
+  },
+  "overlay": {
+    "BUILD": "sha256-y5flfNTgsoDcRwkNmv0BXbUwbwtf3eaDYaRiQcCycgI="
+  }
+}

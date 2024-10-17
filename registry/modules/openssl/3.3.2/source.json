@@ -1,0 +1,8 @@
+{
+  "url": "https://github.com/openssl/openssl/archive/refs/tags/openssl-3.3.2.tar.gz",
+  "strip_prefix": "openssl-openssl-3.3.2",
+  "integrity": "sha256-vtuxaVVVX5mxp7G6kPyXh560ECUIG+NZ7Nap/L3xyNI=",
+  "overlay": {
+    "BUILD": "sha256-CUaOGpVnKvZ7RoEXHUWg02A+vqg9gtndcWictfKZbek="
+  }
+}
