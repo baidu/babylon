@@ -31,45 +31,46 @@ ApplicationContext::~ApplicationContext() noexcept {
   clear();
 }
 
-int ApplicationContext::register_component(
+void ApplicationContext::register_component(
     ::std::unique_ptr<ComponentHolder>&& holder) noexcept {
   return register_component(::std::move(holder), "");
 }
 
-int ApplicationContext::register_component(
+void ApplicationContext::register_component(
     ::std::unique_ptr<ComponentHolder>&& holder, StringView name) noexcept {
   if (!holder) {
-    BABYLON_LOG(WARNING) << "register get null ComponentHolder";
-    return -1;
+    return;
   }
 
   auto pholder = holder.get();
   _holders.emplace_back(::std::move(holder));
 
+  pholder->set_name(name);
   pholder->for_each_type([&](const Id* type) {
     {
       auto result = _holder_by_type.emplace(type, pholder);
-      // type冲突，设置无法只按type获取
-      if (result.second == false) {
-        BABYLON_LOG(DEBUG) << "register different component of same type "
-                           << *type << " will disable wireup by type";
+      // Find one type only accessable path
+      if (result.second) {
+        pholder->increase_accessable_path();
+      } else if (result.first->second) {
+        // Remove one type only accessable path
+        result.first->second->decrease_accessable_path();
         result.first->second = nullptr;
       }
     }
     if (!name.empty()) {
       ::std::tuple<const Id*, ::std::string> key {type, name};
       auto result = _holder_by_type_and_name.emplace(key, pholder);
-      // type and name冲突
-      if (result.second == false) {
-        BABYLON_LOG(WARNING)
-            << "register different component of same type " << *type
-            << " with same name " << name << " will disable wireup";
+      // Find one type name accessable path
+      if (result.second) {
+        pholder->increase_accessable_path();
+      } else if (result.first->second) {
+        // Remove one type name only accessable path
+        result.first->second->decrease_accessable_path();
         result.first->second = nullptr;
       }
     }
   });
-
-  return 0;
 }
 
 ApplicationContext::ComponentIterator ApplicationContext::begin() noexcept {

@@ -243,8 +243,7 @@ template <typename P>
 inline ::std::coroutine_handle<> Cancellable<A>::await_suspend(
     ::std::coroutine_handle<P> handle) noexcept {
   auto id = emplace(handle);
-  _task = [](A awaitable,
-             VersionedValue<uint32_t> id) -> Task<ResultType> {
+  _task = [](A awaitable, VersionedValue<uint32_t> id) -> Task<ResultType> {
     struct S {
       inline ~S() noexcept {
         resume(id);

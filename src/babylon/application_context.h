@@ -73,9 +73,9 @@ class ApplicationContext {
   static ApplicationContext& instance() noexcept;
 
   // 注册一个组件，可以额外附加一个名称用于区分同类型的组件
-  int register_component(::std::unique_ptr<ComponentHolder>&& holder) noexcept;
-  int register_component(::std::unique_ptr<ComponentHolder>&& holder,
-                         StringView name) noexcept;
+  void register_component(::std::unique_ptr<ComponentHolder>&& holder) noexcept;
+  void register_component(::std::unique_ptr<ComponentHolder>&& holder,
+                          StringView name) noexcept;
 
   // 取得一个明确类型的组件访问器
   // 在需要反复使用工厂构造组件的情况下可以节省冗余寻址成本
@@ -167,6 +167,12 @@ class ApplicationContext::ComponentHolder {
       const ::std::function<void(const Id*)>& callback) const noexcept;
 
   inline size_t sequence() const noexcept;
+
+  // How many paths exist to access this component by type or name.
+  // Use to detect orphan component cause by type and name conflict.
+  inline size_t accessable_path_number() const noexcept;
+
+  inline const ::std::string& name() const noexcept;
 
  protected:
   // 构造时需要给定必要的类型信息
@@ -287,6 +293,12 @@ class ApplicationContext::ComponentHolder {
                 int>::type = 0>
   static int initialize(Any&, ApplicationContext&, const Any&) noexcept;
 
+  inline void increase_accessable_path() noexcept;
+  inline void decrease_accessable_path() noexcept;
+
+  inline void set_name(StringView name) noexcept;
+
+  ::std::string _name;
   const Any::Descriptor* _type_id {Any::descriptor<void>()};
   ::absl::flat_hash_map<const Id*, ptrdiff_t> _convert_offset;
   int (*_autowire_function)(Any&, ApplicationContext&) {nullptr};
@@ -297,6 +309,9 @@ class ApplicationContext::ComponentHolder {
   SingletonState _singleton_state {SingletonState::UNINITIALIZED};
   Any _singleton;
   size_t _sequence {0};
+  size_t _accessable_path {0};
+
+  friend ApplicationContext;
 };
 
 template <typename T, typename... BS>
@@ -528,6 +543,8 @@ ApplicationContext::get_or_create(StringView name) noexcept {
 // ApplicationContext end
 ////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+// ApplicationContext::ComponentHolder begin
 template <typename T, typename... BS>
 ABSL_ATTRIBUTE_NOINLINE ApplicationContext::ComponentHolder::ComponentHolder(
     T*, BS*...) noexcept {
@@ -568,6 +585,16 @@ ApplicationContext::ComponentHolder::support_singleton() const noexcept {
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t
 ApplicationContext::ComponentHolder::sequence() const noexcept {
   return _sequence;
+}
+
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t
+ApplicationContext::ComponentHolder::accessable_path_number() const noexcept {
+  return _accessable_path;
+}
+
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE const ::std::string&
+ApplicationContext::ComponentHolder::name() const noexcept {
+  return _name;
 }
 
 template <typename T>
@@ -682,6 +709,23 @@ ABSL_ATTRIBUTE_NOINLINE int ApplicationContext::ComponentHolder::initialize(
     Any&, ApplicationContext&, const Any&) noexcept {
   return 0;
 }
+
+inline void
+ApplicationContext::ComponentHolder::increase_accessable_path() noexcept {
+  _accessable_path++;
+}
+
+inline void
+ApplicationContext::ComponentHolder::decrease_accessable_path() noexcept {
+  _accessable_path--;
+}
+
+inline void ApplicationContext::ComponentHolder::set_name(
+    StringView name) noexcept {
+  _name = name;
+}
+// ApplicationContext::ComponentHolder end
+////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationContext::ComponentAccessor begin
