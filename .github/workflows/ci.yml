@@ -20,7 +20,7 @@ jobs:
           stdlib: {name: libc++}
         - std: {name: c++14}
           feature: {name: tsan}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: basic-${{matrix.compiler.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}
     steps:
     - uses: actions/checkout@v4
@@ -51,7 +51,7 @@ jobs:
           mutable: {name: half}
         - compiler: {name: clang}
           mutable: {name: full}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}
     steps:
     - uses: actions/checkout@v4
@@ -86,7 +86,7 @@ jobs:
         key: bazel-disk-c++14-coroutine-${{github.sha}}
 
   aarch64:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache/restore@v4
