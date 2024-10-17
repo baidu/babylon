@@ -7,6 +7,7 @@ on:
 jobs:
   basic:
     strategy:
+      fail-fast: false
       matrix:
         name:
         - anyflow
