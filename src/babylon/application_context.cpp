@@ -49,24 +49,24 @@ void ApplicationContext::register_component(
   pholder->for_each_type([&](const Id* type) {
     {
       auto result = _holder_by_type.emplace(type, pholder);
-      // Find one type only accessable path
+      // Find one type only accessible path
       if (result.second) {
-        pholder->increase_accessable_path();
+        pholder->increase_accessible_path();
       } else if (result.first->second) {
-        // Remove one type only accessable path
-        result.first->second->decrease_accessable_path();
+        // Remove one type only accessible path
+        result.first->second->decrease_accessible_path();
         result.first->second = nullptr;
       }
     }
     if (!name.empty()) {
       ::std::tuple<const Id*, ::std::string> key {type, name};
       auto result = _holder_by_type_and_name.emplace(key, pholder);
-      // Find one type name accessable path
+      // Find one type name accessible path
       if (result.second) {
-        pholder->increase_accessable_path();
+        pholder->increase_accessible_path();
       } else if (result.first->second) {
-        // Remove one type name only accessable path
-        result.first->second->decrease_accessable_path();
+        // Remove one type name only accessible path
+        result.first->second->decrease_accessible_path();
         result.first->second = nullptr;
       }
     }

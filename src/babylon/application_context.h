@@ -170,9 +170,10 @@ class ApplicationContext::ComponentHolder {
 
   // How many paths exist to access this component by type or name.
   // Use to detect orphan component cause by type and name conflict.
-  inline size_t accessable_path_number() const noexcept;
+  inline size_t accessible_path_number() const noexcept;
 
   inline const ::std::string& name() const noexcept;
+  inline const Id* type_id() const noexcept;
 
  protected:
   // 构造时需要给定必要的类型信息
@@ -293,8 +294,8 @@ class ApplicationContext::ComponentHolder {
                 int>::type = 0>
   static int initialize(Any&, ApplicationContext&, const Any&) noexcept;
 
-  inline void increase_accessable_path() noexcept;
-  inline void decrease_accessable_path() noexcept;
+  inline void increase_accessible_path() noexcept;
+  inline void decrease_accessible_path() noexcept;
 
   inline void set_name(StringView name) noexcept;
 
@@ -309,7 +310,7 @@ class ApplicationContext::ComponentHolder {
   SingletonState _singleton_state {SingletonState::UNINITIALIZED};
   Any _singleton;
   size_t _sequence {0};
-  size_t _accessable_path {0};
+  size_t _accessible_path {0};
 
   friend ApplicationContext;
 };
@@ -588,13 +589,18 @@ ApplicationContext::ComponentHolder::sequence() const noexcept {
 }
 
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t
-ApplicationContext::ComponentHolder::accessable_path_number() const noexcept {
-  return _accessable_path;
+ApplicationContext::ComponentHolder::accessible_path_number() const noexcept {
+  return _accessible_path;
 }
 
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE const ::std::string&
 ApplicationContext::ComponentHolder::name() const noexcept {
   return _name;
+}
+
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE const Id*
+ApplicationContext::ComponentHolder::type_id() const noexcept {
+  return &(_type_id->type_id);
 }
 
 template <typename T>
@@ -711,13 +717,13 @@ ABSL_ATTRIBUTE_NOINLINE int ApplicationContext::ComponentHolder::initialize(
 }
 
 inline void
-ApplicationContext::ComponentHolder::increase_accessable_path() noexcept {
-  _accessable_path++;
+ApplicationContext::ComponentHolder::increase_accessible_path() noexcept {
+  _accessible_path++;
 }
 
 inline void
-ApplicationContext::ComponentHolder::decrease_accessable_path() noexcept {
-  _accessable_path--;
+ApplicationContext::ComponentHolder::decrease_accessible_path() noexcept {
+  _accessible_path--;
 }
 
 inline void ApplicationContext::ComponentHolder::set_name(

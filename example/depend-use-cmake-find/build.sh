@@ -11,8 +11,6 @@ rm -rf $NAME babylon
 tar xzf $NAME.tar.gz
 mv $NAME babylon
 
-sudo apt install googletest
-
 cd babylon
 cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$PWD/output -DBUILD_TESTING=OFF
 cmake --build build

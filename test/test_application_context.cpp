@@ -30,7 +30,8 @@ TEST_F(ApplicationContextTest, get_component_after_register) {
   context.register_component(DefaultComponentHolder<::std::string>::create());
   ASSERT_TRUE(context.component_accessor<::std::string>());
   for (auto& holder : context) {
-    ASSERT_EQ(1, holder.accessable_path_number());
+    ASSERT_EQ(&::babylon::TypeId<::std::string>::ID, holder.type_id());
+    ASSERT_EQ(1, holder.accessible_path_number());
   }
 }
 
@@ -41,7 +42,7 @@ TEST_F(ApplicationContextTest,
   context.register_component(DefaultComponentHolder<::std::string>::create());
   ASSERT_FALSE(context.component_accessor<::std::string>());
   for (auto& holder : context) {
-    ASSERT_EQ(0, holder.accessable_path_number());
+    ASSERT_EQ(0, holder.accessible_path_number());
   }
 }
 
@@ -57,7 +58,7 @@ TEST_F(ApplicationContextTest,
   ASSERT_TRUE(context.component_accessor<::std::string>("B"));
   ASSERT_FALSE(context.component_accessor<::std::string>("C"));
   for (auto& holder : context) {
-    ASSERT_EQ(1, holder.accessable_path_number());
+    ASSERT_EQ(1, holder.accessible_path_number());
   }
 }
 
@@ -71,7 +72,7 @@ TEST_F(ApplicationContextTest,
   ASSERT_FALSE(context.component_accessor<::std::string>());
   ASSERT_FALSE(context.component_accessor<::std::string>("A"));
   for (auto& holder : context) {
-    ASSERT_EQ(0, holder.accessable_path_number());
+    ASSERT_EQ(0, holder.accessible_path_number());
   }
 }
 
@@ -89,7 +90,7 @@ TEST_F(ApplicationContextTest,
   ASSERT_TRUE(context.component_accessor<::std::vector<int>>("A"));
   for (auto& holder : context) {
     ASSERT_EQ("A", holder.name());
-    ASSERT_EQ(2, holder.accessable_path_number());
+    ASSERT_EQ(2, holder.accessible_path_number());
   }
 }
 
