@@ -1,2 +1,2 @@
 common --registry=https://bcr.bazel.build
-common --registry=file:///home/oathdruid/src/babylon/registry
+common --registry=https://baidu.github.io/babylon/registry
