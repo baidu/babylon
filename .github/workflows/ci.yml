@@ -70,7 +70,7 @@ jobs:
         key: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-${{github.sha}}
 
   cpp14-coroutine:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache/restore@v4
