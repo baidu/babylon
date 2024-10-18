@@ -1,5 +1,5 @@
 {
-  "url": "https://github.com/baidu/babylon/archive/refs/tags/v1.4.0.tar.gz",
+  "url": "https://github.com/baidu/babylon/releases/download/v1.4.0/v1.4.0.tar.gz",
   "strip_prefix": "babylon-1.4.0",
-  "integrity": "sha256-EnIsp93WmNyhGKUioiCxL4cBePytmLePD2YEzQkD0pI="
+  "integrity": "sha256-DdLxaQ592EJAak5tVcUHriJKoeusEInUOJG1AV+d8vw="
 }
