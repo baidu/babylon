@@ -1,3 +1,5 @@
 bazel_dep(name = 'babylon', version = '1.4.0')
 bazel_dep(name = 'brpc', version = '1.10.0.bcr.1')
 bazel_dep(name = 'yaml-cpp', version = '0.8.0')
+
+single_version_override(module_name = 'boost.uuid', version = '1.83.0')
