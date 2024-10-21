@@ -12,7 +12,7 @@ Unlike traditional DAG-based parallel frameworks, in `anyflow`, the sub-tasks ar
 
 - [Design](design.pdf)(chinese version only)
 - [Overview](overview.en.md)
-- [Fast Start Guide](fast_begin.md)
+- [Quick Start Guide](quick_start.md)
 - [Builder](builder.md)
 - [Graph](graph.md)
 - [Processor](processor.md)
