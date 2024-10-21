@@ -1,3 +1,5 @@
+**[[English]](README.en.md)**
+
 # Babylon
 
 [![CI](https://github.com/baidu/babylon/actions/workflows/ci.yml/badge.svg)](https://github.com/baidu/babylon/actions/workflows/ci.yml)
