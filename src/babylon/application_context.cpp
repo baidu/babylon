@@ -115,7 +115,6 @@ Any ApplicationContext::ComponentHolder::create(ApplicationContext& context,
 
 void ApplicationContext::ComponentHolder::for_each_type(
     const ::std::function<void(const Id*)>& callback) const noexcept {
-  callback(&_type_id->type_id);
   for (auto& pair : _convert_offset) {
     callback(pair.first);
   }
@@ -191,7 +190,7 @@ ApplicationContext::EmptyComponentHolder
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationContext::EmptyComponentHolder begin
 ApplicationContext::EmptyComponentHolder::EmptyComponentHolder() noexcept
-    : ComponentHolder {static_cast<void*>(nullptr)} {}
+    : ComponentHolder {static_cast<Void*>(nullptr)} {}
 
 Any ApplicationContext::EmptyComponentHolder::create_instance() noexcept {
   return {};
