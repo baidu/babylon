@@ -3,7 +3,7 @@
 # 模块功能文档
 
 - [:any](any.zh-cn.md)
-- [:anyflow](anyflow/index.zh-cn.md)
+- [:anyflow](anyflow/README.zh-cn.md)
 - [:application_context](application_context.zh-cn.md)
 - [:concurrent](concurrent/README.zh-cn.md)
 - [:coroutine](coroutine/README.zh-cn.md)
