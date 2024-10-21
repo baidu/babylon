@@ -1,4 +1,4 @@
-**[[English]](quick_start.en.md)**
+**[[简体中文]](quick_start.zh-cn.md)**
 
 # Quick Start
 
