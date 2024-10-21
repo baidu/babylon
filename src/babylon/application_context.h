@@ -200,6 +200,16 @@ class ApplicationContext::ComponentHolder {
   int initialize(Any& instance, ApplicationContext& context,
                  const Any& option) noexcept;
 
+  // 设置实例类型信息，用于支持构造函数的实现
+  template <typename T>
+  void set_type() noexcept;
+  template <typename T>
+  void add_convertible_type() noexcept;
+  template <typename T, typename B, typename... BS>
+  void add_convertible_type() noexcept;
+  template <typename T>
+  void remove_convertible_type() noexcept;
+
   // 使用空参create_instance构造实例，之后探测协议函数并调用
   // 一般情况下实现空参版本即可，特殊情况下例如想要更换或禁用探测协议函数，可以重写此入口
   virtual Any create_instance(ApplicationContext& context,
@@ -224,14 +234,6 @@ class ApplicationContext::ComponentHolder {
 
   // 查询转换到指定类型所需的偏移量，无法转换时返回最大值PTRDIFF_MAX
   ptrdiff_t convert_offset(const Id* type) const noexcept;
-
-  // 设置实例类型信息，用于支持构造函数的实现
-  template <typename T>
-  void set_type() noexcept;
-  template <typename T>
-  void add_convertible_type() noexcept;
-  template <typename T, typename B, typename... BS>
-  void add_convertible_type() noexcept;
 
   void create_singleton(ApplicationContext& context) noexcept;
 
@@ -546,13 +548,6 @@ ApplicationContext::get_or_create(StringView name) noexcept {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationContext::ComponentHolder begin
-template <typename T, typename... BS>
-ABSL_ATTRIBUTE_NOINLINE ApplicationContext::ComponentHolder::ComponentHolder(
-    T*, BS*...) noexcept {
-  set_type<T>();
-  add_convertible_type<T, BS...>();
-}
-
 template <typename T>
 ABSL_ATTRIBUTE_NOINLINE void ApplicationContext::ComponentHolder::set_option(
     T&& option) noexcept {
@@ -561,9 +556,6 @@ ABSL_ATTRIBUTE_NOINLINE void ApplicationContext::ComponentHolder::set_option(
 
 template <typename T>
 inline ptrdiff_t ApplicationContext::ComponentHolder::offset() const noexcept {
-  if (Any::descriptor<T>() == _type_id) {
-    return 0;
-  }
   return convert_offset(&Any::descriptor<T>()->type_id);
 }
 
@@ -603,6 +595,13 @@ ApplicationContext::ComponentHolder::type_id() const noexcept {
   return &(_type_id->type_id);
 }
 
+template <typename T, typename... BS>
+ABSL_ATTRIBUTE_NOINLINE ApplicationContext::ComponentHolder::ComponentHolder(
+    T*, BS*...) noexcept {
+  set_type<T>();
+  add_convertible_type<T, T, BS...>();
+}
+
 template <typename T>
 ABSL_ATTRIBUTE_NOINLINE void
 ApplicationContext::ComponentHolder::set_type() noexcept {
@@ -618,13 +617,17 @@ ApplicationContext::ComponentHolder::add_convertible_type() noexcept {}
 template <typename T, typename U, typename... US>
 ABSL_ATTRIBUTE_NOINLINE void
 ApplicationContext::ComponentHolder::add_convertible_type() noexcept {
-  if (TypeId<T>::ID != TypeId<U>::ID) {
-    _convert_offset[&TypeId<U>::ID] =
-        reinterpret_cast<ptrdiff_t>(
-            static_cast<U*>(reinterpret_cast<T*>(alignof(T)))) -
-        alignof(T);
-  }
+  _convert_offset[&TypeId<U>::ID] =
+      reinterpret_cast<ptrdiff_t>(
+          static_cast<U*>(reinterpret_cast<T*>(alignof(T)))) -
+      alignof(T);
   add_convertible_type<T, US...>();
+}
+
+template <typename T>
+ABSL_ATTRIBUTE_NOINLINE void
+ApplicationContext::ComponentHolder::remove_convertible_type() noexcept {
+  _convert_offset.erase(&TypeId<T>::ID);
 }
 
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE ::std::atomic<

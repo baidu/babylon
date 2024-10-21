@@ -118,6 +118,55 @@ TEST_F(ApplicationContextTest, create_convertible_to_parent_registered) {
   ASSERT_FALSE(context.component_accessor<X>());
 }
 
+TEST_F(ApplicationContextTest, fix_conflict_by_remove_some_convertible_type) {
+  struct P {
+    int vp = 1;
+  };
+  struct C : public P {
+    int vc = 1;
+  };
+  struct CAsPHolder : public DefaultComponentHolder<C, P> {
+    CAsPHolder() : DefaultComponentHolder {} {
+      remove_convertible_type<C>();
+    }
+    static ::std::unique_ptr<CAsPHolder> create() {
+      return {new CAsPHolder, {}};
+    }
+  };
+  {
+    context.register_component(DefaultComponentHolder<C>::create());
+    context.register_component(DefaultComponentHolder<C, P>::create());
+    ASSERT_FALSE(context.component_accessor<C>());
+    ASSERT_TRUE(context.component_accessor<P>());
+    context.clear();
+  }
+  {
+    context.register_component(DefaultComponentHolder<C>::create());
+    context.register_component(CAsPHolder::create());
+    ASSERT_TRUE(context.component_accessor<C>());
+    ASSERT_TRUE(context.component_accessor<P>());
+    context.clear();
+  }
+  {
+    context.register_component(DefaultComponentHolder<C>::create());
+    context.register_component(DefaultComponentHolder<C, P>::create(), "P");
+    ASSERT_FALSE(context.component_accessor<C>());
+    ASSERT_TRUE(context.component_accessor<P>());
+    ASSERT_TRUE(context.component_accessor<C>("P"));
+    ASSERT_TRUE(context.component_accessor<P>("P"));
+    context.clear();
+  }
+  {
+    context.register_component(DefaultComponentHolder<C>::create());
+    context.register_component(CAsPHolder::create(), "P");
+    ASSERT_TRUE(context.component_accessor<C>());
+    ASSERT_TRUE(context.component_accessor<P>());
+    ASSERT_FALSE(context.component_accessor<C>("P"));
+    ASSERT_TRUE(context.component_accessor<P>("P"));
+    context.clear();
+  }
+}
+
 TEST_F(ApplicationContextTest, create_with_auto_initialize_if_exist) {
   {
     struct Initializable {
