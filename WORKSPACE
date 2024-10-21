@@ -37,17 +37,6 @@ http_archive(
 )
 
 http_archive(
-  name = 'rules_foreign_cc',
-  urls = ['https://github.com/bazelbuild/rules_foreign_cc/releases/download/0.12.0/rules_foreign_cc-0.12.0.tar.gz'],
-  strip_prefix = 'rules_foreign_cc-0.12.0',
-  sha256 = 'a2e6fb56e649c1ee79703e99aa0c9d13c6cc53c8d7a0cbb8797ab2888bbc99a3',
-)
-load('@rules_foreign_cc//foreign_cc:repositories.bzl', 'rules_foreign_cc_dependencies')
-rules_foreign_cc_dependencies()
-load("@bazel_features//:deps.bzl", "bazel_features_deps")
-bazel_features_deps()
-
-http_archive(
   name = 'rules_cuda',
   urls = ['https://github.com/bazel-contrib/rules_cuda/releases/download/v0.2.3/rules_cuda-v0.2.3.tar.gz'],
   strip_prefix = 'rules_cuda-v0.2.3',
