@@ -1,3 +1,5 @@
+**[[English]](arenastring.en.md)**
+
 # arenastring
 
 ## 原理
@@ -29,5 +31,5 @@ common --registry=https://baidu.github.io/babylon/registry
 - 应用补丁依赖项
 ```
 # in MODULE.bazel
-bazel_dep(name = 'protobuf', version = '27.3.arenastring')
+bazel_dep(name = 'protobuf', version = '27.5.arenastring')
 ```
