@@ -1,3 +1,5 @@
+**[[English]](logger.en.md)**
+
 # logger
 
 ## LogStream

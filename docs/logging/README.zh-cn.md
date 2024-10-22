@@ -1,3 +1,5 @@
+**[[English]](README.en.md)**
+
 # logging
 
 ## 背景和原理
@@ -28,8 +30,8 @@
 
 ## 功能文档
 
-- [logger](logger.md)
-- [async_file_appender](async_file_appender.md)
+- [logger](logger.zh-cn.md)
+- [async_file_appender](async_file_appender.zh-cn.md)
 
 ## 典型用例
 

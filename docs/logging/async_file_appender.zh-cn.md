@@ -1,3 +1,5 @@
+**[[English]](async_file_appender.en.md)**
+
 # async_file_appender
 
 ## LogEntry&LogStreamBuffer
