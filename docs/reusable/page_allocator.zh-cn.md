@@ -1,3 +1,5 @@
+**[[English]](page_allocator.en.md)**
+
 # page_allocator
 
 ## 原理
@@ -50,7 +52,4 @@ auto summary = cached_page_allocator.cache_hit_summary();
 // summary.sum为总命中量
 // summary.num为总调用量
 // sum / num可以得到命中率，周期调用并记录差值可以得到命中率监控
-
-// 更说明见注释
-// 单测test/test_page_allocator.cpp
 ```

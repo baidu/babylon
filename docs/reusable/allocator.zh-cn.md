@@ -1,3 +1,5 @@
+**[[English]](allocator.en.md)**
+
 # allocator
 
 ## MonotonicAllocator
@@ -66,7 +68,4 @@ s->buffer // "12345"且分配在memory_resource上
 SwissAllocator<> swiss_allocator(swiss_memory_resource);
 auto* m = swiss_allocator.create_object<SomeMessage>();
 m->GetArena(); // 构造在SwissMemoryResource内置的Arena上
-
-// 更说明见注释
-// 单测test/test_reusable_allocator.cpp
 ```

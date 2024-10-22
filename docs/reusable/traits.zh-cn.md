@@ -1,3 +1,5 @@
+**[[English]](traits.en.md)**
+
 # traits
 
 ## 原理

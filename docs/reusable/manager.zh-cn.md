@@ -1,3 +1,5 @@
+**[[English]](manager.en.md)**
+
 # manager
 
 ## ReusableManager
@@ -37,7 +39,4 @@ pstring->resize(100);
 
 // 然后再清理
 manager.clear();
-
-// 更说明见注释
-// 单测test/test_reusable_manager.cpp
 ```

@@ -1,3 +1,5 @@
+**[[English]](serialization.en.md)**
+
 # serialization
 
 ## 原理

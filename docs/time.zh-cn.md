@@ -1,3 +1,5 @@
+**[[English]](time.en.md)**
+
 # time
 
 ## 原理
@@ -26,10 +28,6 @@ tm local;
 babylon::localtime(&time, &local);
 // 与localtime_r(&time, &local)效果一致，除了
 // - 每个进程只会加载一次时区文件，运行时修改系统时区不会进行热加载
-
-// 更说明见注释
-// 单测 test/test_time.cpp
-// 性能对比 bench/bench_time.cpp
 ```
 
 ## 功能/性能对比

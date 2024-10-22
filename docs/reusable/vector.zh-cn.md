@@ -1,3 +1,5 @@
+**[[English]](vector.en.md)**
+
 # vector
 
 可重用的ReusableVector，满足ReusableTratis
@@ -23,7 +25,4 @@ auto pvector = manger.create<SwissVector<SwissString>>();
 
 // 等用于std::vector进行操作
 pvector->emplace_back("10086");
-
-// 更说明见注释
-// 单测test/test_reusable_vector.cpp
 ```

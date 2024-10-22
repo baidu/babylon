@@ -1,3 +1,5 @@
+**[[English]](memory_resource.en.md)**
+
 # memory_resource
 
 ## 原理
@@ -75,7 +77,4 @@ resource.release();
 // SwissMemoryResource独有功能，可以隐式转换为arena使用
 google::protobuf::Arena& arena = swiss_memory_resource;
 T* message_on_arena = google::protobuf::Arena::CreateMessage<T>(&arena);
-
-// 更说明见注释
-// 单测test/test_reusable_memory_resource.cpp
 ```
