@@ -54,8 +54,8 @@ Babylon also supports building with [CMake](https://cmake.org) and allows depend
 
 ## Module Documentation
 
-- [:any](docs/any.md)
-- [:anyflow](docs/anyflow/index.md)
+- [:any](docs/any.en.md)
+- [:anyflow](docs/anyflow/README.en.md)
 - [:application_context](docs/application_context.md)
 - [:concurrent](docs/concurrent/index.md)
 - [:coroutine](docs/coroutine)

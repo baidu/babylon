@@ -51,8 +51,8 @@ Babylon也支持使用[CMake](https://cmake.org)进行构建，并支持通过[f
 
 ## 模块功能文档
 
-- [:any](docs/any.md)
-- [:anyflow](docs/anyflow/index.md)
+- [:any](docs/any.zh-cn.md)
+- [:anyflow](docs/anyflow/README.zh-cn.md)
 - [:application_context](docs/application_context.md)
 - [:concurrent](docs/concurrent/index.md)
 - [:coroutine](docs/coroutine)
