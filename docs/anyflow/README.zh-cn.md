@@ -14,6 +14,6 @@ anyflow是一个组件化并行计算框架，通过将一段计算逻辑转化�
 - [Overview](overview.zh-cn.md)
 - [Quick Start Guide](quick_start.zh-cn.md)
 - [Builder](builder.zh-cn.md)
-- [Graph](graph.md)
+- [Graph](graph.zh-cn.md)
 - [Processor](processor.md)
 - [Expression](expression.md)
