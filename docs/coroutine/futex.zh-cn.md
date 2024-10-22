@@ -1,12 +1,14 @@
+**[[English]](futex.en.md)**
+
 # futex
 
 ## 原理
 
-标准[coroutine](https://en.cppreference.com/w/cpp/language/coroutines)机制中的`co_await`基本对标了[std::future](https://en.cppreference.com/w/cpp/thread/future)并行同步模式；但更多复杂的同步模式例如[std::mutex](https://en.cppreference.com/w/cpp/thread/mutex)或者[std::condition_variable](https://en.cppreference.com/w/cpp/thread/condition_variable)的支持可以统一通过类似[futex(2)](https://man7.org/linux/man-pages/man2/futex.2.html)的机制统一支持；
+标准[coroutine](https://zh.cppreference.com/w/cpp/language/coroutines)机制中的`co_await`基本对标了[std::future](https://zh.cppreference.com/w/cpp/thread/future)并行同步模式；但更多复杂的同步模式例如[std::mutex](https://zh.cppreference.com/w/cpp/thread/mutex)或者[std::condition_variable](https://zh.cppreference.com/w/cpp/thread/condition_variable)的支持可以统一通过类似[futex(2)](https://man7.org/linux/man-pages/man2/futex.2.html)的机制统一支持；
 
 ![](images/futex.png)
 
-实现上通过每个futex实例伴随一个`std::mutex`来实现值检测和等待回调链串联原子性；通过[DepositBox](../concurrent/deposit_box.md)实现取消和唤醒的唯一性；
+实现上通过每个futex实例伴随一个`std::mutex`来实现值检测和等待回调链串联原子性；通过[DepositBox](../concurrent/deposit_box.zh-cn.md)实现取消和唤醒的唯一性；
 
 ## 用法示例
 

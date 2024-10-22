@@ -1,10 +1,12 @@
+**[[English]](task.en.md)**
+
 # task
 
 ## 原理
 
-协程Task的执行方式设计为依托[Executor](../executor.md)完成；一个根协程需要通过提交到一个[Executor](../executor.md)来得到执行，提交后协程将被设定为绑定到对应[Executor](../executor.md)上；协程执行中，可以通过`co_await`另一个task的方式启动子协程，子协程默认也绑定到同一个[Executor](../executor.md)上，但也支持绑定到其他[Executor](../executor.md)；当一个Task中断并恢复后，会确保回到绑定的[Executor](../executor.md)内；
+协程Task的执行方式设计为依托[Executor](../executor.zh-cn.md)完成；一个根协程需要通过提交到一个[Executor](../executor.zh-cn.md)来得到执行，提交后协程将被设定为绑定到对应[Executor](../executor.zh-cn.md)上；协程执行中，可以通过`co_await`另一个task的方式启动子协程，子协程默认也绑定到同一个[Executor](../executor.zh-cn.md)上，但也支持绑定到其他[Executor](../executor.zh-cn.md)；当一个Task中断并恢复后，会确保回到绑定的[Executor](../executor.zh-cn.md)内；
 
-协程Task默认支持`co_await`另一个Task以及一些其他babylon内置对象，例如[Future](../future.md)；此外，也提供了基于模板特化的定制能力，用来支持用户将其他自定义类型接入框架变成awaitable；
+协程Task默认支持`co_await`另一个Task以及一些其他babylon内置对象，例如[Future](../future.zh-cn.md)；此外，也提供了基于模板特化的定制能力，用来支持用户将其他自定义类型接入框架变成awaitable；
 
 ## 用法示例
 

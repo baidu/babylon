@@ -1,8 +1,10 @@
+**[[English]](future_awaitable.en.md)**
+
 # future_awaitable
 
 ## 原理
 
-[Future](../future.md)本身的回调机制使其非常适合成为一个协程的awaitable，一定程度上也是因为协程内部本身也采用future/promise设计模式的原因；对于[Future](../future.md)进行awaitable的包装提供了两个不同版本，FutureAwaitable为独占模式，即一个Future对应单一Awaiter，一般情况下独占模式可以满足大多数需求；另一个版本是SharedFutureAwaitable共享模式，同一个future可以对应多个Awaiter，完成时同时恢复多个协程；
+[Future](../future.zh-cn.md)本身的回调机制使其非常适合成为一个协程的awaitable，一定程度上也是因为协程内部本身也采用future/promise设计模式的原因；对于[Future](../future.zh-cn.md)进行awaitable的包装提供了两个不同版本，FutureAwaitable为独占模式，即一个Future对应单一Awaiter，一般情况下独占模式可以满足大多数需求；另一个版本是SharedFutureAwaitable共享模式，同一个future可以对应多个Awaiter，完成时同时恢复多个协程；
 
 ## 用法示例
 
