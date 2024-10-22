@@ -59,6 +59,4 @@ parallel loop:
     ptr->...; // 返回值为定制Deleter的智能指针
     // 析构时实例自动归还，池内实例超出容量N后，超出部分会直接销毁
 /////////////////
-
-// 单测test/test_concurrent_object_pool.cpp
 ```

@@ -4,7 +4,7 @@
 
 ## 原理
 
-基于[Epoch](epoch.md)机制，可以实现经典的同步回收机制，不过Epoch的修改更着重于实现异步回收，GarbageCollector是这个异步回收方案的实现；主要设计了retire操作接口，将回收动作打包成任务并绑定对应的epoch之后放入[ConcurrentBoundedQueue](bounded_queue.md)等待异步回收；独立的异步回收线程持续进行当前epoch最低水位的检测，并从队列获取、校验并最终执行回收任务；
+基于[Epoch](epoch.zh-cn.md)机制，可以实现经典的同步回收机制，不过Epoch的修改更着重于实现异步回收，GarbageCollector是这个异步回收方案的实现；主要设计了retire操作接口，将回收动作打包成任务并绑定对应的epoch之后放入[ConcurrentBoundedQueue](bounded_queue.zh-cn.md)等待异步回收；独立的异步回收线程持续进行当前epoch最低水位的检测，并从队列获取、校验并最终执行回收任务；
 
 ## 用法示例
 

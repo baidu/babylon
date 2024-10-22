@@ -60,7 +60,4 @@ queue.push_n([] (Queue::Iterator iter, Queue::Iterator end) {
 		work_on_source(*iter);
 	}
 }, pop_num);
-
-// 单测test/test_concurrent_bounded_queue.cpp
-// 压测bench/bench_concurrent_queue.cpp
 ```

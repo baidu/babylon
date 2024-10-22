@@ -4,13 +4,13 @@
 
 ## 原理
 
-有时我们需要一种多个调用者动态竞争完成相同一段逻辑的设计模式，典型类似实现timeout动作（一个有效，一个无效）或者backup request动作（两个有效，先到先得）；从原理上，这种模式需要的机制和[std::call_once](https://en.cppreference.com/w/cpp/thread/call_once)非常类似，但是会有以下几个不同点：
+有时我们需要一种多个调用者动态竞争完成相同一段逻辑的设计模式，典型类似实现timeout动作（一个有效，一个无效）或者backup request动作（两个有效，先到先得）；从原理上，这种模式需要的机制和[std::call_once](https://zh.cppreference.com/w/cpp/thread/call_once)非常类似，但是会有以下几个不同点：
 - 后来者并不需要等待执行者完成，单纯放弃自己的运行即可；
 - 由于后来者原理上不需要任何执行动作和结果，执行者可以更早释放资源进行复用，相应地后来者需要确保不会修改可能已经被复用的资源；
 
 ![](images/deposit_box.png)
 
-采用[IdAllocator](id_allocator.md)和[ConcurrentVector](vector.md)组织实际的数据，实现聚集存储和基于序号的快速访问；每一个轮次中的take动作通过对版本号的CAS自增实现归属权竞争，后来者除CAS动作外不碰触数据部分；版本号自身同样存储在[ConcurrentVector](vector.md)的槽位内部，确保后来者的CAS动作本身合法，而版本号本身的单调递增特性排除了后来者的ABA问题；
+采用[IdAllocator](id_allocator.zh-cn.md)和[ConcurrentVector](vector.zh-cn.md)组织实际的数据，实现聚集存储和基于序号的快速访问；每一个轮次中的take动作通过对版本号的CAS自增实现归属权竞争，后来者除CAS动作外不碰触数据部分；版本号自身同样存储在[ConcurrentVector](vector.zh-cn.md)的槽位内部，确保后来者的CAS动作本身合法，而版本号本身的单调递增特性排除了后来者的ABA问题；
 
 ## 用法示例
 
