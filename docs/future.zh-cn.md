@@ -1,3 +1,5 @@
+**[[English]](future.en.md)**
+
 # future
 
 ## 原理
@@ -91,7 +93,4 @@ using ::babylon::CountDownLatch;
          // 也是个future，所以也可以进行异步串联
     });
 }
-
-// 更说明见注释
-// 单测test/test_future.cpp
 ```
