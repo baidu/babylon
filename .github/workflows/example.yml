@@ -33,3 +33,9 @@ jobs:
         sudo apt install libboost-all-dev
         sudo apt install libprotobuf-dev
     - run: cd example/${{matrix.name}} && ./build.sh
+
+  bcr-presubmit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: cd example/bcr-presubmit && bazel run example
