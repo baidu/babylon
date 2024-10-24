@@ -244,7 +244,14 @@ template <typename C, typename>
 inline void FutureContext<T, M>::on_finish(C&& callback) noexcept {
   auto head = _head.load(::std::memory_order_acquire);
   if (is_sealed(head)) {
+// In set_value Seal head is done in release order after value assign. This
+// ensure value definitely initialized here.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
     internal::future::run_callback(callback, value());
+#pragma GCC diagnostic pop
     return;
   }
 
