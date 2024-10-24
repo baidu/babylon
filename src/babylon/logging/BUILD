@@ -110,6 +110,7 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     ':file_object',
+    '//src/babylon:regex',
     '//src/babylon:string_view',
     '//src/babylon:time',
     '@com_google_absl//absl/time',

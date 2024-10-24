@@ -3,6 +3,7 @@
 #if __cplusplus >= 201703L
 
 #include "babylon/time.h"
+#include "babylon/regex.h"
 
 // clang-format off
 #include BABYLON_EXTERNAL(absl/base/optimization.h) // ABSL_PREDICT_FALSE
@@ -16,7 +17,6 @@
 #include <unistd.h>
 
 #include <iostream>
-#include <regex>
 
 BABYLON_NAMESPACE_BEGIN
 

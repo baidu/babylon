@@ -157,6 +157,17 @@ cc_library(
 )
 
 cc_library(
+  name = 'regex',
+  hdrs = ['regex.h'],
+  copts = BABYLON_COPTS,
+  includes = ['//src'],
+  strip_include_prefix = '//src',
+  deps = [
+    ':environment',
+  ],
+)
+
+cc_library(
   name = 'sanitizer_helper',
   hdrs = ['sanitizer_helper.h'],
   copts = BABYLON_COPTS,
