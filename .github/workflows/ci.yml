@@ -78,6 +78,7 @@ jobs:
         path: bazel-disk
         key: bazel-disk-c++14-coroutine-${{github.sha}}
         restore-keys: bazel-disk-c++14-coroutine-
+    - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '27.5'/" MODULE.bazel
     - run: bazel test --disk_cache=bazel-disk --verbose_failures --test_output=errors --action_env=CC=gcc-12 --cxxopt=-std=c++14 --cxxopt=-fcoroutines --cxxopt=-fconcepts test/...
     - uses: actions/cache/save@v4
       if: always()
