@@ -61,7 +61,7 @@ jobs:
         key: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-${{github.sha}}
         restore-keys: bazel-disk-arenastring-${{matrix.compiler.name}}-${{matrix.stdlib.name}}-${{matrix.mutable.name}}-
     - run: sudo apt install libc++-18-dev libc++abi-18-dev
-    - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '27.5.arenastring'/" MODULE.bazel
+    - run: sed -i "/single_version_override.*protobuf/s/version = '[^']*'/version = '28.3.arenastring'/" MODULE.bazel
     - run: bazel test --compilation_mode=opt --disk_cache=bazel-disk --verbose_failures --test_output=errors --config=asan --registry=https://bcr.bazel.build --registry=file://%workspace%/registry ${{matrix.compiler.flag}} ${{matrix.stdlib.flag}} ${{matrix.mutable.flag}} test/...
     - uses: actions/cache/save@v4
       if: always()

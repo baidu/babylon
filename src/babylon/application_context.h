@@ -153,14 +153,22 @@ class ApplicationContext::ComponentHolder {
   template <typename T>
   void set_option(T&& option) noexcept;
 
+  // ComponentHoler all support use as factory, but not all usable as singleton.
   inline bool support_singleton() const noexcept;
 
+  // If component is convertible to type T, return address offset in convertion.
+  // Return PTRDIFF_MAX if not convertible.
   template <typename T>
   inline ptrdiff_t offset() const noexcept;
 
+  // Type-erased component as factory interface.
   Any create(ApplicationContext& context) noexcept;
   Any create(ApplicationContext& context, const Any& option) noexcept;
 
+  // Type-erased component as singleton interface. Create and hold a singleton
+  // component inside when first get request comes.
+  // Return that singleton in a type-erased way, or empty any when creation
+  // failed or not support_singleton.
   inline Any& get(ApplicationContext& context) noexcept;
 
   void for_each_type(
@@ -232,7 +240,6 @@ class ApplicationContext::ComponentHolder {
   // 取得下一个自增序号，用来标识初始化顺序实现逆序销毁
   static size_t next_sequence() noexcept;
 
-  // 查询转换到指定类型所需的偏移量，无法转换时返回最大值PTRDIFF_MAX
   ptrdiff_t convert_offset(const Id* type) const noexcept;
 
   void create_singleton(ApplicationContext& context) noexcept;
@@ -617,10 +624,9 @@ ApplicationContext::ComponentHolder::add_convertible_type() noexcept {}
 template <typename T, typename U, typename... US>
 ABSL_ATTRIBUTE_NOINLINE void
 ApplicationContext::ComponentHolder::add_convertible_type() noexcept {
-  _convert_offset[&TypeId<U>::ID] =
-      reinterpret_cast<ptrdiff_t>(
-          static_cast<U*>(reinterpret_cast<T*>(alignof(T)))) -
-      alignof(T);
+  _convert_offset[&TypeId<U>::ID] = reinterpret_cast<ptrdiff_t>(static_cast<U*>(
+                                        reinterpret_cast<T*>(alignof(T)))) -
+                                    alignof(T);
   add_convertible_type<T, US...>();
 }
 
