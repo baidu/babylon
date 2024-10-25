@@ -1,4 +1,4 @@
 #!/bin/sh
 set -ex
 
-bazel run example
+bazel run --enable_bzlmod=false example

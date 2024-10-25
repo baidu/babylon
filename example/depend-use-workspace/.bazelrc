@@ -1,1 +1,0 @@
-build --enable_bzlmod=false --cxxopt=-std=c++17

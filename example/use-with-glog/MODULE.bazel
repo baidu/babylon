@@ -1,2 +1,2 @@
-bazel_dep(name = 'babylon', version = '1.4.0')
+bazel_dep(name = 'babylon', version = '1.4.1')
 bazel_dep(name = 'glog', version = '0.7.1')

@@ -1,9 +1,9 @@
 #!/bin/sh
 set -ex
 
-URL=https://github.com/baidu/babylon/releases/download/v1.4.0/v1.4.0.tar.gz
-NAME=babylon-1.4.0
-SHA256=0dd2f1690e7dd842406a4e6d55c507ae224aa1ebac1089d43891b5015f9df2fc
+URL=https://github.com/baidu/babylon/releases/download/v1.4.1/v1.4.1.tar.gz
+NAME=babylon-1.4.1
+SHA256=930e8d24822a472466e8b616011a57c37021b02486ad19ee7b62c12bfef923b8
 if ! echo "$SHA256 $NAME.tar.gz" | sha256sum -c; then
   wget $URL --continue -O $NAME.tar.gz
 fi
@@ -12,7 +12,7 @@ tar xzf $NAME.tar.gz
 mv $NAME babylon
 
 cd babylon
-cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$PWD/output -DBUILD_TESTING=OFF
+cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$PWD/output
 cmake --build build
 cmake --install build
 cd -
