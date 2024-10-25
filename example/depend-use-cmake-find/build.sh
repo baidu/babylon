@@ -12,7 +12,7 @@ tar xzf $NAME.tar.gz
 mv $NAME babylon
 
 cd babylon
-cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$PWD/output
+cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$PWD/output -DBUILD_TESTING=OFF
 cmake --build build
 cmake --install build
 cd -
