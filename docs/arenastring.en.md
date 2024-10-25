@@ -39,5 +39,5 @@ common --registry=https://baidu.github.io/babylon/registry
 - Apply the patch dependency:
 ```
 # in MODULE.bazel
-bazel_dep(name = 'protobuf', version = '27.5.arenastring')
+bazel_dep(name = 'protobuf', version = '28.3.arenastring')
 ```
