@@ -26,8 +26,8 @@ using ::babylon::Promise;
     ::std::thread thread([&]() {
         // 异步做一些事情
         ...
-            // 最终赋值
-            promise.set_value(10086);
+        // 最终赋值
+        promise.set_value(10086);
     });
     future.get();  // 等待set_value，结果 == 10086
 }
@@ -39,8 +39,8 @@ using ::babylon::Promise;
     XThread thread([&]() {
         // 异步做一些事情
         ...
-            // 最终赋值
-            promise.set_value(10086);
+        // 最终赋值
+        promise.set_value(10086);
     });
     future.get();  // 等待set_value（使用XSchedInterface协程同步，不占用pthread
                    // worker），结果 == 10086
@@ -53,8 +53,8 @@ using ::babylon::Promise;
     ::std::thread thread([promise = ::std::move(promise)]() mutable {
         // 异步做一些事情
         ...
-            // 最终赋值
-            promise.set_value(10086);
+        // 最终赋值
+        promise.set_value(10086);
     });
     Promise<int> promise2;
     auto future2 = promise2.get_future();
