@@ -1,0 +1,15 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "boost.uuid",
+    hdrs = glob([
+        "include/**/*.hpp",
+        "include/**/*.h",
+        "include/**/*.ipp",
+    ]),
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@boost.type_traits",
+    ],
+)

@@ -1,0 +1,8 @@
+{
+    "url": "https://github.com/boostorg/uuid/archive/refs/tags/boost-1.83.0.tar.gz",
+    "integrity": "sha256-D9kSkan1QR0Jf4gR5hNz3xPU4b6EWNWLLIas9CYVPBY=",
+    "strip_prefix": "uuid-boost-1.83.0",
+    "overlay": {
+        "BUILD.bazel": "sha256-NKAKbj1aWnmW4zk41aTK3E+oXeb9cK1thp9KvgdYzJE="
+    }
+}
