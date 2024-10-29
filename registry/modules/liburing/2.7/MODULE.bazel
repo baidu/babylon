@@ -1,0 +1,7 @@
+module(
+    name = "liburing",
+    version = "2.7",
+    compatibility_level = 1,
+)
+
+bazel_dep(name = "rules_cc", version = "0.0.9")

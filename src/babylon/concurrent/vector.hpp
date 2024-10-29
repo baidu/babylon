@@ -128,14 +128,14 @@ RetireList<T, D>::get_node(uint64_t head) noexcept {
 }
 
 template <typename T, typename D>
-inline __attribute__((always_inline)) uint16_t RetireList<T, D>::get_timestamp(
-    uint64_t head) noexcept {
+inline __attribute__((always_inline)) uint16_t
+RetireList<T, D>::get_timestamp(uint64_t head) noexcept {
   return head >> 48;
 }
 
 template <typename T, typename D>
-inline __attribute__((always_inline)) uint64_t RetireList<T, D>::make_head(
-    Node* node, uint64_t timestamp) noexcept {
+inline __attribute__((always_inline)) uint64_t
+RetireList<T, D>::make_head(Node* node, uint64_t timestamp) noexcept {
   return (timestamp << 48) | reinterpret_cast<uint64_t>(node);
 }
 

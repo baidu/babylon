@@ -102,7 +102,7 @@ int ThreadPoolExecutor::start() noexcept {
       });
   _threads.reserve(_worker_number);
   for (size_t i = 0; i < _worker_number; ++i) {
-    _threads.emplace_back(&ThreadPoolExecutor::keep_execute, this);
+    _threads.emplace_back(&ThreadPoolExecutor::keep_execute, this, i);
   }
   if (_balance_interval.count() >= 0) {
     _balance_thread = ::std::thread(&ThreadPoolExecutor::keep_balance, this);
@@ -149,7 +149,10 @@ int ThreadPoolExecutor::invoke(
       {.type = TaskType::FUNCTION, .function {::std::move(function)}});
 }
 
-void ThreadPoolExecutor::keep_execute() noexcept {
+void ThreadPoolExecutor::keep_execute(int i) noexcept {
+  ::std::string name = "work-" + ::std::to_string(i);
+  ::pthread_setname_np(::pthread_self(), name.c_str());
+
   auto& local_queue = _local_task_queues.local();
   RunnerScope scope {*this};
   while (true) {
@@ -213,6 +216,9 @@ int ThreadPoolExecutor::enqueue_task(Task&& task) noexcept {
       auto& local_queue = _local_task_queues.local();
       if (local_queue.size() < _local_capacity) {
         local_queue.push<false, false, false>(::std::move(task));
+        if (_enable_work_stealing) {
+          wakeup_one_worker();
+        }
         return 0;
       }
     }

@@ -171,8 +171,8 @@ struct Executor::IsCoroutineTask {
 };
 template <typename C, typename... Args>
   requires requires {
-             typename ::std::remove_cvref_t<::std::invoke_result_t<C, Args...>>;
-           }
+    typename ::std::remove_cvref_t<::std::invoke_result_t<C, Args...>>;
+  }
 struct Executor::IsCoroutineTask<C, Args...> {
   static constexpr bool value = IsSpecialization<
       ::std::remove_cvref_t<::std::invoke_result_t<C, Args...>>,
@@ -193,9 +193,8 @@ template <typename A>
 struct Executor::AwaitResult {};
 template <typename A>
   requires requires {
-             typename coroutine::AwaitResultType<A,
-                                                 CoroutineTask<>::promise_type>;
-           }
+    typename coroutine::AwaitResultType<A, CoroutineTask<>::promise_type>;
+  }
 struct Executor::AwaitResult<A> {
   using AwaitResultType =
       coroutine::AwaitResultType<A, CoroutineTask<>::promise_type>;
@@ -305,6 +304,11 @@ class ThreadPoolExecutor : public Executor {
   int ABSL_DEPRECATED("Use start instead")
       initialize(size_t worker_num, size_t queue_capacity) noexcept;
 
+  size_t local_task_number() noexcept {
+    auto& local_queue = _local_task_queues.local();
+    return local_queue.size();
+  }
+
  protected:
   virtual int invoke(MoveOnlyFunction<void(void)>&& function) noexcept override;
 
@@ -322,7 +326,7 @@ class ThreadPoolExecutor : public Executor {
 
   using TaskQueue = ConcurrentBoundedQueue<Task>;
 
-  void keep_execute() noexcept;
+  void keep_execute(int i) noexcept;
   void keep_balance() noexcept;
   int enqueue_task(Task&& task) noexcept;
 

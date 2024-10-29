@@ -1,13 +1,13 @@
-#include "babylon/logging/log_entry.h"
+#include "babylon/io/entry.h"
 
 #include "babylon/protect.h"
 
-BABYLON_NAMESPACE_BEGIN
+BABYLON_IO_NAMESPACE_BEGIN
 
 ////////////////////////////////////////////////////////////////////////////////
-// LogStreamBuffer begin
-void LogEntry::append_to_iovec(size_t page_size,
-                               ::std::vector<struct ::iovec>& iov) noexcept {
+// Entry begin
+void Entry::append_to_iovec(size_t page_size,
+                            ::std::vector<struct ::iovec>& iov) noexcept {
   auto full_inline_size = INLINE_PAGE_CAPACITY * page_size;
   // 页面数量超过了可内联规模，需要考虑扩展页表
   if (size > full_inline_size) {
@@ -22,9 +22,8 @@ void LogEntry::append_to_iovec(size_t page_size,
   }
 }
 
-void LogEntry::pages_append_to_iovec(
-    char** pages, size_t size, size_t page_size,
-    ::std::vector<struct ::iovec>& iov) noexcept {
+void Entry::pages_append_to_iovec(char** pages, size_t size, size_t page_size,
+                                  ::std::vector<struct ::iovec>& iov) noexcept {
   auto num = size / page_size;
   // 先收集靠前的整页
   for (size_t i = 0; i < num; ++i) {
@@ -37,7 +36,7 @@ void LogEntry::pages_append_to_iovec(
   }
 }
 
-void LogEntry::page_table_append_to_iovec(
+void Entry::page_table_append_to_iovec(
     PageTable& table, size_t size, size_t page_size,
     ::std::vector<struct ::iovec>& iov) noexcept {
   auto full_table_size =
@@ -58,12 +57,12 @@ void LogEntry::page_table_append_to_iovec(
     iov.emplace_back(::iovec {.iov_base = table_ptr, .iov_len = 0});
   }
 }
-// LogStreamBuffer end
+// Entry end
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// LogStreamBuffer begin
-int LogStreamBuffer::overflow(int ch) noexcept {
+// EntryBuffer begin
+int EntryBuffer::overflow(int ch) noexcept {
   // 先同步字节数
   sync();
   // 分配一个新页，设置到缓冲区
@@ -77,34 +76,34 @@ int LogStreamBuffer::overflow(int ch) noexcept {
   return sputc(ch);
 }
 
-int LogStreamBuffer::sync() noexcept {
+int EntryBuffer::sync() noexcept {
   auto ptr = pptr();
   if (ptr > _sync_point) {
-    _log.size += static_cast<uintptr_t>(ptr - _sync_point);
+    _entry.size += static_cast<uintptr_t>(ptr - _sync_point);
     _sync_point = ptr;
   }
   return 0;
 }
 
-void LogStreamBuffer::overflow_page_table() noexcept {
+void EntryBuffer::overflow_page_table() noexcept {
   // 当前页表用尽，需要分配一个新的页表
   auto page_table =
-      reinterpret_cast<LogEntry::PageTable*>(_page_allocator->allocate());
+      reinterpret_cast<Entry::PageTable*>(_page_allocator->allocate());
   page_table->next = nullptr;
   // 计算新页表的起止点
   auto pages = page_table->pages;
   auto pages_end = reinterpret_cast<char**>(
       reinterpret_cast<uintptr_t>(page_table) + _page_allocator->page_size());
   // 如果当前页表是日志对象内联页表
-  if (_pages == _log.pages + LogEntry::INLINE_PAGE_CAPACITY) {
+  if (_pages == _entry.pages + Entry::INLINE_PAGE_CAPACITY) {
     // 转存最后一个页指针到新页表内，腾出页表的单链表头
     // 并将新页表挂载到头上
-    *pages++ = reinterpret_cast<char*>(_log.head);
-    _log.head = page_table;
+    *pages++ = reinterpret_cast<char*>(_entry.head);
+    _entry.head = page_table;
   } else {
     // 从最后一个页表项推算出对应页表地址
     // 将新页表接在后面
-    auto last_page_table = reinterpret_cast<LogEntry::PageTable*>(
+    auto last_page_table = reinterpret_cast<Entry::PageTable*>(
         reinterpret_cast<uintptr_t>(_pages_end) - _page_allocator->page_size());
     last_page_table->next = page_table;
   }
@@ -112,9 +111,9 @@ void LogStreamBuffer::overflow_page_table() noexcept {
   _pages = pages;
   _pages_end = pages_end;
 }
-// LogStreamBuffer end
+// EntryBuffer end
 ////////////////////////////////////////////////////////////////////////////////
 
-BABYLON_NAMESPACE_END
+BABYLON_IO_NAMESPACE_END
 
 #include "babylon/unprotect.h"

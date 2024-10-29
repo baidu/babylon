@@ -138,6 +138,13 @@
   }                                     \
   BABYLON_NAMESPACE_END
 
+#define BABYLON_IO_NAMESPACE_BEGIN \
+  BABYLON_NAMESPACE_BEGIN          \
+  namespace io {
+#define BABYLON_IO_NAMESPACE_END \
+  }                              \
+  BABYLON_NAMESPACE_END
+
 // 早期arena patch版本
 // - protobuf_3-2-1-8_PD_BL
 // - protobuf_3-2-1-9_PD_BL

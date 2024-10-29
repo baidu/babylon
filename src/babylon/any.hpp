@@ -19,22 +19,22 @@ BABYLON_NAMESPACE_BEGIN
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
 template <typename T, typename E>
-__attribute__((init_priority(101)))
-Any::Meta Any::TypeDescriptor<T, E>::meta_for_instance {
+__attribute__((init_priority(
+    101))) Any::Meta Any::TypeDescriptor<T, E>::meta_for_instance {
     .v = Any::meta_for_instance(
         &TypeDescriptor<typename ::std::decay<T>::type>().descriptor)};
 
 template <typename T, typename E>
-__attribute__((init_priority(101)))
-Any::Meta Any::TypeDescriptor<T, E>::meta_for_inplace_trivial {
+__attribute__((init_priority(
+    101))) Any::Meta Any::TypeDescriptor<T, E>::meta_for_inplace_trivial {
     .v = reinterpret_cast<uint64_t>(
              &TypeDescriptor<typename ::std::decay<T>::type>().descriptor) |
          static_cast<uint64_t>(HolderType::INPLACE_TRIVIAL) << 56 |
          static_cast<uint64_t>(Type::INSTANCE) << 48};
 
 template <typename T, typename E>
-__attribute__((init_priority(101)))
-Any::Meta Any::TypeDescriptor<T, E>::meta_for_inplace_non_trivial {
+__attribute__((init_priority(
+    101))) Any::Meta Any::TypeDescriptor<T, E>::meta_for_inplace_non_trivial {
     .v = reinterpret_cast<uint64_t>(
              &TypeDescriptor<typename ::std::decay<T>::type>().descriptor) |
          static_cast<uint64_t>(HolderType::INPLACE_NON_TRIVIAL) << 56 |
@@ -233,7 +233,7 @@ inline Any& Any::operator=(T&& other) {
 }
 
 inline Any& Any::operator=(const Any& other) {
-  return this->operator=<const Any&>(other);
+  return this->operator= <const Any&>(other);
 }
 
 template <typename T>

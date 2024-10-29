@@ -265,4 +265,21 @@ TEST_F(CoroutineTest, future_awaitable_by_non_babylon_coroutine_task) {
   ASSERT_EQ("10086", future.get());
 }
 
+CoroutineTask<> func(size_t i, ::std::string s) {
+  ::std::cerr << "s " << s << ::std::endl;
+  co_return;
+}
+
+TEST_F(CoroutineTest, loop) {
+  executor
+      .execute([]() -> CoroutineTask<> {
+        for (size_t i = 0; i < 1000000; ++i) {
+          ::std::string s = ::std::to_string(i);
+          ::std::string s2 = ::std::to_string(i + 10000);
+          ::std::string s3 = s + s2;
+          co_await func(i, s3);
+        }
+      })
+      .get();
+}
 #endif // __cpp_concepts && __cpp_lib_coroutine

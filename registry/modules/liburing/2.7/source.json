@@ -1,0 +1,8 @@
+{
+    "url": "https://github.com/axboe/liburing/archive/refs/tags/liburing-2.7.tar.gz",
+    "integrity": "sha256-ViAq1EPFDmhN3jaSgZvjuRu+AD4cFL9av6EZc2aZeME=",
+    "strip_prefix": "liburing-liburing-2.7",
+    "overlay": {
+        "BUILD": "sha256-NKoWJGLFo+d7o/DYRkmsL9LVQadKf5LNwhcn0WK15DQ="
+    }
+}

@@ -10,12 +10,10 @@ BABYLON_COROUTINE_NAMESPACE_BEGIN
 
 // Check if C(Args...) is not only invocable but also worked as coroutine
 template <typename C, typename... Args>
-concept Invocable =
-    ::std::invocable<C, Args...> &&
-    requires {
-      typename ::std::coroutine_traits<::std::invoke_result_t<C, Args...>,
-                                       Args...>::promise_type;
-    };
+concept Invocable = ::std::invocable<C, Args...> && requires {
+  typename ::std::coroutine_traits<::std::invoke_result_t<C, Args...>,
+                                   Args...>::promise_type;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Get awaitable type
@@ -29,8 +27,8 @@ struct AwaitableFrom {
 };
 template <typename A, typename P>
   requires requires {
-             ::std::declval<P>().await_transform(::std::declval<A>());
-           }
+    ::std::declval<P>().await_transform(::std::declval<A>());
+  }
 struct AwaitableFrom<A, P> {
   using type =
       decltype(::std::declval<P>().await_transform(::std::declval<A>()));
@@ -51,16 +49,16 @@ struct AwaiterFrom {
 };
 template <typename A, typename P>
   requires requires {
-             ::std::declval<AwaitableType<A, P>>().operator co_await();
-           }
+    ::std::declval<AwaitableType<A, P>>().operator co_await();
+  }
 struct AwaiterFrom<A, P> {
   using type =
       decltype(::std::declval<AwaitableType<A, P>>().operator co_await());
 };
 template <typename A, typename P>
   requires requires {
-             operator co_await(::std::declval<AwaitableType<A, P>>());
-           }
+    operator co_await(::std::declval<AwaitableType<A, P>>());
+  }
 struct AwaiterFrom<A, P> {
   using type =
       decltype(operator co_await(::std::declval<AwaitableType<A, P>>()));

@@ -7,7 +7,7 @@ load('//:copts.bzl', 'BABYLON_COPTS')
 cc_library(
   name = 'coroutine',
   deps = [
-    'cancelable', ':futex', ':promise', ':task', 'traits',
+    'cancelable', ':futex', ':promise', ':task', 'traits', 'yield_awaitable',
   ],
 )
 
@@ -68,5 +68,16 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     '//src/babylon:type_traits',
+  ],
+)
+
+cc_library(
+  name = 'yield_awaitable',
+  hdrs = ['yield_awaitable.h'],
+  copts = BABYLON_COPTS,
+  includes = ['//src'],
+  strip_include_prefix = '//src',
+  deps = [
+    ':promise',
   ],
 )

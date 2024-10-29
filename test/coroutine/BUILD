@@ -38,3 +38,14 @@ cc_test(
   ]
 )
 
+cc_test(
+  name = 'test_yield_awaitable',
+  srcs = ['test_yield_awaitable.cpp'],
+  copts = BABYLON_TEST_COPTS,
+  deps = [
+    '//:coroutine',
+    '//:executor',
+    '//:logging',
+    '@com_google_googletest//:gtest_main',
+  ]
+)

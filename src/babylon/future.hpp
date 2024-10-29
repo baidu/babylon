@@ -36,8 +36,8 @@ template <typename C, typename T,
           typename ::std::enable_if<!IsInvocable<C, T&&>::value &&
                                         IsInvocable<C, T&>::value,
                                     int32_t>::type = 0>
-inline auto run_callback(C& callback, T& value) noexcept
-    -> decltype(callback(value)) {
+inline auto run_callback(C& callback,
+                         T& value) noexcept -> decltype(callback(value)) {
   return callback(value);
 }
 template <typename C, typename T,

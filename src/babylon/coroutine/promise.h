@@ -64,6 +64,9 @@ class BasicPromise {
   inline bool awaiter_inplace_resumable() const noexcept;
   inline ::std::coroutine_handle<> awaiter() const noexcept;
   inline void resume_awaiter() noexcept;
+  inline BasicExecutor* awaiter_executor() const noexcept {
+    return _awaiter_executor;
+  }
 
   // After awaiter suspend and finish registration, this newly created coroutine
   // will send back to it's binding executor and resume. If we already there or
@@ -74,10 +77,9 @@ class BasicPromise {
   // Use Transformer do real transform
   template <typename A>
     requires requires {
-               BasicPromise::Transformer<::std::remove_cvref_t<A>>::
-                   await_transform(::std::declval<BasicPromise&>(),
-                                   ::std::declval<A&&>());
-             }
+      BasicPromise::Transformer<::std::remove_cvref_t<A>>::await_transform(
+          ::std::declval<BasicPromise&>(), ::std::declval<A&&>());
+    }
   inline auto await_transform(A&& awaitable) noexcept;
 
  private:
@@ -260,10 +262,9 @@ inline void BasicPromise::resume(::std::coroutine_handle<> handle) noexcept {
 
 template <typename A>
   requires requires {
-             BasicPromise::Transformer<::std::remove_cvref_t<A>>::
-                 await_transform(::std::declval<BasicPromise&>(),
-                                 ::std::declval<A&&>());
-           }
+    BasicPromise::Transformer<::std::remove_cvref_t<A>>::await_transform(
+        ::std::declval<BasicPromise&>(), ::std::declval<A&&>());
+  }
 inline auto BasicPromise::await_transform(A&& awaitable) noexcept {
   return Transformer<::std::remove_cvref_t<A>>::await_transform(
       *this, ::std::forward<A>(awaitable));

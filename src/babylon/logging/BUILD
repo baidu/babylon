@@ -53,12 +53,11 @@ cc_library(
 
 cc_library(
   name = 'log_entry',
-  srcs = ['log_entry.cpp'],
   hdrs = ['log_entry.h'],
   copts = BABYLON_COPTS,
   strip_include_prefix = '//src',
   deps = [
-    '//src/babylon/reusable:page_allocator',
+    '//src/babylon/io:entry',
   ],
 )
 

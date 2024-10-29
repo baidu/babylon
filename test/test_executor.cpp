@@ -60,6 +60,19 @@ TEST_F(ExecutorTest, can_execute_member_function) {
   ASSERT_EQ(10089, s.value);
 }
 
+TEST_F(ExecutorTest, can_execute_member_function2) {
+  struct S {
+    int function(int& i) {
+      return value += i;
+    }
+    int value {1};
+  };
+  S s;
+  int i = 1;
+  inplace_executor.submit(&S::function, &s, ::std::ref(i));
+  ASSERT_EQ(10089, s.value);
+}
+
 TEST_F(ExecutorTest, can_execute_function_object) {
   struct S {
     S(int i) : i(i) {}

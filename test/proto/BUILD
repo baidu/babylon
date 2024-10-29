@@ -21,7 +21,7 @@ config_setting(
 
 proto_library(
   name = 'proto_deps',
-  srcs = select({
+  srcs = ['echo.proto'] + select({
     ':use-arenastring': ['mutable/arena_example.proto'],
     '//conditions:default': ['arena_example.proto'],
   }),

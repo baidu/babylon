@@ -436,8 +436,8 @@ template <>
 struct hash<string_view> {
   // absl和std c++20使用is_transparent定义来判定是否支持异构键
   using is_transparent = void;
-  inline __attribute__((always_inline)) size_t operator()(
-      string_view sv) const noexcept {
+  inline __attribute__((always_inline)) size_t
+  operator()(string_view sv) const noexcept {
     return ::std::_Hash_impl::hash(sv.data(), sv.size());
   }
 };

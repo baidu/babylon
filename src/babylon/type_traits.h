@@ -174,17 +174,17 @@ struct IsInvocable {
 // };
 // Checker<SomeClass, Arg1, Arg2>::value == true
 // Checker<int, Arg1, Arg2>::value == false
-#define BABYLON_DECLARE_STATIC_INVOCABLE(F, C)                        \
-  template <typename __BABYLON_TPL_T, typename... __BABYLON_TPL_Args> \
-  struct C {                                                          \
-    template <typename __BABYLON_TPL_U>                               \
-    static auto checker(int) -> decltype(__BABYLON_TPL_U::F(          \
-        ::std::declval<__BABYLON_TPL_Args>()...));                    \
-    template <typename __BABYLON_TPL_U>                               \
-    static ::babylon::NeverUsed checker(...);                         \
-    static constexpr bool value =                                     \
-        !::std::is_same<decltype(checker<__BABYLON_TPL_T>(0)),        \
-                        ::babylon::NeverUsed>::value;                 \
+#define BABYLON_DECLARE_STATIC_INVOCABLE(F, C)                              \
+  template <typename __BABYLON_TPL_T, typename... __BABYLON_TPL_Args>       \
+  struct C {                                                                \
+    template <typename __BABYLON_TPL_U>                                     \
+    static auto checker(int) -> decltype(__BABYLON_TPL_U::F(                \
+                                 ::std::declval<__BABYLON_TPL_Args>()...)); \
+    template <typename __BABYLON_TPL_U>                                     \
+    static ::babylon::NeverUsed checker(...);                               \
+    static constexpr bool value =                                           \
+        !::std::is_same<decltype(checker<__BABYLON_TPL_T>(0)),              \
+                        ::babylon::NeverUsed>::value;                       \
   };
 
 // 定义一个用于检测是否T().F(args)可调用的检测器
@@ -205,7 +205,7 @@ struct IsInvocable {
   struct C {                                                                  \
     template <typename __BABYLON_TPL_U>                                       \
     static auto checker(int) -> decltype(::std::declval<__BABYLON_TPL_U>().F( \
-        ::std::declval<__BABYLON_TPL_Args>()...));                            \
+                                 ::std::declval<__BABYLON_TPL_Args>()...));   \
     template <typename __BABYLON_TPL_U>                                       \
     static ::babylon::NeverUsed checker(...);                                 \
     static constexpr bool value =                                             \
@@ -226,8 +226,8 @@ BABYLON_DECLARE_MEMBER_INVOCABLE(operator(), IsHashable)
 template <typename A, typename B>
 struct IsEqualityComparable {
   template <typename AA, typename BB>
-  static auto checker(int)
-      -> decltype(::std::declval<AA>() == ::std::declval<BB>());
+  static auto checker(int) -> decltype(::std::declval<AA>() ==
+                                       ::std::declval<BB>());
   template <typename AA, typename BB>
   static NeverUsed checker(...);
   static constexpr bool value =

@@ -146,6 +146,11 @@ alias(
 )
 
 alias(
+  name = 'io',
+  actual = '//src/babylon/io',
+)
+
+alias(
   name = 'logging',
   actual = '//src/babylon/logging',
 )
