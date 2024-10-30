@@ -82,3 +82,7 @@ Babylon也支持使用[CMake](https://cmake.org)进行构建，并支持通过[f
 如果你可以解决某个issue, 欢迎发送PR。
 
 发送PR前请确认有对应的单测代码。
+
+## 致谢
+
+[![文心快码源力计划标志](https://comate.baidu.com/images/powersource/powersource-light-zh-1.png)](https://comate.baidu.com/zh/powerSource)
