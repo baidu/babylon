@@ -85,3 +85,7 @@ If you encounter any issues or need new features, feel free to create an issue.
 If you can solve an issue, you're welcome to submit a PR.
 
 Before sending a PR, please ensure corresponding test cases are included.
+
+## Appreciation
+
+[![Comate PowerSource Initiative Logo](https://comate.baidu.com/images/powersource/powersource-light-en-1.png)](https://comate.baidu.com/en/powerSource)
