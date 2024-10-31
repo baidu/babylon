@@ -256,7 +256,7 @@ struct AlwaysUseNewThreadExecutor : public Executor {
 class ThreadPoolExecutor : public Executor {
  public:
   // Use **this** in worker thread, so no copy nor move
-  ThreadPoolExecutor() noexcept = default;
+  ThreadPoolExecutor() = default;
   ThreadPoolExecutor(ThreadPoolExecutor&&) noexcept = delete;
   ThreadPoolExecutor(const ThreadPoolExecutor&) noexcept = delete;
   ThreadPoolExecutor& operator=(ThreadPoolExecutor&&) noexcept = delete;

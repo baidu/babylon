@@ -39,6 +39,27 @@ jobs:
         path: bazel-disk
         key: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.mode.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-${{github.sha}}
 
+  compatible:
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [{name: gcc-9, flag: --action_env=CC=gcc-9}]
+    runs-on: ubuntu-20.04
+    name: compatible-${{matrix.compiler.name}}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/cache/restore@v4
+      with:
+        path: bazel-disk
+        key: bazel-disk-compatible-${{matrix.compiler.name}}-${{github.sha}}
+        restore-keys: bazel-disk-compatible-${{matrix.compiler.name}}
+    - run: bazel test --disk_cache=bazel-disk --verbose_failures --test_output=errors ${{matrix.compiler.flag}} test/...
+    - uses: actions/cache/save@v4
+      if: always()
+      with:
+        path: bazel-disk
+        key: bazel-disk-basic-${{matrix.compiler.name}}-${{github.sha}}
+
   arenastring:
     strategy:
       fail-fast: false
