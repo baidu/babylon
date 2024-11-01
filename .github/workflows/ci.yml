@@ -58,7 +58,7 @@ jobs:
       if: always()
       with:
         path: bazel-disk
-        key: bazel-disk-basic-${{matrix.compiler.name}}-${{github.sha}}
+        key: bazel-disk-compatible-${{matrix.compiler.name}}-${{github.sha}}
 
   arenastring:
     strategy:
