@@ -59,7 +59,7 @@ class GarbageCollector {
  private:
   class ReclaimTask {
    public:
-    ReclaimTask() noexcept = default;
+    ReclaimTask() = default;
     ReclaimTask(ReclaimTask&&) = default;
     ReclaimTask(const ReclaimTask&) = delete;
     ReclaimTask& operator=(ReclaimTask&&) = default;
