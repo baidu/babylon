@@ -1,0 +1,5 @@
+{
+  "url": "https://github.com/apache/brpc/archive/refs/tags/1.11.0.tar.gz",
+  "strip_prefix": "brpc-1.11.0",
+  "integrity": "sha256-74flQ6ULckbOgzBlqGEIT4wypOInNptEBfIl+CqNMDA="
+}

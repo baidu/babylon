@@ -14,23 +14,18 @@ class EnumerableThreadLocal {
  public:
   // 可默认构造，可以移动，不能拷贝
   EnumerableThreadLocal() noexcept;
-  inline EnumerableThreadLocal(EnumerableThreadLocal&&) noexcept = default;
+  EnumerableThreadLocal(EnumerableThreadLocal&&) noexcept;
   EnumerableThreadLocal(const EnumerableThreadLocal&) = delete;
-  inline EnumerableThreadLocal& operator=(EnumerableThreadLocal&&) noexcept =
-      default;
+  EnumerableThreadLocal& operator=(EnumerableThreadLocal&&) noexcept;
   EnumerableThreadLocal& operator=(const EnumerableThreadLocal&) = delete;
 
   template <typename C>
   EnumerableThreadLocal(C&& constructor) noexcept;
 
-  void set_constructor(::std::function<void(T*)> constructor) noexcept {
-    _storage.set_constructor(constructor);
-  }
+  void set_constructor(::std::function<void(T*)> constructor) noexcept;
 
   // 获得线程局部存储
-  inline T& local() {
-    return _storage.ensure(ThreadId::current_thread_id<T>().value);
-  }
+  inline T& local();
 
   // 遍历所有【当前或曾经存在】的线程局部存储
   template <typename C, typename = typename ::std::enable_if<
@@ -76,7 +71,20 @@ class EnumerableThreadLocal {
   }
 
  private:
+  struct Cache;
+
+  static size_t fetch_add_id() noexcept;
+
+  inline T& local_slow(Cache& cache);
+
   ConcurrentVector<T, 128> _storage;
+  size_t _id {fetch_add_id()};
+};
+
+template <typename T>
+struct EnumerableThreadLocal<T>::Cache {
+  size_t id {0};
+  T* item {nullptr};
 };
 
 // 典型线程局部存储为了性能一般会独占缓存行
@@ -162,10 +170,27 @@ class CompactEnumerableThreadLocal {
   Storage* _storage;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// EnumerableThreadLocal begin
 template <typename T>
 inline EnumerableThreadLocal<T>::EnumerableThreadLocal() noexcept {
   // 确保内部使用的ThreadId此时初始化，建立正确的析构顺序
   ThreadId::end<T>();
+}
+
+template <typename T>
+EnumerableThreadLocal<T>::EnumerableThreadLocal(
+    EnumerableThreadLocal&& other) noexcept
+    : EnumerableThreadLocal {} {
+  *this = ::std::move(other);
+}
+
+template <typename T>
+EnumerableThreadLocal<T>& EnumerableThreadLocal<T>::operator=(
+    EnumerableThreadLocal&& other) noexcept {
+  ::std::swap(_id, other._id);
+  ::std::swap(_storage, other._storage);
+  return *this;
 }
 
 template <typename T>
@@ -175,6 +200,38 @@ inline EnumerableThreadLocal<T>::EnumerableThreadLocal(C&& constructor) noexcept
   // 确保内部使用的ThreadId此时初始化，建立正确的析构顺序
   ThreadId::end<T>();
 }
+
+template <typename T>
+ABSL_ATTRIBUTE_NOINLINE void EnumerableThreadLocal<T>::set_constructor(
+    ::std::function<void(T*)> constructor) noexcept {
+  _storage.set_constructor(constructor);
+}
+
+template <typename T>
+ABSL_ATTRIBUTE_ALWAYS_INLINE inline T& EnumerableThreadLocal<T>::local() {
+  static thread_local Cache cache;
+  if (ABSL_PREDICT_TRUE(cache.id == _id)) {
+    return *cache.item;
+  }
+  return local_slow(cache);
+}
+
+template <typename T>
+ABSL_ATTRIBUTE_NOINLINE size_t
+EnumerableThreadLocal<T>::fetch_add_id() noexcept {
+  static ::std::atomic<size_t> next_id {1};
+  return next_id.fetch_add(1, ::std::memory_order_relaxed);
+}
+
+template <typename T>
+inline T& EnumerableThreadLocal<T>::local_slow(Cache& cache) {
+  auto& item = _storage.ensure(ThreadId::current_thread_id<T>().value);
+  cache.id = _id;
+  cache.item = &item;
+  return item;
+}
+// EnumerableThreadLocal end
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename T, size_t CACHE_LINE_NUM>
 CompactEnumerableThreadLocal<
