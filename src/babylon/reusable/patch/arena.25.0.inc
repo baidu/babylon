@@ -47,8 +47,10 @@ constexpr size_t kAllocPolicyWithMemoryResourcePointerSize =
     ArenaAlignDefault::Ceil(sizeof(AllocationPolicyWithMemoryResourcePointer));
 
 inline PROTOBUF_ALWAYS_INLINE bool use_swiss_resource(const AllocationPolicy* policy) noexcept {
-  return policy != nullptr
-      && policy->block_alloc == ::babylon::SwissMemoryResource::arena_block_alloc;
+  if (policy != nullptr) {
+    return policy->block_alloc == ::babylon::SwissMemoryResource::arena_block_alloc;
+  }
+  return false;
 }
 
 inline PROTOBUF_ALWAYS_INLINE AllocationPolicyWithMemoryResourcePointer::SwissMemoryResource&
@@ -225,8 +227,8 @@ void* SerialArena::AllocateAlignedFallback(size_t n) {
 
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateFromStringBlockFallback() {
-  if (internal::use_swiss_resource(parent_.AllocPolicy())) {
-    auto& resource = internal::swiss_resource(parent_.AllocPolicy());
+  if (ABSL_PREDICT_TRUE(use_swiss_resource(parent_.AllocPolicy()))) {
+    auto& resource = swiss_resource(parent_.AllocPolicy());
     auto ptr = reinterpret_cast<::std::string*>(
         resource.allocate<alignof(std::string)>(sizeof(std::string)));
     resource.register_destructor(ptr);
@@ -806,7 +808,7 @@ void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
 }
 
 void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
-  if (use_swiss_resource(AllocPolicy())) {
+  if (ABSL_PREDICT_TRUE(use_swiss_resource(AllocPolicy()))) {
     swiss_resource(AllocPolicy()).do_register_destructor(elem, cleanup);
     return;
   }
@@ -830,8 +832,8 @@ void* ThreadSafeArena::AllocateAlignedWithCleanupFallback(
 
 PROTOBUF_NOINLINE
 void* ThreadSafeArena::AllocateFromStringBlock() {
-  if (internal::use_swiss_resource(AllocPolicy())) {
-    auto& resource = internal::swiss_resource(AllocPolicy());
+  if (ABSL_PREDICT_TRUE(use_swiss_resource(AllocPolicy()))) {
+    auto& resource = swiss_resource(AllocPolicy());
     auto ptr = resource.allocate<alignof(::std::string)>(sizeof(::std::string));
     resource.register_destructor<::std::string>(static_cast<::std::string*>(ptr));
     return ptr;
@@ -960,14 +962,14 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(size_t n) {
 }  // namespace internal
 
 void* Arena::Allocate(size_t n) {
-  if (internal::use_swiss_resource(impl_.AllocPolicy())) {
+  if (ABSL_PREDICT_TRUE(internal::use_swiss_resource(impl_.AllocPolicy()))) {
     return internal::swiss_resource(impl_.AllocPolicy()).allocate<8>(n);
   }
   return impl_.AllocateAligned(n);
 }
 
 void* Arena::AllocateForArray(size_t n) {
-  if (internal::use_swiss_resource(impl_.AllocPolicy())) {
+  if (ABSL_PREDICT_TRUE(internal::use_swiss_resource(impl_.AllocPolicy()))) {
     return internal::swiss_resource(impl_.AllocPolicy()).allocate<8>(n);
   }
   return impl_.AllocateAligned<internal::AllocationClient::kArray>(n);
@@ -975,7 +977,7 @@ void* Arena::AllocateForArray(size_t n) {
 
 void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
                                         void (*destructor)(void*)) {
-  if (internal::use_swiss_resource(impl_.AllocPolicy())) {
+  if (ABSL_PREDICT_TRUE(internal::use_swiss_resource(impl_.AllocPolicy()))) {
     auto& resource = internal::swiss_resource(impl_.AllocPolicy());
     auto ptr = resource.allocate<8>(n);
     resource.do_register_destructor(ptr, destructor);
