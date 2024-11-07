@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
 
   ::std::thread([] {
     ::tcmalloc::MallocExtension::SetBackgroundReleaseRate(
-      ::tcmalloc::MallocExtension::BytesPerSecond(16 << 10));
+        ::tcmalloc::MallocExtension::BytesPerSecond(16 << 10));
     ::tcmalloc::MallocExtension::ProcessBackgroundActions();
   }).detach();
   server.RunUntilAskedToQuit();
