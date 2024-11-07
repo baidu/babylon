@@ -41,3 +41,5 @@ common --registry=https://baidu.github.io/babylon/registry
 # in MODULE.bazel
 bazel_dep(name = 'protobuf', version = '28.3.arenastring')
 ```
+
+Here is an example of using this patch with [brpc](https://github.com/apache/brpc): [use-arena-with-brpc](../example/use-arena-with-brpc), along with some performance demonstrations.

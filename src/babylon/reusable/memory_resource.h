@@ -226,8 +226,8 @@ class ExclusiveMonotonicBufferResource : public MonotonicBufferResource {
 
   PageArray* _last_page_array {nullptr};
   char** _last_page_pointer {_last_page_array->pages};
-  char* _last_page {nullptr};
-  size_t _last_page_allocated {UINT32_MAX};
+  char* _free_begin {nullptr};
+  char* _free_end {nullptr};
   size_t _space_used {0};
   size_t _space_allocated {0};
 
@@ -260,6 +260,8 @@ class SharedMonotonicBufferResource : public MonotonicBufferResource {
 
   template <size_t alignment>
   inline void* allocate(size_t bytes) noexcept;
+  template <size_t alignment>
+  void* allocate_slow(size_t bytes) noexcept;
   inline void* allocate(size_t bytes, size_t alignment) noexcept;
 
   template <typename T>
@@ -447,17 +449,20 @@ ExclusiveMonotonicBufferResource::do_align<1>() noexcept {}
 
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE void
 ExclusiveMonotonicBufferResource::do_align(size_t alignment) noexcept {
-  _last_page_allocated =
-      (_last_page_allocated + alignment - 1) & static_cast<size_t>(-alignment);
+  auto free_begin = reinterpret_cast<uintptr_t>(_free_begin);
+  free_begin =
+      (free_begin + alignment - 1) & static_cast<uintptr_t>(-alignment);
+  _free_begin = reinterpret_cast<char*>(free_begin);
 }
 
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE void*
 ExclusiveMonotonicBufferResource::do_allocate_already_aligned(
     size_t bytes, size_t alignment) noexcept {
   _space_used += bytes;
-  if (_last_page_allocated + bytes <= _page_allocator->page_size()) {
-    auto result = _last_page + _last_page_allocated;
-    _last_page_allocated += bytes;
+  auto result = _free_begin;
+  auto next = result + bytes;
+  if (ABSL_PREDICT_TRUE(next <= _free_end)) {
+    _free_begin = next;
     return result;
   }
   return do_allocate_in_new_page(bytes, alignment);
@@ -470,6 +475,16 @@ ExclusiveMonotonicBufferResource::do_allocate_already_aligned(
 template <size_t alignment>
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE void*
 SharedMonotonicBufferResource::allocate(size_t bytes) noexcept {
+  auto local = _resources.local_fast();
+  if (ABSL_PREDICT_TRUE(local != nullptr)) {
+    return local->allocate<alignment>(bytes);
+  }
+  return allocate_slow<alignment>(bytes);
+}
+
+template <size_t alignment>
+ABSL_ATTRIBUTE_NOINLINE void* SharedMonotonicBufferResource::allocate_slow(
+    size_t bytes) noexcept {
   return _resources.local().allocate<alignment>(bytes);
 }
 

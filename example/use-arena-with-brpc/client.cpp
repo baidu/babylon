@@ -10,7 +10,7 @@ DEFINE_string(connection_type, "",
               "Connection type. Available values: single, pooled, short");
 DEFINE_string(server, "0.0.0.0:8000", "IP Address of server");
 DEFINE_int32(timeout_ms, 500, "RPC timeout in milliseconds");
-DEFINE_uint64(qps, 100, "");
+DEFINE_uint64(qps, 750, "");
 
 DEFINE_uint64(payload_scale, 10, "");
 
