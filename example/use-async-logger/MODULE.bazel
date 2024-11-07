@@ -1,5 +1,12 @@
-bazel_dep(name = 'babylon', version = '1.4.1')
-bazel_dep(name = 'brpc', version = '1.10.0.bcr.1')
+bazel_dep(name = 'babylon', version = '1.4.2')
+bazel_dep(name = 'brpc', version = '1.11.0')
 bazel_dep(name = 'spdlog', version = '1.14.1')
 bazel_dep(name = 'tcmalloc', version = '0.0.0-20240411-5ed309d')
-single_version_override(module_name = 'protobuf', version = '3.19.6')
+
+single_version_override(module_name = 'rules_fuzzing', version = '0.5.1')
+single_version_override(module_name = 'protobuf', version = '28.3')
+archive_override(module_name = 'brpc',
+  urls = ['https://github.com/apache/brpc/archive/30a56dd153010c0be88d7c197712e5b95843ff9c.zip'],
+  integrity = 'sha256-94aE0H4NZo72DSB0wtq6YlMZc9fOpGAlK4QHgG0FvXg=',
+  strip_prefix = 'brpc-30a56dd153010c0be88d7c197712e5b95843ff9c',
+)

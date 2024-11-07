@@ -33,20 +33,24 @@ index 000000000..8d1c8b69c
 +++ b/WORKSPACE.bzlmod
 @@ -0,0 +1 @@
 + 
+diff --git a/src/file_lists.cmake b/src/file_lists.cmake
+index 07152d92d..200c67cf6 100644
+--- a/src/file_lists.cmake
++++ b/src/file_lists.cmake
+@@ -243,6 +243,8 @@ set(libprotobuf_lite_hdrs
+   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.h
+   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_cleanup.h
+   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.h
++  # ARENASTRING PATCH: add new file
++  ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring_impl.h
+   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.h
+   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_lite.h
+   ${protobuf_SOURCE_DIR}/src/google/protobuf/endian.h
 diff --git a/src/google/protobuf/BUILD.bazel b/src/google/protobuf/BUILD.bazel
-index 381e0e24e..7c495fa98 100644
+index 381e0e24e..d56a5836c 100644
 --- a/src/google/protobuf/BUILD.bazel
 +++ b/src/google/protobuf/BUILD.bazel
-@@ -464,6 +464,8 @@ cc_library(
-     srcs = [
-         "any_lite.cc",
-         "arenastring.cc",
-+        # ARENASTRING PATCH: add new file
-+        "arenastring_impl.cc",
-         "arenaz_sampler.cc",
-         "extension_set.cc",
-         "generated_enum_util.cc",
-@@ -483,6 +485,8 @@ cc_library(
+@@ -483,6 +483,8 @@ cc_library(
          "any.h",
          "arena.h",
          "arenastring.h",
@@ -55,7 +59,7 @@ index 381e0e24e..7c495fa98 100644
          "arenaz_sampler.h",
          "descriptor_lite.h",
          "endian.h",
-@@ -823,6 +827,9 @@ filegroup(
+@@ -823,6 +825,9 @@ filegroup(
          "map_proto2_unittest.proto",
          "map_unittest.proto",
          "unittest.proto",
@@ -65,7 +69,7 @@ index 381e0e24e..7c495fa98 100644
          "unittest_custom_options.proto",
          "unittest_embed_optimize_for.proto",
          "unittest_empty.proto",
-@@ -838,6 +845,9 @@ filegroup(
+@@ -838,6 +843,9 @@ filegroup(
          "unittest_optimize_for.proto",
          "unittest_proto3.proto",
          "unittest_proto3_arena.proto",
@@ -75,7 +79,7 @@ index 381e0e24e..7c495fa98 100644
          "unittest_proto3_arena_lite.proto",
          "unittest_proto3_bad_macros.proto",
          "unittest_proto3_extensions.proto",
-@@ -1225,6 +1235,7 @@ cc_test(
+@@ -1225,6 +1233,7 @@ cc_test(
      ],
  )
  
@@ -83,7 +87,7 @@ index 381e0e24e..7c495fa98 100644
  cc_test(
      name = "arenastring_unittest",
      srcs = ["arenastring_unittest.cc"],
-@@ -1241,6 +1252,23 @@ cc_test(
+@@ -1241,6 +1250,23 @@ cc_test(
      ],
  )
  
@@ -448,6 +452,49 @@ index fb730a416..8f2bc8e1d 100644
  }
  inline void Mixin::set_allocated_root(std::string* value) {
    ::google::protobuf::internal::TSanWrite(&_impl_);
+diff --git a/src/google/protobuf/arena_align_test.cc b/src/google/protobuf/arena_align_test.cc
+index 7e0347f10..fa95d47ac 100644
+--- a/src/google/protobuf/arena_align_test.cc
++++ b/src/google/protobuf/arena_align_test.cc
+@@ -147,7 +147,11 @@ TEST(ArenaAlign, Padded) {
+ }
+ 
+ TEST(ArenaAlign, CeilPtr) {
+-  alignas(64) char p[129] = {0};
++  struct alignas(64) S {
++    char p[129] = {0};
++  };
++  auto s = ::std::make_unique<S>();
++  auto p = s->p;
+   auto align_64 = ArenaAlignAs(64);
+   EXPECT_THAT(align_64.Ceil(p + 0), Eq(p));
+   EXPECT_THAT(align_64.Ceil(p + 1), Eq(p + 64));
+@@ -159,7 +163,11 @@ TEST(ArenaAlign, CeilPtr) {
+ }
+ 
+ TEST(ArenaAlign, CheckAligned) {
+-  alignas(128) char p[129] = {0};
++  struct alignas(64) S {
++    char p[129] = {0};
++  };
++  auto s = ::std::make_unique<S>();
++  auto p = s->p;
+   auto align_64 = ArenaAlignAs(64);
+   EXPECT_THAT(align_64.CheckAligned(p + 0), Eq(p));
+   EXPECT_THAT(align_64.CheckAligned(p + 64), Eq(p + 64));
+@@ -178,7 +186,11 @@ TEST(ArenaAlign, CheckAligned) {
+ }
+ 
+ TEST(ArenaAlign, CeilDefaultAligned) {
+-  alignas(128) char p[129] = {0};
++  struct alignas(64) S {
++    char p[129] = {0};
++  };
++  auto s = ::std::make_unique<S>();
++  auto p = s->p;
+   auto align_64 = ArenaAlignAs(64);
+   EXPECT_THAT(align_64.CeilDefaultAligned(p + 0), Eq(p));
+   EXPECT_THAT(align_64.CeilDefaultAligned(p + 8), Eq(p + 64));
 diff --git a/src/google/protobuf/arena_unittest.cc b/src/google/protobuf/arena_unittest.cc
 index 857abf057..9500344e3 100644
 --- a/src/google/protobuf/arena_unittest.cc
@@ -759,173 +806,12 @@ index 0c1c4e271..54ff21e61 100644
  }
  
  inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
-diff --git a/src/google/protobuf/arenastring_impl.cc b/src/google/protobuf/arenastring_impl.cc
-new file mode 100644
-index 000000000..c4a976bbe
---- /dev/null
-+++ b/src/google/protobuf/arenastring_impl.cc
-@@ -0,0 +1,155 @@
-+#include "google/protobuf/arenastring_impl.h"
-+
-+#include "google/protobuf/port_def.inc"
-+
-+namespace google {
-+namespace protobuf {
-+
-+ArenaStringAccessor& ArenaStringAccessor::assign(const_pointer data,
-+                                                 size_type size) noexcept {
-+  auto* buffer = qualified_buffer(size);
-+  set_size(size);
-+  __builtin_memcpy(buffer, data, size);
-+  buffer[size] = '\0';
-+  return *this;
-+}
-+
-+void ArenaStringAccessor::reserve(size_type required_capacity) noexcept {
-+  if (required_capacity > capacity()) {
-+    auto origin_size = size();
-+    recreate_buffer(required_capacity);
-+    set_size_and_terminator(origin_size);
-+  }
-+}
-+
-+void ArenaStringAccessor::push_back(value_type c) noexcept {
-+  auto origin_size = size();
-+  auto* buffer = qualified_buffer(origin_size + 1, origin_size << 1);
-+  set_size(origin_size + 1);
-+  buffer[origin_size] = c;
-+  buffer[origin_size + 1] = '\0';
-+}
-+
-+ArenaStringAccessor& ArenaStringAccessor::append(
-+    const_pointer append_data, size_type append_size) noexcept {
-+  auto origin_size = size();
-+  auto* buffer = qualified_buffer(origin_size + append_size);
-+  set_size(origin_size + append_size);
-+  __builtin_memcpy(buffer + origin_size, append_data, append_size);
-+  buffer[origin_size + append_size] = '\0';
-+  return *this;
-+}
-+
-+void ArenaStringAccessor::swap(ArenaStringAccessor other) noexcept {
-+#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI
-+  auto* tmp = representation().data;
-+  *reinterpret_cast<pointer*>(_ptr) = other.representation().data;
-+  *reinterpret_cast<pointer*>(other._ptr) = tmp;
-+#else   // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
-+  _ptr->swap(*other._ptr);
-+#endif  // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
-+}
-+
-+void ArenaStringAccessor::resize(size_type new_size, value_type c) noexcept {
-+  auto origin_size = size();
-+  auto buffer = qualified_buffer(new_size);
-+  set_size_and_terminator(new_size);
-+  if (new_size > origin_size) {
-+    __builtin_memset(buffer + origin_size, c, new_size - origin_size);
-+  }
-+}
-+
-+internal::StdStringRep& ArenaStringAccessor::representation() noexcept {
-+#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI
-+  return *(*reinterpret_cast<StdStringRep**>(_ptr) - 1);
-+#else   // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
-+  return *reinterpret_cast<StdStringRep*>(_ptr);
-+#endif  // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
-+}
-+
-+ArenaStringAccessor::pointer ArenaStringAccessor::recreate_buffer(
-+    size_type capacity) noexcept {
-+#if __GLIBCXX__
-+  size_t buffer_size = capacity + 1;
-+  buffer_size = (buffer_size + 7) & static_cast<size_t>(-8);
-+  capacity = buffer_size - 1;
-+#if _GLIBCXX_USE_CXX11_ABI
-+  auto* buffer = reinterpret_cast<char*>(_arena->AllocateAligned(buffer_size));
-+  __builtin_memcpy(buffer, data(), size());
-+  auto& rep = representation();
-+  rep.data = buffer;
-+  rep.capacity = capacity;
-+  return buffer;
-+#else   // !_GLIBCXX_USE_CXX11_ABI
-+  auto* rep = reinterpret_cast<StdStringRep*>(
-+      _arena->AllocateAligned(sizeof(StdStringRep) + buffer_size));
-+  rep->capacity = capacity;
-+  rep->refcount = -1;
-+  __builtin_memcpy(rep->data, data(), size());
-+  *reinterpret_cast<pointer*>(_ptr) = rep->data;
-+  return rep->data;
-+#endif  // !_GLIBCXX_USE_CXX11_ABI
-+#else   // !__GLIBCXX__
-+  capacity = (capacity + 16) & static_cast<size_type>(-16);
-+  auto* buffer = reinterpret_cast<pointer>(_arena->AllocateAligned(capacity));
-+  __builtin_memcpy(buffer, data(), size());
-+  auto& rep = representation();
-+  rep.long_format.data = buffer;
-+  rep.long_format.capacity = capacity + 1;
-+  return rep.long_format.data;
-+#endif  // !__GLIBCXX__
-+}
-+
-+ArenaStringAccessor::pointer ArenaStringAccessor::writable_buffer() noexcept {
-+#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI
-+  return representation().refcount <= 0 ? representation().data : &(*_ptr)[0];
-+#else   // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
-+  return &(*_ptr)[0];
-+#endif  // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
-+}
-+
-+void ArenaStringAccessor::set_size(size_type size) noexcept {
-+#if __GLIBCXX__
-+  auto& rep = representation();
-+  rep.size = size;
-+#else   // !__GLIBCXX__
-+  auto& rep = representation();
-+  if (rep.is_long()) {
-+    rep.long_format.size = size;
-+  } else {
-+    rep.shot_format.size = size << 1;
-+  }
-+#endif  // !__GLIBCXX__
-+}
-+
-+void ArenaStringAccessor::set_size_and_terminator(size_type size) noexcept {
-+#if __GLIBCXX__
-+  auto& rep = representation();
-+  rep.size = size;
-+  rep.data[size] = '\0';
-+#else   // !__GLIBCXX__
-+  auto& rep = representation();
-+  if (rep.is_long()) {
-+    rep.long_format.size = size;
-+    rep.long_format.data[size] = '\0';
-+  } else {
-+    rep.shot_format.size = size << 1;
-+    rep.shot_format.data[size] = '\0';
-+  }
-+#endif  // !__GLIBCXX__
-+}
-+
-+void MaybeArenaStringAccessor::clear() noexcept {
-+#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI
-+  if (representation().refcount <= 0) {
-+    ArenaStringAccessor::clear();
-+    return;
-+  }
-+#endif  // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
-+  underlying()->clear();
-+}
-+
-+}  // namespace protobuf
-+}  // namespace google
-+
-+#include "google/protobuf/port_undef.inc"
 diff --git a/src/google/protobuf/arenastring_impl.h b/src/google/protobuf/arenastring_impl.h
 new file mode 100644
-index 000000000..05324e276
+index 000000000..140d280f6
 --- /dev/null
 +++ b/src/google/protobuf/arenastring_impl.h
-@@ -0,0 +1,522 @@
+@@ -0,0 +1,907 @@
 +#pragma once
 +
 +// Feature check macro
@@ -1011,159 +897,485 @@ index 000000000..05324e276
 +  using reverse_iterator = ::std::reverse_iterator<iterator>;
 +  using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
 +
-+  using StdStringRep = internal::StdStringRep;
-+
-+  // Disable default constructor and copy constructor
++  // Disable default constructor and default operator=
 +  ArenaStringAccessor() = delete;
 +  inline ArenaStringAccessor(ArenaStringAccessor&&) noexcept = default;
 +  inline ArenaStringAccessor(const ArenaStringAccessor&) noexcept = default;
 +  ArenaStringAccessor& operator=(ArenaStringAccessor&&) = delete;
 +  ArenaStringAccessor& operator=(const ArenaStringAccessor&) = delete;
-+  ~ArenaStringAccessor() noexcept = default;
++  inline ~ArenaStringAccessor() noexcept = default;
 +
 +  // Assign
-+  inline ArenaStringAccessor& operator=(::absl::string_view other) noexcept {
-+    return assign(other.data(), other.size());
-+  }
-+  inline ArenaStringAccessor& assign(::absl::string_view other) noexcept {
-+    return assign(other.data(), other.size());
-+  }
-+  ArenaStringAccessor& assign(const_pointer data, size_type size) noexcept;
++  inline ArenaStringAccessor& operator=(::absl::string_view other) noexcept;
++  inline ArenaStringAccessor& assign(::absl::string_view other) noexcept;
++  inline ArenaStringAccessor& assign(const_pointer data,
++                                     size_type size) noexcept;
 +
 +  // Element access
-+  inline reference operator[](size_type position) noexcept {
-+    return writable_buffer()[position];
-+  }
-+  inline const_reference operator[](size_type position) const noexcept {
-+    return data()[position];
-+  }
-+  inline const_pointer data() const noexcept { return c_str(); }
-+  inline const_pointer c_str() const noexcept {
-+    return static_cast<const ::std::string*>(_ptr)->c_str();
-+  }
-+  inline operator ::absl::string_view() const noexcept {
-+    return ::absl::string_view(data(), size());
-+  }
-+  inline operator const ::std::string&() const noexcept { return *_ptr; }
++  inline reference operator[](size_type position) noexcept;
++  inline const_reference operator[](size_type position) const noexcept;
++  inline const_pointer data() const noexcept;
++  inline const_pointer c_str() const noexcept;
++  inline operator ::absl::string_view() const noexcept;
++  inline operator const ::std::string&() const noexcept;
 +
 +  // Iterators
-+  inline iterator begin() noexcept { return iterator(writable_buffer()); }
-+  inline const_iterator cbegin() const noexcept {
-+    return const_iterator(data());
-+  }
-+  inline const_iterator end() noexcept {
-+    return iterator(writable_buffer() + size());
-+  }
-+  inline const_iterator cend() const noexcept {
-+    return const_iterator(data() + size());
-+  }
++  inline iterator begin() noexcept;
++  inline const_iterator begin() const noexcept;
++  inline const_iterator cbegin() const noexcept;
++  inline iterator end() noexcept;
++  inline const_iterator end() const noexcept;
++  inline const_iterator cend() const noexcept;
 +
 +  // Capacity
-+  inline bool empty() const noexcept { return _ptr->empty(); }
-+  inline size_type size() const noexcept { return _ptr->size(); }
-+  void reserve(size_type required_capacity) noexcept;
-+  inline size_type capacity() const noexcept { return _ptr->capacity(); }
++  inline bool empty() const noexcept;
++  inline size_type size() const noexcept;
++  inline void reserve(size_type required_capacity) noexcept;
++  inline size_type capacity() const noexcept;
 +
 +  // Modifiers
-+  inline void clear() noexcept { set_size_and_terminator(0); }
-+  void push_back(value_type c) noexcept;
-+  inline ArenaStringAccessor& append(::absl::string_view sv) noexcept {
-+    return append(sv.data(), sv.size());
-+  }
-+  ArenaStringAccessor& append(const_pointer append_data,
-+                              size_type append_size) noexcept;
-+  inline ArenaStringAccessor& operator+=(char ch) noexcept {
-+    push_back(ch);
-+    return *this;
-+  }
-+  inline ArenaStringAccessor& operator+=(::absl::string_view sv) noexcept {
-+    return append(sv.data(), sv.size());
-+  }
-+  void resize(size_type new_size) noexcept { resize(new_size, '\0'); }
-+  void resize(size_type new_size, value_type c) noexcept;
-+  void swap(ArenaStringAccessor other) noexcept;
++  inline void clear() noexcept;
++  inline void push_back(value_type c) noexcept;
++  inline ArenaStringAccessor& append(::absl::string_view sv) noexcept;
++  inline ArenaStringAccessor& append(const_pointer append_data,
++                                     size_type append_size) noexcept;
++  inline ArenaStringAccessor& operator+=(char ch) noexcept;
++  inline ArenaStringAccessor& operator+=(::absl::string_view sv) noexcept;
++  inline void resize(size_type new_size) noexcept;
++  inline void resize(size_type new_size, value_type c) noexcept;
++  inline void swap(ArenaStringAccessor other) noexcept;
 +
 +  // Operations
-+  inline int compare(::absl::string_view other) const noexcept {
-+    return static_cast<::absl::string_view>(*this).compare(other);
-+  }
++  inline int compare(::absl::string_view other) const noexcept;
 +
 +  ////////////////////////////////////////////////////////////////////////////
-+  // Special function
-+  inline static ArenaStringAccessor create(Arena* arena) noexcept {
-+    auto* ptr = reinterpret_cast<::std::string*>(
-+        arena->AllocateAligned(sizeof(::std::string)));
-+    new (ptr)::std::string();
-+    return ArenaStringAccessor(arena, ptr);
-+  }
-+
++  // Special functions
++  // Create string on arena
++  inline static ArenaStringAccessor create(Arena* arena) noexcept;
 +  template <typename T>
-+  inline static ArenaStringAccessor create(Arena* arena, T&& value) noexcept {
-+    return create(arena) = ::std::forward<T>(value);
-+  }
-+
-+  // Clear function dont need arena
-+  inline static void clear(::std::string* ptr) noexcept {
-+    ArenaStringAccessor(nullptr, ptr).clear();
-+  }
-+
-+  // Wwap function dont need arena
-+  // but left and right must both on same arena
-+  inline static void swap(::std::string* left, ::std::string* right) noexcept {
-+    ArenaStringAccessor(nullptr, left)
-+        .swap(ArenaStringAccessor(nullptr, right));
-+  }
-+
-+  // Wrapper construct
-+  inline ArenaStringAccessor(Arena* arena, ::std::string* ptr) noexcept
-+      : _arena(arena), _ptr(ptr) {}
-+  inline Arena* arena() const noexcept { return _arena; }
-+  inline ::std::string* underlying() const noexcept { return _ptr; }
-+
++  inline static ArenaStringAccessor create(Arena* arena, T&& value) noexcept;
++  // Swap strings both on **same** arena or both not on arena
++  inline static void swap(::std::string* left, ::std::string* right) noexcept;
++  // Wrap constructor
++  inline ArenaStringAccessor(Arena* arena, ::std::string* ptr) noexcept;
++  inline Arena* arena() const noexcept;
++  inline ::std::string* underlying() const noexcept;
 +  // Support absl::strings_internal::STLStringResizeUninitialized
-+  inline char* __resize_default_init(size_type new_size) noexcept {
-+    auto buffer = qualified_buffer(new_size);
-+    set_size_and_terminator(new_size);
-+    return buffer;
-+  }
-+
-+  // Also support absl::Format(ArenaStringAccessor, ...)
-+  inline operator ::absl::FormatRawSink() noexcept {
-+    return ::absl::FormatRawSink(this);
-+  }
++  inline char* __resize_default_init(size_type new_size) noexcept;
 +  ////////////////////////////////////////////////////////////////////////////
-+
-+ protected:
-+  StdStringRep& representation() noexcept;
-+
-+  pointer recreate_buffer(size_type capacity) noexcept;
-+
-+  pointer writable_buffer() noexcept;
-+
-+  inline pointer qualified_buffer(size_type required_capacity,
-+                                  size_type predict_capacity) noexcept {
-+    return required_capacity <= capacity() ? writable_buffer()
-+                                           : recreate_buffer(predict_capacity);
-+  }
-+
-+  inline pointer qualified_buffer(size_type required_capacity) noexcept {
-+    return qualified_buffer(required_capacity, required_capacity);
-+  }
-+
-+  void set_size(size_type size) noexcept;
-+
-+  void set_size_and_terminator(size_type size) noexcept;
 +
 + private:
-+  // Support absl::Format(ArenaStringAccessor*, ...)
-+  friend inline void AbslFormatFlush(ArenaStringAccessor* accessor,
++  inline internal::StdStringRep& representation() noexcept;
++
++  inline pointer qualified_buffer(size_type required_capacity) noexcept;
++  inline pointer qualified_buffer(size_type required_capacity,
++                                  size_type predict_capacity) noexcept;
++  inline pointer writable_buffer() noexcept;
++  inline pointer recreate_buffer(size_type capacity) noexcept;
++
++  inline void set_size(size_type size) noexcept;
++  inline void set_size_and_terminator(size_type size) noexcept;
++
++  Arena* _arena{nullptr};
++  ::std::string* _ptr{nullptr};
++};
++
++class MaybeArenaStringAccessor : public ArenaStringAccessor {
++ public:
++  using ArenaStringAccessor::ArenaStringAccessor;
++  inline MaybeArenaStringAccessor(const ArenaStringAccessor& other) noexcept;
++
++  // Assign
++  template <typename T>
++  inline MaybeArenaStringAccessor& operator=(T&& other) noexcept;
++  // Deal with assign string specially. Try to keep copy on write state when
++  // using old abi.
++  inline MaybeArenaStringAccessor& operator=(
++      const ::std::string& other) noexcept;
++  inline MaybeArenaStringAccessor& operator=(::std::string& other) noexcept;
++  inline MaybeArenaStringAccessor& operator=(::std::string&& other) noexcept;
++  // Support api of ArenaStringPtr and InlinedStringField
++  template <typename T>
++  inline MaybeArenaStringAccessor& operator=(
++      ::std::reference_wrapper<T> other) noexcept;
++  template <typename T>
++  inline MaybeArenaStringAccessor& assign(T&& other) noexcept;
++  inline MaybeArenaStringAccessor& assign(const_pointer data,
++                                          size_type size) noexcept;
++  inline MaybeArenaStringAccessor& assign(const ::std::string& other) noexcept;
++  inline MaybeArenaStringAccessor& assign(::std::string& other) noexcept;
++  inline MaybeArenaStringAccessor& assign(::std::string&& other) noexcept;
++  template <typename T>
++  inline MaybeArenaStringAccessor& assign(
++      ::std::reference_wrapper<T> other) noexcept;
++
++  // Element access
++  inline reference operator[](size_type position) noexcept;
++  using ArenaStringAccessor::operator[];
++  using ArenaStringAccessor::c_str;
++  using ArenaStringAccessor::data;
++  using ArenaStringAccessor::operator ::absl::string_view;
++  using ArenaStringAccessor::operator const ::std::string&;
++
++  // Iterators
++  inline iterator begin() noexcept;
++  using ArenaStringAccessor::begin;
++  using ArenaStringAccessor::cbegin;
++  inline iterator end() noexcept;
++  using ArenaStringAccessor::cend;
++  using ArenaStringAccessor::end;
++
++  // Capacity
++  using ArenaStringAccessor::empty;
++  using ArenaStringAccessor::size;
++  inline void reserve(size_type required_capacity) noexcept;
++  using ArenaStringAccessor::capacity;
++
++  // Modifiers
++  inline void clear() noexcept;
++  inline void push_back(value_type c) noexcept;
++  inline MaybeArenaStringAccessor& append(::absl::string_view sv) noexcept;
++  inline MaybeArenaStringAccessor& append(const_pointer append_data,
++                                          size_type append_size) noexcept;
++  inline MaybeArenaStringAccessor& operator+=(char ch) noexcept;
++  inline MaybeArenaStringAccessor& operator+=(::absl::string_view sv) noexcept;
++  inline void resize(size_type new_size) noexcept;
++  inline void resize(size_type new_size, value_type c) noexcept;
++  using ArenaStringAccessor::swap;
++
++  ////////////////////////////////////////////////////////////////////////////
++  // Special functions
++  // Create string maybe on arena
++  inline static MaybeArenaStringAccessor create(Arena* arena) noexcept;
++  template <typename T>
++  inline static MaybeArenaStringAccessor create(Arena* arena,
++                                                T&& value) noexcept;
++  // Clear string maybe on arena
++  inline static void clear(::std::string* ptr) noexcept;
++  // Wrap constructor
++  inline MaybeArenaStringAccessor(::std::string* string) noexcept;
++  using ArenaStringAccessor::arena;
++  using ArenaStringAccessor::underlying;
++  // Support absl::strings_internal::STLStringResizeUninitialized
++  inline void __resize_default_init(size_type new_size) noexcept;
++  // Make operator* and operator-> both to self to imitate a string*
++  inline MaybeArenaStringAccessor* operator->() noexcept;
++  inline const MaybeArenaStringAccessor* operator->() const noexcept;
++  inline MaybeArenaStringAccessor& operator*() noexcept;
++  inline const MaybeArenaStringAccessor& operator*() const noexcept;
++  // Destroy string if not on arena
++  inline void destroy() noexcept;
++  // Also support absl::Format(MaybeArenaStringAccessor, ...)
++  inline operator ::absl::FormatRawSink() noexcept;
++  ////////////////////////////////////////////////////////////////////////////
++
++ private:
++  // Support absl::Format(MaybeArenaStringAccessor*, ...)
++  friend inline void AbslFormatFlush(MaybeArenaStringAccessor* accessor,
 +                                     ::absl::string_view sv) noexcept {
 +    accessor->append(sv.data(), sv.size());
 +  }
-+
-+  Arena* _arena;
-+  ::std::string* _ptr;
 +};
++
++#if GOOGLE_PROTOBUF_MUTABLE_DONATED_STRING
++using MutableStringType = MaybeArenaStringAccessor;
++using MutableStringReferenceType = MaybeArenaStringAccessor;
++#else   // !GOOGLE_PROTOBUF_MUTABLE_DONATED_STRING
++using MutableStringType = ::std::string*;
++using MutableStringReferenceType = ::std::string&;
++#endif  // !GOOGLE_PROTOBUF_MUTABLE_DONATED_STRING
++
++////////////////////////////////////////////////////////////////////////////////
++// ArenaStringAccessor begin
++inline ArenaStringAccessor& ArenaStringAccessor::operator=(
++    ::absl::string_view other) noexcept {
++  return assign(other.data(), other.size());
++}
++
++inline ArenaStringAccessor& ArenaStringAccessor::assign(
++    ::absl::string_view other) noexcept {
++  return assign(other.data(), other.size());
++}
++
++inline ArenaStringAccessor& ArenaStringAccessor::assign(
++    const_pointer data, size_type size) noexcept {
++  auto buffer = qualified_buffer(size);
++  set_size(size);
++  __builtin_memcpy(buffer, data, size);
++  buffer[size] = '\0';
++  return *this;
++}
++
++inline ArenaStringAccessor::reference ArenaStringAccessor::operator[](
++    size_type position) noexcept {
++  return writable_buffer()[position];
++}
++
++inline ArenaStringAccessor::const_reference ArenaStringAccessor::operator[](
++    size_type position) const noexcept {
++  return data()[position];
++}
++
++inline ArenaStringAccessor::const_pointer ArenaStringAccessor::data()
++    const noexcept {
++  return c_str();
++}
++
++inline ArenaStringAccessor::const_pointer ArenaStringAccessor::c_str()
++    const noexcept {
++  return static_cast<const ::std::string*>(_ptr)->c_str();
++}
++
++inline ArenaStringAccessor::operator ::absl::string_view() const noexcept {
++  return ::absl::string_view(data(), size());
++}
++
++inline ArenaStringAccessor::operator const ::std::string&() const noexcept {
++  return *_ptr;
++}
++
++inline ArenaStringAccessor::iterator ArenaStringAccessor::begin() noexcept {
++  return iterator(writable_buffer());
++}
++
++inline ArenaStringAccessor::const_iterator ArenaStringAccessor::begin()
++    const noexcept {
++  return cbegin();
++}
++
++inline ArenaStringAccessor::const_iterator ArenaStringAccessor::cbegin()
++    const noexcept {
++  return const_iterator(data());
++}
++
++inline ArenaStringAccessor::iterator ArenaStringAccessor::end() noexcept {
++  return iterator(writable_buffer() + size());
++}
++
++inline ArenaStringAccessor::const_iterator ArenaStringAccessor::end()
++    const noexcept {
++  return cend();
++}
++
++inline ArenaStringAccessor::const_iterator ArenaStringAccessor::cend()
++    const noexcept {
++  return const_iterator(data() + size());
++}
++
++inline bool ArenaStringAccessor::empty() const noexcept {
++  return _ptr->empty();
++}
++
++inline ArenaStringAccessor::size_type ArenaStringAccessor::size()
++    const noexcept {
++  return _ptr->size();
++}
++
++inline void ArenaStringAccessor::reserve(size_type required_capacity) noexcept {
++  if (required_capacity > capacity()) {
++    auto origin_size = size();
++    recreate_buffer(required_capacity);
++    set_size_and_terminator(origin_size);
++  }
++}
++
++inline ArenaStringAccessor::size_type ArenaStringAccessor::capacity()
++    const noexcept {
++  return _ptr->capacity();
++}
++
++inline void ArenaStringAccessor::clear() noexcept {
++  set_size_and_terminator(0);
++}
++
++inline void ArenaStringAccessor::push_back(value_type c) noexcept {
++  auto origin_size = size();
++  auto buffer = qualified_buffer(origin_size + 1, origin_size << 1);
++  set_size(origin_size + 1);
++  buffer[origin_size] = c;
++  buffer[origin_size + 1] = '\0';
++}
++
++inline ArenaStringAccessor& ArenaStringAccessor::append(
++    ::absl::string_view sv) noexcept {
++  return append(sv.data(), sv.size());
++}
++
++inline ArenaStringAccessor& ArenaStringAccessor::append(
++    const_pointer append_data, size_type append_size) noexcept {
++  auto origin_size = size();
++  auto buffer = qualified_buffer(origin_size + append_size);
++  set_size(origin_size + append_size);
++  __builtin_memcpy(buffer + origin_size, append_data, append_size);
++  buffer[origin_size + append_size] = '\0';
++  return *this;
++}
++
++inline ArenaStringAccessor& ArenaStringAccessor::operator+=(char ch) noexcept {
++  push_back(ch);
++  return *this;
++}
++
++inline ArenaStringAccessor& ArenaStringAccessor::operator+=(
++    ::absl::string_view sv) noexcept {
++  return append(sv.data(), sv.size());
++}
++
++inline void ArenaStringAccessor::resize(size_type new_size) noexcept {
++  resize(new_size, '\0');
++}
++
++inline void ArenaStringAccessor::resize(size_type new_size,
++                                        value_type c) noexcept {
++  auto origin_size = size();
++  auto buffer = qualified_buffer(new_size);
++  set_size_and_terminator(new_size);
++  if (new_size > origin_size) {
++    __builtin_memset(buffer + origin_size, c, new_size - origin_size);
++  }
++}
++
++inline void ArenaStringAccessor::swap(ArenaStringAccessor other) noexcept {
++#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI
++  auto tmp = representation().data;
++  *reinterpret_cast<pointer*>(_ptr) = other.representation().data;
++  *reinterpret_cast<pointer*>(other._ptr) = tmp;
++#else   // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
++  _ptr->swap(*other._ptr);
++#endif  // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
++}
++
++inline int ArenaStringAccessor::compare(
++    ::absl::string_view other) const noexcept {
++  return static_cast<::absl::string_view>(*this).compare(other);
++}
++
++inline ArenaStringAccessor ArenaStringAccessor::create(Arena* arena) noexcept {
++  auto ptr = reinterpret_cast<::std::string*>(
++      arena->AllocateAligned(sizeof(::std::string)));
++  new (ptr)::std::string();
++  return ArenaStringAccessor(arena, ptr);
++}
++
++template <typename T>
++inline ArenaStringAccessor ArenaStringAccessor::create(Arena* arena,
++                                                       T&& value) noexcept {
++  return create(arena) = ::std::forward<T>(value);
++}
++
++inline void ArenaStringAccessor::swap(::std::string* left,
++                                      ::std::string* right) noexcept {
++  ArenaStringAccessor(nullptr, left).swap(ArenaStringAccessor(nullptr, right));
++}
++
++inline ArenaStringAccessor::ArenaStringAccessor(Arena* arena,
++                                                ::std::string* ptr) noexcept
++    : _arena(arena), _ptr(ptr) {}
++
++inline Arena* ArenaStringAccessor::arena() const noexcept { return _arena; }
++inline ::std::string* ArenaStringAccessor::underlying() const noexcept {
++  return _ptr;
++}
++
++inline char* ArenaStringAccessor::__resize_default_init(
++    size_type new_size) noexcept {
++  auto buffer = qualified_buffer(new_size);
++  set_size_and_terminator(new_size);
++  return buffer;
++}
++
++inline internal::StdStringRep& ArenaStringAccessor::representation() noexcept {
++#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI
++  return *(*reinterpret_cast<internal::StdStringRep**>(_ptr) - 1);
++#else   // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
++  return *reinterpret_cast<internal::StdStringRep*>(_ptr);
++#endif  // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
++}
++
++inline ArenaStringAccessor::pointer ArenaStringAccessor::qualified_buffer(
++    size_type required_capacity, size_type predict_capacity) noexcept {
++  return required_capacity <= capacity() ? writable_buffer()
++                                         : recreate_buffer(predict_capacity);
++}
++
++inline ArenaStringAccessor::pointer ArenaStringAccessor::qualified_buffer(
++    size_type required_capacity) noexcept {
++  return qualified_buffer(required_capacity, required_capacity);
++}
++
++inline ArenaStringAccessor::pointer
++ArenaStringAccessor::writable_buffer() noexcept {
++#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI
++  return representation().data;
++#else   // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
++  return &(*_ptr)[0];
++#endif  // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
++}
++
++inline ArenaStringAccessor::pointer ArenaStringAccessor::recreate_buffer(
++    size_type capacity) noexcept {
++#if __GLIBCXX__
++  size_t buffer_size = capacity + 1;
++  buffer_size = (buffer_size + 7) & static_cast<size_t>(-8);
++  capacity = buffer_size - 1;
++#if _GLIBCXX_USE_CXX11_ABI
++  auto buffer = reinterpret_cast<char*>(_arena->AllocateAligned(buffer_size));
++  __builtin_memcpy(buffer, data(), size());
++  auto& rep = representation();
++  rep.data = buffer;
++  rep.capacity = capacity;
++  return buffer;
++#else   // !_GLIBCXX_USE_CXX11_ABI
++  auto rep = reinterpret_cast<StdStringRep*>(
++      _arena->AllocateAligned(sizeof(StdStringRep) + buffer_size));
++  rep->capacity = capacity;
++  rep->refcount = -1;
++  __builtin_memcpy(rep->data, data(), size());
++  *reinterpret_cast<pointer*>(_ptr) = rep->data;
++  return rep->data;
++#endif  // !_GLIBCXX_USE_CXX11_ABI
++#else   // !__GLIBCXX__
++  capacity = (capacity + 16) & static_cast<size_type>(-16);
++  auto buffer = reinterpret_cast<pointer>(_arena->AllocateAligned(capacity));
++  __builtin_memcpy(buffer, data(), size());
++  auto& rep = representation();
++  rep.long_format.data = buffer;
++  rep.long_format.capacity = capacity + 1;
++  return rep.long_format.data;
++#endif  // !__GLIBCXX__
++}
++
++inline void ArenaStringAccessor::set_size(size_type size) noexcept {
++#if __GLIBCXX__
++  auto& rep = representation();
++  rep.size = size;
++#else   // !__GLIBCXX__
++  auto& rep = representation();
++  if (rep.is_long()) {
++    rep.long_format.size = size;
++  } else {
++    rep.shot_format.size = size << 1;
++  }
++#endif  // !__GLIBCXX__
++}
++
++inline void ArenaStringAccessor::set_size_and_terminator(
++    size_type size) noexcept {
++#if __GLIBCXX__
++  auto& rep = representation();
++  rep.size = size;
++  rep.data[size] = '\0';
++#else   // !__GLIBCXX__
++  auto& rep = representation();
++  if (rep.is_long()) {
++    rep.long_format.size = size;
++    rep.long_format.data[size] = '\0';
++  } else {
++    rep.shot_format.size = size << 1;
++    rep.shot_format.data[size] = '\0';
++  }
++#endif  // !__GLIBCXX__
++}
 +
 +inline bool operator==(const ArenaStringAccessor& left,
 +                       const ArenaStringAccessor& right) noexcept {
@@ -1254,195 +1466,254 @@ index 000000000..05324e276
 +                       ::absl::string_view right) noexcept {
 +  return *left.underlying() >= right;
 +}
++// ArenaStringAccessor end
++////////////////////////////////////////////////////////////////////////////////
 +
-+class MaybeArenaStringAccessor : public ArenaStringAccessor {
-+ public:
-+  using ArenaStringAccessor::ArenaStringAccessor;
++////////////////////////////////////////////////////////////////////////////////
++// MaybeArenaStringAccessor begin
++inline MaybeArenaStringAccessor::MaybeArenaStringAccessor(
++    const ArenaStringAccessor& other) noexcept
++    : ArenaStringAccessor(other) {}
 +
-+  MaybeArenaStringAccessor(const ArenaStringAccessor& other) noexcept
-+      : ArenaStringAccessor(other) {}
++template <typename T>
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::operator=(
++    T&& other) noexcept {
++  return assign(::std::forward<T>(other));
++}
++template <typename T>
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::assign(
++    T&& other) noexcept {
++  ::absl::string_view sv(::std::forward<T>(other));
++  return assign(sv.data(), sv.size());
++}
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::assign(
++    const_pointer data, size_type size) noexcept {
++  if (arena() != nullptr) {
++    ArenaStringAccessor::assign(data, size);
++  } else {
++    underlying()->assign(data, size);
++  }
++  return *this;
++}
 +
-+  // Assign
-+  template <typename T>
-+  inline MaybeArenaStringAccessor& operator=(T&& other) {
-+    return assign(::std::forward<T>(other));
-+  }
-+  template <typename T>
-+  inline MaybeArenaStringAccessor& assign(T&& other) {
-+    ::absl::string_view sv(::std::forward<T>(other));
-+    return assign(sv.data(), sv.size());
-+  }
-+  inline MaybeArenaStringAccessor& assign(const_pointer data, size_type size) {
-+    if (arena() != nullptr) {
-+      ArenaStringAccessor::assign(data, size);
-+    } else {
-+      underlying()->assign(data, size);
-+    }
-+    return *this;
-+  }
-+  // Deal with assign string specially. Try to keep copy on write state when
-+  // using old abi
-+  inline MaybeArenaStringAccessor& operator=(const ::std::string& other) {
-+    return assign(other);
-+  }
-+  inline MaybeArenaStringAccessor& assign(const ::std::string& other) {
-+    if (arena() != nullptr) {
-+      ArenaStringAccessor::assign(other);
-+    } else {
-+      underlying()->assign(other);
-+    }
-+    return *this;
-+  }
-+  inline MaybeArenaStringAccessor& operator=(::std::string& other) {
-+    return assign(static_cast<const ::std::string&>(other));
-+  }
-+  inline MaybeArenaStringAccessor& assign(::std::string& other) {
-+    return assign(static_cast<const ::std::string&>(other));
-+  }
-+  inline MaybeArenaStringAccessor& operator=(::std::string&& other) {
-+    return assign(::std::move(other));
-+  }
-+  inline MaybeArenaStringAccessor& assign(::std::string&& other) {
-+    if (arena() != nullptr) {
-+      ArenaStringAccessor::assign(other);
-+    } else {
-+      underlying()->assign(::std::move(other));
-+    }
-+    return *this;
-+  }
-+  template <typename T>
-+  inline MaybeArenaStringAccessor& operator=(
-+      ::std::reference_wrapper<T> other) {
-+    return assign(other);
-+  }
-+  template <typename T>
-+  inline MaybeArenaStringAccessor& assign(::std::reference_wrapper<T> other) {
-+    return assign(other.get());
-+  }
++// Deal with assign string specially. Try to keep copy on write state when
++// using old abi
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::operator=(
++    const ::std::string& other) noexcept {
++  return assign(other);
++}
 +
-+  inline void reserve(size_type required_capacity) {
-+    if (arena() != nullptr) {
-+      ArenaStringAccessor::reserve(required_capacity);
-+    } else if (required_capacity > capacity()) {
-+      underlying()->reserve(required_capacity);
-+    }
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::assign(
++    const ::std::string& other) noexcept {
++  if (arena() != nullptr) {
++    ArenaStringAccessor::assign(other);
++  } else {
++    underlying()->assign(other);
 +  }
++  return *this;
++}
 +
-+  void clear() noexcept;
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::operator=(
++    ::std::string& other) noexcept {
++  return assign(static_cast<const ::std::string&>(other));
++}
 +
-+  inline void push_back(value_type c) {
-+    if (arena() != nullptr) {
-+      ArenaStringAccessor::push_back(c);
-+    } else {
-+      underlying()->push_back(c);
-+    }
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::assign(
++    ::std::string& other) noexcept {
++  return assign(static_cast<const ::std::string&>(other));
++}
++
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::operator=(
++    ::std::string&& other) noexcept {
++  return assign(::std::move(other));
++}
++
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::assign(
++    ::std::string&& other) noexcept {
++  if (arena() != nullptr) {
++    ArenaStringAccessor::assign(other);
++  } else {
++    underlying()->assign(::std::move(other));
 +  }
++  return *this;
++}
 +
-+  inline MaybeArenaStringAccessor& append(::absl::string_view sv) {
-+    return append(sv.data(), sv.size());
++template <typename T>
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::operator=(
++    ::std::reference_wrapper<T> other) noexcept {
++  return assign(other);
++}
++
++template <typename T>
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::assign(
++    ::std::reference_wrapper<T> other) noexcept {
++  return assign(other.get());
++}
++
++inline MaybeArenaStringAccessor::reference MaybeArenaStringAccessor::operator[](
++    size_type position) noexcept {
++#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI
++  if (representation().refcount >= 0) {
++    return underlying()->operator[](position);
 +  }
++#endif  // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
++  return ArenaStringAccessor::operator[](position);
++}
 +
-+  inline MaybeArenaStringAccessor& append(const_pointer data, size_type size) {
-+    if (arena() != nullptr) {
-+      ArenaStringAccessor::append(data, size);
-+    } else {
-+      underlying()->append(data, size);
-+    }
-+    return *this;
++inline MaybeArenaStringAccessor::iterator
++MaybeArenaStringAccessor::begin() noexcept {
++#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI
++  if (representation().refcount >= 0) {
++    return underlying()->begin();
 +  }
++#endif  // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
++  return ArenaStringAccessor::begin();
++}
 +
-+  inline MaybeArenaStringAccessor& operator+=(char ch) noexcept {
-+    push_back(ch);
-+    return *this;
++inline MaybeArenaStringAccessor::iterator
++MaybeArenaStringAccessor::end() noexcept {
++#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI
++  if (representation().refcount >= 0) {
++    return underlying()->end();
 +  }
++#endif  // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
++  return ArenaStringAccessor::end();
++}
 +
-+  inline MaybeArenaStringAccessor& operator+=(::absl::string_view sv) noexcept {
-+    return append(sv.data(), sv.size());
++inline void MaybeArenaStringAccessor::reserve(
++    size_type required_capacity) noexcept {
++  if (arena() != nullptr) {
++    ArenaStringAccessor::reserve(required_capacity);
++  } else if (required_capacity > capacity()) {
++    underlying()->reserve(required_capacity);
 +  }
++}
 +
-+  inline void resize(size_type size) {
-+    if (arena() != nullptr) {
-+      ArenaStringAccessor::resize(size);
-+    } else {
-+      underlying()->resize(size);
-+    }
++inline void MaybeArenaStringAccessor::clear() noexcept {
++#if __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI
++  if (representation().refcount <= 0) {
++    ArenaStringAccessor::clear();
++    return;
 +  }
-+  inline void resize(size_type size, value_type c) {
-+    if (arena() != nullptr) {
-+      ArenaStringAccessor::resize(size, c);
-+    } else {
-+      underlying()->resize(size, c);
-+    }
++#endif  // !__GLIBCXX__ || _GLIBCXX_USE_CXX11_ABI
++  underlying()->clear();
++}
++
++inline void MaybeArenaStringAccessor::push_back(value_type c) noexcept {
++  if (arena() != nullptr) {
++    ArenaStringAccessor::push_back(c);
++  } else {
++    underlying()->push_back(c);
 +  }
++}
 +
-+  ////////////////////////////////////////////////////////////////////////////
-+  // Special function
-+  inline static MaybeArenaStringAccessor create(Arena* arena) {
-+    if (arena != nullptr) {
-+      return ArenaStringAccessor::create(arena);
-+    } else {
-+      return MaybeArenaStringAccessor(new ::std::string);
-+    }
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::append(
++    ::absl::string_view sv) noexcept {
++  return append(sv.data(), sv.size());
++}
++
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::append(
++    const_pointer data, size_type size) noexcept {
++  if (arena() != nullptr) {
++    ArenaStringAccessor::append(data, size);
++  } else {
++    underlying()->append(data, size);
 +  }
++  return *this;
++}
 +
-+  template <typename T>
-+  inline static MaybeArenaStringAccessor create(Arena* arena, T&& value) {
-+    return create(arena) = ::std::forward<T>(value);
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::operator+=(
++    char ch) noexcept {
++  push_back(ch);
++  return *this;
++}
++
++inline MaybeArenaStringAccessor& MaybeArenaStringAccessor::operator+=(
++    ::absl::string_view sv) noexcept {
++  return append(sv.data(), sv.size());
++}
++
++inline void MaybeArenaStringAccessor::resize(size_type size) noexcept {
++  if (arena() != nullptr) {
++    ArenaStringAccessor::resize(size);
++  } else {
++    underlying()->resize(size);
 +  }
++}
 +
-+  inline static void clear(::std::string* ptr) noexcept {
-+    MaybeArenaStringAccessor(ptr).clear();
++inline void MaybeArenaStringAccessor::resize(size_type size,
++                                             value_type c) noexcept {
++  if (arena() != nullptr) {
++    ArenaStringAccessor::resize(size, c);
++  } else {
++    underlying()->resize(size, c);
 +  }
++}
 +
-+  // Add wrapper constructor for normal string
-+  inline MaybeArenaStringAccessor(::std::string* string) noexcept
-+      : ArenaStringAccessor(nullptr, string) {}
-+  using ArenaStringAccessor::arena;
-+  using ArenaStringAccessor::underlying;
-+
-+  // Support absl::strings_internal::STLStringResizeUninitialized
-+  inline void __resize_default_init(size_type new_size) noexcept {
-+    if (arena() != nullptr) {
-+      ArenaStringAccessor::__resize_default_init(new_size);
-+    } else {
-+      ::absl::strings_internal::STLStringResizeUninitialized(underlying(),
-+                                                             new_size);
-+    }
++inline MaybeArenaStringAccessor MaybeArenaStringAccessor::create(
++    Arena* arena) noexcept {
++  if (arena != nullptr) {
++    return ArenaStringAccessor::create(arena);
++  } else {
++    return MaybeArenaStringAccessor(new ::std::string);
 +  }
++}
 +
-+  // Make operator* and operator-> both to self to imitate a string*
-+  inline MaybeArenaStringAccessor* operator->() { return this; }
-+  inline const MaybeArenaStringAccessor* operator->() const { return this; }
-+  inline MaybeArenaStringAccessor& operator*() { return *this; }
-+  inline const MaybeArenaStringAccessor& operator*() const { return *this; }
++template <typename T>
++inline MaybeArenaStringAccessor MaybeArenaStringAccessor::create(
++    Arena* arena, T&& value) noexcept {
++  return create(arena) = ::std::forward<T>(value);
++}
 +
-+  inline void destroy() noexcept {
-+    if (arena() == nullptr) {
-+      delete underlying();
-+    }
++inline void MaybeArenaStringAccessor::clear(::std::string* ptr) noexcept {
++  MaybeArenaStringAccessor(ptr).clear();
++}
++
++inline MaybeArenaStringAccessor::MaybeArenaStringAccessor(
++    ::std::string* string) noexcept
++    : ArenaStringAccessor(nullptr, string) {}
++
++inline void MaybeArenaStringAccessor::__resize_default_init(
++    size_type new_size) noexcept {
++  if (arena() != nullptr) {
++    ArenaStringAccessor::__resize_default_init(new_size);
++  } else {
++    ::absl::strings_internal::STLStringResizeUninitialized(underlying(),
++                                                           new_size);
 +  }
++}
 +
-+  // Also support absl::Format(MaybeArenaStringAccessor, ...)
-+  inline operator ::absl::FormatRawSink() noexcept {
-+    return ::absl::FormatRawSink(this);
++inline MaybeArenaStringAccessor*
++MaybeArenaStringAccessor::operator->() noexcept {
++  return this;
++}
++
++inline const MaybeArenaStringAccessor* MaybeArenaStringAccessor::operator->()
++    const noexcept {
++  return this;
++}
++
++inline MaybeArenaStringAccessor&
++MaybeArenaStringAccessor::operator*() noexcept {
++  return *this;
++}
++
++inline const MaybeArenaStringAccessor& MaybeArenaStringAccessor::operator*()
++    const noexcept {
++  return *this;
++}
++
++inline void MaybeArenaStringAccessor::destroy() noexcept {
++  if (arena() == nullptr) {
++    delete underlying();
 +  }
-+  ////////////////////////////////////////////////////////////////////////////
++}
 +
-+ private:
-+  // Support absl::Format
-+  friend inline void AbslFormatFlush(MaybeArenaStringAccessor* accessor,
-+                                     ::absl::string_view sv) noexcept {
-+    accessor->append(sv.data(), sv.size());
-+  }
-+};
-+
-+#if GOOGLE_PROTOBUF_MUTABLE_DONATED_STRING
-+using MutableStringType = MaybeArenaStringAccessor;
-+using MutableStringReferenceType = MaybeArenaStringAccessor;
-+#else   // !GOOGLE_PROTOBUF_MUTABLE_DONATED_STRING
-+using MutableStringType = ::std::string*;
-+using MutableStringReferenceType = ::std::string&;
-+#endif  // !GOOGLE_PROTOBUF_MUTABLE_DONATED_STRING
++inline MaybeArenaStringAccessor::operator ::absl::FormatRawSink() noexcept {
++  return ::absl::FormatRawSink(this);
++}
++// MaybeArenaStringAccessor end
++////////////////////////////////////////////////////////////////////////////////
 +
 +}  // namespace protobuf
 +}  // namespace google
@@ -6258,7 +6529,7 @@ index a17f922b6..1c4a47f28 100644
  
  
 diff --git a/src/google/protobuf/inlined_string_field.h b/src/google/protobuf/inlined_string_field.h
-index d894acb7e..4d2c4972d 100644
+index d894acb7e..06f651d3e 100644
 --- a/src/google/protobuf/inlined_string_field.h
 +++ b/src/google/protobuf/inlined_string_field.h
 @@ -25,6 +25,8 @@
@@ -6327,6 +6598,15 @@ index d894acb7e..4d2c4972d 100644
  }
  
  inline const std::string& InlinedStringField::GetNoArena() const {
+@@ -429,7 +438,7 @@ inline PROTOBUF_NDEBUG_INLINE void InlinedStringField::InternalSwap(
+     InlinedStringField* rhs, bool rhs_arena_dtor_registered,
+     MessageLite* rhs_msg, Arena* arena) {
+ #ifdef GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
+-  lhs->get_mutable()->swap(*rhs->get_mutable());
++  MaybeArenaStringAccessor::swap(lhs->get_mutable(), rhs->get_mutable());
+   if (!lhs_arena_dtor_registered && rhs_arena_dtor_registered) {
+     lhs_msg->OnDemandRegisterArenaDtor(arena);
+   } else if (lhs_arena_dtor_registered && !rhs_arena_dtor_registered) {
 @@ -441,7 +450,7 @@ inline PROTOBUF_NDEBUG_INLINE void InlinedStringField::InternalSwap(
    (void)rhs_arena_dtor_registered;
    (void)lhs_msg;
@@ -6342,15 +6622,15 @@ index d894acb7e..4d2c4972d 100644
    (void)donated;
 -  SetNoArena(value);
 +  MutableAccessor(arena, donated) = value;
-+}
-+
+ }
+ 
+-inline void InlinedStringField::Set(const char* str, ::google::protobuf::Arena* arena,
 +inline void InlinedStringField::Set(const std::string& value, Arena* arena,
 +                                    bool donated, uint32_t* /*donating_states*/,
 +                                    uint32_t /*mask*/, MessageLite* /*msg*/) {
 +  MutableAccessor(arena, donated) = value;
- }
- 
--inline void InlinedStringField::Set(const char* str, ::google::protobuf::Arena* arena,
++}
++
 +inline void InlinedStringField::Set(const char* str,
 +                                    ::google::protobuf::Arena* arena,
                                      bool donated, uint32_t* donating_states,

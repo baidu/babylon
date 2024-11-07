@@ -7,9 +7,9 @@
 # in WORKSPACE
 http_archive(
   name = 'com_baidu_babylon',
-  urls = ['https://github.com/baidu/babylon/releases/download/v1.4.1/v1.4.1.tar.gz'],
-  strip_prefix = 'babylon-1.4.1',
-  sha256 = '930e8d24822a472466e8b616011a57c37021b02486ad19ee7b62c12bfef923b8',
+  urls = ['https://github.com/baidu/babylon/releases/download/v1.4.2/v1.4.2.tar.gz'],
+  strip_prefix = 'babylon-1.4.2',
+  sha256 = 'd60ee9cd86a777137bf021c8861e97438a69cc857659d5eb39af9e8464434cf1',
 )
 ```
 

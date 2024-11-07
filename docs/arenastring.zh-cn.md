@@ -33,3 +33,5 @@ common --registry=https://baidu.github.io/babylon/registry
 # in MODULE.bazel
 bazel_dep(name = 'protobuf', version = '28.3.arenastring')
 ```
+
+这里可以找到一个结合[brpc](https://github.com/apache/brpc)使用补丁的例子[use-arena-with-brpc](../example/use-arena-with-brpc)以及一些性能演示

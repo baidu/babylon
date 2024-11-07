@@ -82,8 +82,8 @@ ExclusiveMonotonicBufferResource& ExclusiveMonotonicBufferResource::operator=(
 
   ::std::swap(_last_page_array, other._last_page_array);
   ::std::swap(_last_page_pointer, other._last_page_pointer);
-  ::std::swap(_last_page, other._last_page);
-  ::std::swap(_last_page_allocated, other._last_page_allocated);
+  ::std::swap(_free_begin, other._free_begin);
+  ::std::swap(_free_end, other._free_end);
   ::std::swap(_space_used, other._space_used);
   ::std::swap(_space_allocated, other._space_allocated);
 
@@ -142,8 +142,9 @@ void* ExclusiveMonotonicBufferResource::do_allocate_in_new_page(
     _space_allocated += page_size;
     if (_last_page_pointer > _last_page_array->pages) {
       SanitizerHelper::PoisonGuard guard {_last_page_array};
-      _last_page = *--_last_page_pointer = page;
-      _last_page_allocated = bytes;
+      *--_last_page_pointer = page;
+      _free_begin = page + bytes;
+      _free_end = page + page_size;
       return page;
     } else {
       return do_allocate_with_page_in_new_page_array(bytes, page);
@@ -155,18 +156,17 @@ void* ExclusiveMonotonicBufferResource::do_allocate_in_new_page(
 void* ExclusiveMonotonicBufferResource::do_allocate_with_page_in_new_page_array(
     size_t bytes, char* page) noexcept {
   auto page_size = _page_allocator->page_size();
-  _last_page_allocated = (_last_page_allocated + alignof(PageArray) - 1) &
-                         static_cast<size_t>(-alignof(PageArray));
-  if (_last_page_allocated + sizeof(PageArray) <= page_size) {
+  do_align<alignof(PageArray)>();
+  if (_free_begin + sizeof(PageArray) <= _free_end) {
     SanitizerHelper::PoisonGuard last_guard {_last_page_array};
-    auto new_page_array =
-        reinterpret_cast<PageArray*>(_last_page + _last_page_allocated);
+    auto new_page_array = reinterpret_cast<PageArray*>(_free_begin);
     SanitizerHelper::PoisonGuard new_guard {new_page_array};
     new_page_array->next = _last_page_array;
     _last_page_array = new_page_array;
     _last_page_pointer = &new_page_array->pages[PAGE_ARRAY_CAPACITY - 1];
-    _last_page_allocated = bytes;
-    _last_page = *_last_page_pointer = page;
+    *_last_page_pointer = page;
+    _free_begin = page + bytes;
+    _free_end = page + page_size;
   } else if (bytes + sizeof(PageArray) <= page_size) {
     bytes = (bytes + alignof(PageArray) - 1) &
             static_cast<size_t>(-alignof(PageArray));
@@ -174,8 +174,9 @@ void* ExclusiveMonotonicBufferResource::do_allocate_with_page_in_new_page_array(
     new_page_array->next = _last_page_array;
     _last_page_array = new_page_array;
     _last_page_pointer = &new_page_array->pages[PAGE_ARRAY_CAPACITY - 1];
-    _last_page_allocated = bytes + sizeof(PageArray);
-    _last_page = *_last_page_pointer = page;
+    *_last_page_pointer = page;
+    _free_begin = page + bytes + sizeof(PageArray);
+    _free_end = page + page_size;
   } else {
     auto additional_page = reinterpret_cast<char*>(_page_allocator->allocate());
     _space_allocated += page_size;
@@ -184,8 +185,9 @@ void* ExclusiveMonotonicBufferResource::do_allocate_with_page_in_new_page_array(
     _last_page_array = new_page_array;
     new_page_array->pages[PAGE_ARRAY_CAPACITY - 1] = page;
     _last_page_pointer = &new_page_array->pages[PAGE_ARRAY_CAPACITY - 2];
-    _last_page_allocated = sizeof(PageArray);
-    _last_page = *_last_page_pointer = additional_page;
+    *_last_page_pointer = additional_page;
+    _free_begin = additional_page + sizeof(PageArray);
+    _free_end = additional_page + page_size;
     SanitizerHelper::poison(additional_page, page_size);
   }
   return page;
@@ -256,9 +258,9 @@ void ExclusiveMonotonicBufferResource::release() noexcept {
     }
     _page_allocator->deallocate(reinterpret_cast<void**>(tmp_pages), size);
     _last_page_pointer = _last_page_array->pages;
-    _last_page_allocated = UINT32_MAX;
+    _free_begin = nullptr;
+    _free_end = nullptr;
   }
-  _last_page = nullptr;
   while (_last_oversize_page_array != nullptr) {
     SanitizerHelper::unpoison(_last_oversize_page_array);
     auto iter = _last_oversize_page_pointer;
@@ -277,9 +279,10 @@ void ExclusiveMonotonicBufferResource::release() noexcept {
 
 bool ExclusiveMonotonicBufferResource::contains(const void* ptr) noexcept {
   {
+    auto page_size = _page_allocator->page_size();
     auto page_array = _last_page_array;
     auto iter = _last_page_pointer;
-    auto size = _last_page_allocated;
+    auto size = page_size - static_cast<size_t>(_free_end - _free_begin);
     while (page_array != nullptr) {
       SanitizerHelper::PoisonGuard guard {page_array};
       auto end = &page_array->pages[PAGE_ARRAY_CAPACITY];
@@ -287,7 +290,7 @@ bool ExclusiveMonotonicBufferResource::contains(const void* ptr) noexcept {
         if (ptr >= *iter && ptr < *iter + size) {
           return true;
         }
-        size = _page_allocator->page_size();
+        size = page_size;
       }
       page_array = page_array->next;
       iter = page_array->pages;

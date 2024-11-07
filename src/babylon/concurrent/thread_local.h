@@ -24,8 +24,18 @@ class EnumerableThreadLocal {
 
   void set_constructor(::std::function<void(T*)> constructor) noexcept;
 
-  // 获得线程局部存储
-  inline T& local();
+  // Get item exclusive to current thread.
+  inline T& local() noexcept;
+
+  // When calling intensively from single thread, allocation from memory pool
+  // for example, get item from ConcurrentVector could also significant costly
+  // than normal thread_local, because of more indirections in segmented vector
+  // lookup.
+  //
+  // Use local_fast instead of local in such scene provide a really really fast
+  // path. But local_fast may return nullptr when cache is not available, and
+  // caller should call local again when this happen.
+  inline T* local_fast() noexcept;
 
   // 遍历所有【当前或曾经存在】的线程局部存储
   template <typename C, typename = typename ::std::enable_if<
@@ -75,7 +85,7 @@ class EnumerableThreadLocal {
 
   static size_t fetch_add_id() noexcept;
 
-  inline T& local_slow(Cache& cache);
+  static thread_local Cache _s_cache;
 
   ConcurrentVector<T, 128> _storage;
   size_t _id {fetch_add_id()};
@@ -208,12 +218,23 @@ ABSL_ATTRIBUTE_NOINLINE void EnumerableThreadLocal<T>::set_constructor(
 }
 
 template <typename T>
-ABSL_ATTRIBUTE_ALWAYS_INLINE inline T& EnumerableThreadLocal<T>::local() {
-  static thread_local Cache cache;
-  if (ABSL_PREDICT_TRUE(cache.id == _id)) {
-    return *cache.item;
+inline T& EnumerableThreadLocal<T>::local() noexcept {
+  auto item = local_fast();
+  if (ABSL_PREDICT_FALSE(item == nullptr)) {
+    item = &_storage.ensure(ThreadId::current_thread_id<T>().value);
+    _s_cache.id = _id;
+    _s_cache.item = item;
   }
-  return local_slow(cache);
+  return *item;
+}
+
+template <typename T>
+ABSL_ATTRIBUTE_ALWAYS_INLINE inline T*
+EnumerableThreadLocal<T>::local_fast() noexcept {
+  if (ABSL_PREDICT_TRUE(_s_cache.id == _id)) {
+    return _s_cache.item;
+  }
+  return nullptr;
 }
 
 template <typename T>
@@ -224,12 +245,8 @@ EnumerableThreadLocal<T>::fetch_add_id() noexcept {
 }
 
 template <typename T>
-inline T& EnumerableThreadLocal<T>::local_slow(Cache& cache) {
-  auto& item = _storage.ensure(ThreadId::current_thread_id<T>().value);
-  cache.id = _id;
-  cache.item = &item;
-  return item;
-}
+thread_local
+    typename EnumerableThreadLocal<T>::Cache EnumerableThreadLocal<T>::_s_cache;
 // EnumerableThreadLocal end
 ////////////////////////////////////////////////////////////////////////////////
 

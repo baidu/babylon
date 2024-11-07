@@ -1,11 +1,10 @@
 cc_library(
-  name = 'reusable_rpc_protocol',
-  srcs = ['reusable_rpc_protocol.cpp', 'reusable_rpc_protocol.trick.cpp'],
-  hdrs = ['reusable_rpc_protocol.h'],
+  name = 'swiss_message_factory',
+  srcs = ['swiss_message_factory.cpp'],
+  hdrs = ['swiss_message_factory.h'],
   deps = [
     '@brpc//:brpc',
     '@babylon//:concurrent_object_pool',
-    '@babylon//:concurrent_transient_hash_table',
     '@babylon//:reusable',
   ],
 )
@@ -35,7 +34,18 @@ cc_binary(
   srcs = ['server.cpp'],
   deps = [
     ':cc_echo_proto',
-    ':reusable_rpc_protocol',
+    '@brpc//:brpc',
+    '@tcmalloc//tcmalloc',
+  ],
+)
+
+cc_binary(
+  name = 'server_babylon',
+  srcs = ['server.cpp'],
+  copts = ['-DWITH_BABYLON=1'],
+  deps = [
+    ':cc_echo_proto',
+    ':swiss_message_factory',
     '@brpc//:brpc',
     '@tcmalloc//tcmalloc',
   ],
