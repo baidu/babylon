@@ -282,7 +282,7 @@ bool ExclusiveMonotonicBufferResource::contains(const void* ptr) noexcept {
     auto page_size = _page_allocator->page_size();
     auto page_array = _last_page_array;
     auto iter = _last_page_pointer;
-    auto size = page_size - (_free_end - _free_begin);
+    auto size = page_size - static_cast<size_t>(_free_end - _free_begin);
     while (page_array != nullptr) {
       SanitizerHelper::PoisonGuard guard {page_array};
       auto end = &page_array->pages[PAGE_ARRAY_CAPACITY];
