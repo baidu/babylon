@@ -151,7 +151,7 @@ class ConcurrentSampler {
   ~ConcurrentSampler() noexcept = default;
 
   // 计算目标值所在的分桶
-  inline static size_t bucket_index(uint32_t value) noexcept;
+  inline static size_t bucket_index(uint64_t value) noexcept;
 
   // 设置目标分桶的预期容量，支持运行中动态修改
   // 修改会在下一轮reset之后生效
@@ -159,7 +159,7 @@ class ConcurrentSampler {
   size_t bucket_capacity(size_t index) const noexcept;
 
   // 计数操作
-  ConcurrentSampler& operator<<(uint32_t value) noexcept;
+  ConcurrentSampler& operator<<(uint64_t value) noexcept;
 
   // 遍历收集各个线程的采样桶，并调用
   // C(size_t bucket_index, const SampleBucket&)
@@ -179,7 +179,7 @@ class ConcurrentSampler {
     // 采样前数据总量，超出capacity之后只保留capacity
     ::std::atomic<uint32_t> record_num;
     // 实际采样值
-    uint32_t data[0];
+    uint64_t data[0];
   };
 
  private:
@@ -188,16 +188,17 @@ class ConcurrentSampler {
 
     ::std::atomic<uint32_t> version {0};
     ::std::atomic<uint32_t> non_empty_bucket_mask {0};
-    SampleBucket* buckets[31] = {
+    SampleBucket* buckets[32] = {
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+    };
   };
 
   inline static uint16_t xorshift128_rand() noexcept;
 
-  SampleBucket* prepare_sample_bucket(uint32_t value) noexcept;
+  SampleBucket* prepare_sample_bucket(uint64_t value) noexcept;
 
   EnumerableThreadLocal<Sample> _storage;
   uint8_t _bucket_capacity[32] = {30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
@@ -276,17 +277,27 @@ ConcurrentSummer::operator<<(Summary summary) noexcept {
 ////////////////////////////////////////////////////////////////////////////////
 // ConcurrentSampler begin
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t
-ConcurrentSampler::bucket_index(uint32_t value) noexcept {
+ConcurrentSampler::bucket_index(uint64_t value) noexcept {
   // [0, 2) => 0
   // [2, 2^31) => log2(n)
   // [2^31, 2^32) => 30
-  value &= 0x7FFFFFFF;
-  value >>= 1;
-  if (ABSL_PREDICT_FALSE(value == 0)) {
-    return 0;
-  } else {
-    return 32 - static_cast<size_t>(__builtin_clz(value));
-  }
+  // [2^32, 2^64) => 31
+
+  // 63 - 前导零个数（0当做1处理，避免__builtin_clzll异常），得到对数值。
+  int64_t log2n = 63 - __builtin_clzll(value | 1);
+
+  // >= 30 => ~0
+  // < 30  =>  0
+  uint64_t mask30 = -static_cast<uint64_t>(log2n > 29);
+  // >= 32 => ~0
+  // < 32  =>  0
+  uint64_t mask32 = -static_cast<uint64_t>(log2n > 31);
+
+  // log_val < 30       => log2n
+  // 30 <= log_val < 32 => 30
+  // log_val >= 32      => 31
+  uint64_t adjusted = 30 + (mask32 & 1);
+  return (mask30 & adjusted) | (~mask30 & static_cast<uint64_t>(log2n));
 }
 
 template <typename C>

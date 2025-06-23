@@ -99,7 +99,7 @@ size_t ConcurrentSampler::bucket_capacity(size_t index) const noexcept {
   return _bucket_capacity[index];
 }
 
-ConcurrentSampler& ConcurrentSampler::operator<<(uint32_t value) noexcept {
+ConcurrentSampler& ConcurrentSampler::operator<<(uint64_t value) noexcept {
   auto bucket = prepare_sample_bucket(value);
   // record_num只有本计数线程会写入，无需特殊同步
   auto record_num = bucket->record_num.load(::std::memory_order_relaxed);
@@ -125,7 +125,7 @@ void ConcurrentSampler::reset() noexcept {
 }
 
 ConcurrentSampler::SampleBucket* ConcurrentSampler::prepare_sample_bucket(
-    uint32_t value) noexcept {
+    uint64_t value) noexcept {
   auto index = bucket_index(value);
   auto& local = _storage.local();
   // 检测是否开启了新版本
@@ -143,7 +143,7 @@ ConcurrentSampler::SampleBucket* ConcurrentSampler::prepare_sample_bucket(
     // 桶未创建，或者容量需要调整
     if (bucket == nullptr || bucket->capacity != _bucket_capacity[index]) {
       size_t capacity = _bucket_capacity[index];
-      size_t allocate_size = sizeof(SampleBucket) + sizeof(uint32_t) * capacity;
+      size_t allocate_size = sizeof(SampleBucket) + sizeof(uint64_t) * capacity;
       allocate_size = (allocate_size + BABYLON_CACHELINE_SIZE - 1) &
                       static_cast<size_t>(-BABYLON_CACHELINE_SIZE);
       if (bucket == nullptr || allocate_size != bucket->allocate_size) {
