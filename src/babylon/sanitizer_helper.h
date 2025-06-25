@@ -1,5 +1,6 @@
 #pragma once
 
+#include <absl/debugging/leak_check.h>
 #include "babylon/environment.h"
 
 // clang-format off
@@ -7,8 +8,14 @@
 // clang-format on
 
 #ifdef ABSL_HAVE_ADDRESS_SANITIZER
-#include <sanitizer/asan_interface.h> // ASAN_*
-#endif                                // ABSL_HAVE_ADDRESS_SANITIZER
+#include <sanitizer/asan_interface.h>  // ASAN_*
+#endif                                 // ABSL_HAVE_ADDRESS_SANITIZER
+
+#if defined(ABSL_HAVE_LEAK_SANITIZER) || defined(ABSL_HAVE_ADDRESS_SANITIZER)
+#include <sanitizer/lsan_interface.h> // __lsan_*
+
+#define BABYLON_HAVE_LEAK_SANITIZER 1
+#endif                                // ABSL_HAVE_LEAK_SANITIZER || ABSL_HAVE_ADDRESS_SANITIZER
 
 BABYLON_NAMESPACE_BEGIN
 
@@ -81,5 +88,21 @@ struct SanitizerHelper {
 #endif // ABSL_HAVE_ADDRESS_SANITIZER
   };
 };
+
+#ifdef BABYLON_HAVE_LEAK_SANITIZER
+class LeakCheckDisabler {
+public:
+  LeakCheckDisabler() { __lsan_disable(); }
+  LeakCheckDisabler(const LeakCheckDisabler&) = delete;
+  LeakCheckDisabler& operator=(const LeakCheckDisabler&) = delete;
+  ~LeakCheckDisabler() { __lsan_enable(); }
+};
+
+#define BABYLON_LEAK_CHECK_DISABLER \
+  LeakCheckDisabler __disabler_##__LINE__; ((void)0)
+
+#else
+#define BABYLON_LEAK_CHECK_DISABLER ((void)0)
+#endif // BABYLON_HAVE_LEAK_SANITIZER
 
 BABYLON_NAMESPACE_END

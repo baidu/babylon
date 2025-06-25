@@ -174,6 +174,7 @@ cc_library(
   includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
+    '@com_google_absl//absl/debugging:leak_check',
     ':environment',
   ],
 )

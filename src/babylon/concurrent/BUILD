@@ -131,6 +131,7 @@ cc_library(
   includes = ['//src'],
   strip_include_prefix = '//src',
   deps = [
+    '//src/babylon:sanitizer_helper',
     ':id_allocator',
   ],
 )

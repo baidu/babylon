@@ -1,5 +1,6 @@
 #pragma once
 
+#include "babylon/sanitizer_helper.h"        // BABYLON_LEAK_CHECK_DISABLER
 #include "babylon/concurrent/id_allocator.h" // IdAllocator, ThreadId
 
 #include <math.h> // 等baidu/adu-lab/energon-onboard升级完成后去掉
@@ -97,10 +98,12 @@ struct EnumerableThreadLocal<T>::Cache {
   T* item {nullptr};
 };
 
-// 典型线程局部存储为了性能一般会独占缓存行
-// 对于很小的类型，例如size_t，会产生比较多的浪费
-// 通过多个实例紧凑共享一条缓存行，可以减少这种浪费
-template <typename T, size_t CACHE_LINE_NUM = 1>
+// 典型线程局部存储为了性能一般会独占缓存行。
+// 对于很小的类型，例如size_t，会产生比较多的浪费。
+// 通过多个实例紧凑共享一条缓存行，可以减少这种浪费。
+// 默认依赖静态变量，可能会有析构顺序的问题。
+// 在不析构的场景下，推荐使用`Leaky=true'的模式。
+template <typename T, size_t CACHE_LINE_NUM = 1, bool Leaky = false>
 class CompactEnumerableThreadLocal {
  public:
   // 可以默认构造
@@ -115,7 +118,13 @@ class CompactEnumerableThreadLocal {
   ~CompactEnumerableThreadLocal() noexcept;
 
   // 获得线程局部存储
-  inline T& local() {
+  template <bool L = Leaky>
+  inline typename ::std::enable_if<L, T&>::type local() {
+    BABYLON_LEAK_CHECK_DISABLER;
+    return _storage->local().value[_cacheline_offset];
+  }
+  template <bool L = Leaky>
+  inline typename ::std::enable_if<!L, T&>::type local() {
     return _storage->local().value[_cacheline_offset];
   }
 
@@ -172,8 +181,65 @@ class CompactEnumerableThreadLocal {
   using Storage = EnumerableThreadLocal<CacheLine>;
   using StorageVector = ConcurrentVector<Storage, 128>;
 
-  static IdAllocator<uint32_t>& id_allocator() noexcept;
-  static Storage& storage(size_t slot_index) noexcept;
+  template <bool L = Leaky>
+  static typename ::std::enable_if<L, uint32_t>::type
+  allocate_id() noexcept {
+    BABYLON_LEAK_CHECK_DISABLER;
+    return id_allocator().allocate().value;
+  }
+  template <bool L = Leaky>
+  static typename ::std::enable_if<!L, uint32_t>::type
+  allocate_id() noexcept {
+    return id_allocator().allocate().value;
+  }
+
+  template <bool L = Leaky>
+  static typename ::std::enable_if<L, IdAllocator<uint32_t>&>::type
+  id_allocator() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+    BABYLON_LEAK_CHECK_DISABLER;
+    static auto allocator = new IdAllocator<uint32_t>();
+#pragma GCC diagnostic pop
+    return *allocator;
+  }
+  template <bool L = Leaky>
+  static typename ::std::enable_if<!L, IdAllocator<uint32_t>&>::type
+  id_allocator() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+    static IdAllocator<uint32_t> allocator;
+#pragma GCC diagnostic pop
+    return allocator;
+  }
+
+  template <bool L = Leaky>
+  static typename ::std::enable_if<L, Storage&>::type
+  storage(size_t slot_index) noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+    BABYLON_LEAK_CHECK_DISABLER;
+    static auto storage_vector = new StorageVector();
+#pragma GCC diagnostic pop
+    return storage_vector->ensure(slot_index);
+  }
+  template <bool L = Leaky>
+  static typename ::std::enable_if<!L, Storage&>::type
+  storage(size_t slot_index) noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+    static StorageVector storage_vector;
+#pragma GCC diagnostic pop
+    return storage_vector.ensure(slot_index);
+  }
 
   uint32_t _instance_id;
   uint32_t _cacheline_offset;
@@ -250,25 +316,26 @@ thread_local
 // EnumerableThreadLocal end
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename T, size_t CACHE_LINE_NUM>
+template <typename T, size_t CACHE_LINE_NUM, bool Leaky>
 CompactEnumerableThreadLocal<
-    T, CACHE_LINE_NUM>::CompactEnumerableThreadLocal() noexcept
+    T, CACHE_LINE_NUM, Leaky>::CompactEnumerableThreadLocal() noexcept
     : // 分配一个独占的实例编号
-      _instance_id {id_allocator().allocate().value},
+      _instance_id {allocate_id()},
       // 使用storage[id / num].local()[id % num]槽位
       _cacheline_offset {_instance_id % NUM_PER_CACHELINE},
-      _storage {&storage(_instance_id / NUM_PER_CACHELINE)} {}
+      _storage {&storage(_instance_id / NUM_PER_CACHELINE)} {
+}
 
-template <typename T, size_t CACHE_LINE_NUM>
-CompactEnumerableThreadLocal<T, CACHE_LINE_NUM>::CompactEnumerableThreadLocal(
+template <typename T, size_t CACHE_LINE_NUM, bool Leaky>
+CompactEnumerableThreadLocal<T, CACHE_LINE_NUM, Leaky>::CompactEnumerableThreadLocal(
     CompactEnumerableThreadLocal&& other) noexcept
     : CompactEnumerableThreadLocal() {
   *this = ::std::move(other);
 }
 
-template <typename T, size_t CACHE_LINE_NUM>
-CompactEnumerableThreadLocal<T, CACHE_LINE_NUM>&
-CompactEnumerableThreadLocal<T, CACHE_LINE_NUM>::operator=(
+template <typename T, size_t CACHE_LINE_NUM, bool Leaky>
+CompactEnumerableThreadLocal<T, CACHE_LINE_NUM, Leaky>&
+CompactEnumerableThreadLocal<T, CACHE_LINE_NUM, Leaky>::operator=(
     CompactEnumerableThreadLocal&& other) noexcept {
   ::std::swap(_instance_id, other._instance_id);
   ::std::swap(_cacheline_offset, other._cacheline_offset);
@@ -276,9 +343,9 @@ CompactEnumerableThreadLocal<T, CACHE_LINE_NUM>::operator=(
   return *this;
 }
 
-template <typename T, size_t CACHE_LINE_NUM>
+template <typename T, size_t CACHE_LINE_NUM, bool Leaky>
 CompactEnumerableThreadLocal<
-    T, CACHE_LINE_NUM>::~CompactEnumerableThreadLocal() noexcept {
+    T, CACHE_LINE_NUM, Leaky>::~CompactEnumerableThreadLocal() noexcept {
   // 清理缓存行中自己使用的部分，并释放实例编号
   _storage->for_each([&](CacheLine* iter, CacheLine* end) {
     for (; iter != end; ++iter) {
@@ -286,31 +353,6 @@ CompactEnumerableThreadLocal<
     }
   });
   id_allocator().deallocate(_instance_id);
-}
-
-template <typename T, size_t CACHE_LINE_NUM>
-IdAllocator<uint32_t>&
-CompactEnumerableThreadLocal<T, CACHE_LINE_NUM>::id_allocator() noexcept {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wexit-time-destructors"
-  static IdAllocator<uint32_t> allocator;
-#pragma GCC diagnostic pop
-  return allocator;
-}
-
-template <typename T, size_t CACHE_LINE_NUM>
-typename CompactEnumerableThreadLocal<T, CACHE_LINE_NUM>::Storage&
-CompactEnumerableThreadLocal<T, CACHE_LINE_NUM>::storage(
-    size_t slot_index) noexcept {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wexit-time-destructors"
-  static StorageVector storage_vector;
-#pragma GCC diagnostic pop
-  return storage_vector.ensure(slot_index);
 }
 
 BABYLON_NAMESPACE_END

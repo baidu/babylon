@@ -153,7 +153,7 @@ class BvarIntRecorder : public ::bvar::Variable {
   sampler_type* _sampler {nullptr};
 };
 
-// ::bvar::detail::IntRecorder的替换实现
+// ::bvar::detail::Percentile的替换实现
 class BvarPercentile {
  public:
   // 支持加入Window所需的类型定义
