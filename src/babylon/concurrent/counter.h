@@ -43,7 +43,7 @@ class ConcurrentAdder {
  private:
   inline void count(ssize_t value) noexcept;
 
-  CompactEnumerableThreadLocal<ssize_t, 64> _storage;
+  CompactEnumerableThreadLocal<ssize_t, 64, true> _storage;
 };
 
 // 高并发最大值计数器
@@ -85,7 +85,7 @@ class ConcurrentMaxer {
     ssize_t value;
   };
 
-  CompactEnumerableThreadLocal<Slot, 64> _storage;
+  CompactEnumerableThreadLocal<Slot, 64, true> _storage;
   size_t _version {0};
 };
 
@@ -123,7 +123,7 @@ class ConcurrentSummer {
   Summary value() const noexcept;
 
  private:
-  CompactEnumerableThreadLocal<Summary, 64> _storage;
+  CompactEnumerableThreadLocal<Summary, 64, true> _storage;
 };
 
 // 高并发采样计数器
