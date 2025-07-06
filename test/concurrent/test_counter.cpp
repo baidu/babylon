@@ -124,8 +124,10 @@ TEST(concurrent_summary, caculate_right) {
 
 TEST(concurrent_sampler, collect_sample_from_multithread) {
   ConcurrentSampler sampler;
+  uint64_t val64 = static_cast<uint64_t>(
+   ::std::numeric_limits<uint32_t>::max()) + 1;
   ::std::thread a([&] {
-    sampler << 1;
+    sampler << val64;
     sampler << 3;
   });
   ::std::thread b([&] {
@@ -141,7 +143,7 @@ TEST(concurrent_sampler, collect_sample_from_multithread) {
   c.join();
 
   size_t total_record_num = 0;
-  ::std::vector<uint32_t> result;
+  ::std::vector<uint64_t> result;
   sampler.for_each([&](size_t, const ConcurrentSampler::SampleBucket& bucket) {
     auto record_num = bucket.record_num.load(::std::memory_order_acquire);
     total_record_num += record_num;
@@ -151,7 +153,7 @@ TEST(concurrent_sampler, collect_sample_from_multithread) {
     }
   });
 
-  ::std::vector<uint32_t> expected = {1, 3, 3, 5, 7, 9};
+  ::std::vector<uint64_t> expected = {3, 3, 5, 7, 9, val64};
   ::std::sort(result.begin(), result.end());
   ASSERT_EQ(result.size(), total_record_num);
   ASSERT_EQ(expected, result);
@@ -164,7 +166,7 @@ TEST(concurrent_sampler, random_drop_sample_after_reach_capacity) {
   }
 
   size_t total_record_num = 0;
-  ::std::vector<uint32_t> result;
+  ::std::vector<uint64_t> result;
   sampler.for_each([&](size_t, const ConcurrentSampler::SampleBucket& bucket) {
     auto record_num = bucket.record_num.load(::std::memory_order_acquire);
     total_record_num += record_num;
@@ -188,7 +190,7 @@ TEST(concurrent_sampler, reset_drops_all) {
   sampler << 10086;
 
   size_t total_record_num = 0;
-  ::std::vector<uint32_t> result;
+  ::std::vector<uint64_t> result;
   sampler.for_each([&](size_t, const ConcurrentSampler::SampleBucket& bucket) {
     auto record_num = bucket.record_num.load(::std::memory_order_acquire);
     total_record_num += record_num;
@@ -213,7 +215,7 @@ TEST(concurrent_sampler, new_capacity_used_after_reset) {
 
   {
     size_t total_record_num = 0;
-    ::std::vector<uint32_t> result;
+    ::std::vector<uint64_t> result;
     sampler.for_each(
         [&](size_t, const ConcurrentSampler::SampleBucket& bucket) {
           auto record_num = bucket.record_num.load(::std::memory_order_acquire);
@@ -234,7 +236,7 @@ TEST(concurrent_sampler, new_capacity_used_after_reset) {
 
   {
     size_t total_record_num = 0;
-    ::std::vector<uint32_t> result;
+    ::std::vector<uint64_t> result;
     sampler.for_each(
         [&](size_t, const ConcurrentSampler::SampleBucket& bucket) {
           auto record_num = bucket.record_num.load(::std::memory_order_acquire);
