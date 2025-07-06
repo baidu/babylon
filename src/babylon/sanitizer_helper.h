@@ -1,9 +1,9 @@
 #pragma once
 
-#include <absl/debugging/leak_check.h>
 #include "babylon/environment.h"
 
 // clang-format off
+#include BABYLON_EXTERNAL(absl/base/config.h) // ABSL_HAVE_ADDRESS_SANITIZER ABSL_HAVE_LEAK_SANITIZER
 #include BABYLON_EXTERNAL(absl/base/attributes.h) // ABSL_ATTRIBUTE_ALWAYS_INLINE
 // clang-format on
 
