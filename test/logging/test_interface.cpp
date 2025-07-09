@@ -9,10 +9,19 @@ using ::babylon::LogStreamProvider;
 using ::babylon::StringView;
 
 struct MockLogStreamProvider : public LogStreamProvider {
-  virtual LogStream& stream(int severity, StringView file,
-                            int line) noexcept override {
+  LogStream& stream(int severity, StringView file,
+                    int line) noexcept override {
     this->file = file;
     this->line = line;
+    this->severity = severity;
+    return ls;
+  }
+
+  LogStream& stream(int severity, StringView file,
+                    int line, StringView function) noexcept override {
+    this->file = file;
+    this->line = line;
+    this->function = function;
     this->severity = severity;
     return ls;
   }
@@ -21,6 +30,7 @@ struct MockLogStreamProvider : public LogStreamProvider {
   LogStream ls {*ss.rdbuf()};
   ::std::string file;
   int line {-1};
+  ::std::string function;
   int severity {-1};
 };
 
@@ -46,6 +56,7 @@ TEST_F(LogInterfaceTest, change_log_backend) {
   auto before_line = __LINE__;
   BABYLON_LOG(INFO) << "this line should appear in provider";
   auto after_line = __LINE__;
+  auto function = __func__;
   MockLogStreamProvider& provider =
       dynamic_cast<MockLogStreamProvider&>(LogInterface::provider());
   ASSERT_NE(::std::string::npos,
@@ -53,5 +64,6 @@ TEST_F(LogInterfaceTest, change_log_backend) {
   ASSERT_EQ(file, provider.file);
   ASSERT_LT(before_line, provider.line);
   ASSERT_GT(after_line, provider.line);
+  ASSERT_EQ(function, provider.function);
   ASSERT_TRUE(LogInterface::SEVERITY_INFO == provider.severity);
 }

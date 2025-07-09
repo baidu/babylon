@@ -57,10 +57,11 @@ void DefaultLogStream::do_begin() noexcept {
   mutex().lock();
   (*this) << severity();
   thread_local int tid = ::syscall(__NR_gettid);
-  format(" %d-%02d-%02d %02d:%02d:%02d.%06d %d %.*s:%d] ",
+  format(" %d-%02d-%02d %02d:%02d:%02d.%06d %d %.*s:%d %.*s] ",
          time_struct.tm_year + 1900, time_struct.tm_mon + 1,
          time_struct.tm_mday, time_struct.tm_hour, time_struct.tm_min,
-         time_struct.tm_sec, us, tid, file().size(), file().data(), line());
+         time_struct.tm_sec, us, tid, file().size(), file().data(), line(),
+         function().size(), function().data());
 }
 
 void DefaultLogStream::do_end() noexcept {

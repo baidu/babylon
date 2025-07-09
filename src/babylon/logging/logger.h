@@ -19,7 +19,8 @@ class Logger final {
 
   inline bool initialized() const noexcept;
   inline LogSeverity min_severity() const noexcept;
-  LogStream& stream(LogSeverity severity, StringView file, int line) noexcept;
+  LogStream& stream(LogSeverity severity, StringView file,
+                    int line, StringView function) noexcept;
 
  private:
   using ThreadLocalLogStream =
@@ -137,7 +138,7 @@ BABYLON_NAMESPACE_END
       : ::babylon::Voidify() &                                              \
             ::babylon::ScopedLogStream(                                     \
                 (logger).stream(::babylon::LogSeverity::severity, __FILE__, \
-                                __LINE__),                                  \
+                                __LINE__, __func__),                        \
                 ##__VA_ARGS__)                                              \
                 .stream()
 
