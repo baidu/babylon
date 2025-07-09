@@ -4,52 +4,6 @@
 
 BABYLON_NAMESPACE_BEGIN
 
-////////////////////////////////////////////////////////////////////////////////
-// ConcurrentAdder begin
-ssize_t ConcurrentAdder::value() const noexcept {
-  ssize_t sum = 0;
-  _storage.for_each([&](const ssize_t& value) {
-    sum += value;
-  });
-  return sum;
-}
-
-void ConcurrentAdder::reset() noexcept {
-  _storage.for_each([&](ssize_t& value) {
-    value = 0;
-  });
-}
-// ConcurrentAdder end
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// ConcurrentMaxer begin
-ssize_t ConcurrentMaxer::value() const noexcept {
-  ssize_t max_value = 0;
-  value(max_value);
-  return max_value;
-}
-
-bool ConcurrentMaxer::value(ssize_t& max_value) const noexcept {
-  bool has_result = false;
-  ssize_t result = ::std::numeric_limits<ssize_t>::min();
-  _storage.for_each([&](const Slot& slot) {
-    if (slot.version == _version) {
-      if (slot.value > result) {
-        result = slot.value;
-        has_result = true;
-      }
-    }
-  });
-  if (has_result) {
-    max_value = result;
-  }
-  return has_result;
-}
-
-void ConcurrentMaxer::reset() noexcept {
-  ++_version;
-}
 // ConcurrentMaxer end
 ////////////////////////////////////////////////////////////////////////////////
 
