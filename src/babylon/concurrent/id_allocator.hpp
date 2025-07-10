@@ -1,6 +1,7 @@
 #pragma once
 
 #include "babylon/concurrent/id_allocator.h"
+#include "babylon/sanitizer_helper.h" // BABYLON_LEAK_CHECK_DISABLER
 
 // clang-format off
 #include BABYLON_EXTERNAL(absl/base/optimization.h) // ABSL_PREDICT_FALSE
@@ -138,9 +139,22 @@ inline ::std::basic_ostream<C, T>& operator<<(
 
 namespace internal {
 namespace concurrent_id_allocator {
-template <typename T>
+template <typename T, bool Leaky = false>
 struct IdAllocatorFotType {
-  static IdAllocator<uint16_t>& instance() noexcept {
+  template <bool L = Leaky>
+  static typename ::std::enable_if<L, IdAllocator<uint16_t>&>::type
+  instance() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+    BABYLON_LEAK_CHECK_DISABLER;
+    static auto object = new IdAllocator<uint32_t>();
+#pragma GCC diagnostic pop
+    return *object;
+  }
+  template <bool L = Leaky>
+  static typename ::std::enable_if<!L, IdAllocator<uint16_t>&>::type
+  instance() noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
@@ -151,8 +165,8 @@ struct IdAllocatorFotType {
   }
 };
 } // namespace concurrent_id_allocator
-} // namespace internal
 
+template <bool Leaky>
 template <typename T>
 // The identity of thread_local within inline function has some bug as mentioned
 // in https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85400
@@ -164,35 +178,40 @@ ABSL_ATTRIBUTE_NOINLINE
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE
 #endif // __clang__ || BABYLON_GCC_VERSION >= 80400
        // clang-format off
-VersionedValue<uint16_t> ThreadId::current_thread_id() noexcept {
+VersionedValue<uint16_t> ThreadIdImpl<Leaky>::current_thread_id() noexcept {
        // clang-format on
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wexit-time-destructors"
-  thread_local ThreadId id(
-      internal::concurrent_id_allocator::IdAllocatorFotType<T>::instance());
+  thread_local ThreadIdImpl id(
+      concurrent_id_allocator::IdAllocatorFotType<T, Leaky>::instance());
 #pragma GCC diagnostic pop
   return id._value;
 }
 
+template <bool Leaky>
 template <typename T>
-inline uint16_t ThreadId::end() noexcept {
-  return internal::concurrent_id_allocator::IdAllocatorFotType<T>::instance()
-      .end();
+inline uint16_t ThreadIdImpl<Leaky>::end() noexcept {
+  return concurrent_id_allocator::IdAllocatorFotType<T, Leaky>::
+    instance().end();
 }
 
+template <bool Leaky>
 template <typename T, typename C, typename>
-ABSL_ATTRIBUTE_NOINLINE void ThreadId::for_each(C&& callback) {
-  internal::concurrent_id_allocator::IdAllocatorFotType<T>::instance().for_each(
-      ::std::forward<C>(callback));
+ABSL_ATTRIBUTE_NOINLINE void ThreadIdImpl<Leaky>::for_each(C&& callback) {
+  concurrent_id_allocator::IdAllocatorFotType<T, Leaky>::instance().
+    for_each(::std::forward<C>(callback));
 }
 
-inline ThreadId::ThreadId(IdAllocator<uint16_t>& allocator)
+template <bool Leaky>
+inline ThreadIdImpl<Leaky>::ThreadIdImpl(IdAllocator<uint16_t>& allocator)
     : _allocator(allocator), _value(allocator.allocate()) {}
 
-inline ThreadId::~ThreadId() noexcept {
+template <bool Leaky>
+inline ThreadIdImpl<Leaky>::~ThreadIdImpl() noexcept {
   _allocator.deallocate(_value);
 }
+} // namespace internal
 
 BABYLON_NAMESPACE_END
