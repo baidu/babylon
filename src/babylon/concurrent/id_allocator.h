@@ -89,10 +89,13 @@ class IdAllocator {
 
 // 获取当前所在线程的唯一标识
 // 原理上syscall
-// __NR_gettid/pthread_self/std::this_thread::get_id都可以获取到唯一标识
-// 但是ThreadId的实现基于IdAllocator，可以提供【尽量小】且【尽量连续】的编号能力
-class ThreadId {
- public:
+// __NR_gettid/pthread_self/std::this_thread::get_id都可以获取到唯一标识。
+// 但是ThreadId/LeakyThreadId的实现基于IdAllocator，可以提供【尽量小】且【尽量连续】的编号能力。
+// 在不析构的场景下，推荐使用`Leaky=true'的模式。
+namespace internal {
+template <bool Leaky>
+class ThreadIdImpl {
+public:
   // 获取当前线程的标识
   // 支持最多活跃65534个线程，对于合理的服务端程序设计已经足够
   // T: 每个类型有自己的IdAllocator，在线程局部存储设计中可以用来隔离不同类型
@@ -116,18 +119,22 @@ class ThreadId {
                 IsInvocable<C, uint16_t, uint16_t>::value>::type>
   static void for_each(C&& callback);
 
- private:
+private:
   // 内部类型，用thread local持有，使用者不应尝试构造
-  inline ThreadId(IdAllocator<uint16_t>& allocator);
-  ThreadId(ThreadId&&) = delete;
-  ThreadId(const ThreadId&) = delete;
-  ThreadId& operator=(ThreadId&&) = delete;
-  ThreadId& operator=(const ThreadId&) = delete;
-  inline ~ThreadId() noexcept;
+  inline ThreadIdImpl(IdAllocator<uint16_t>& allocator);
+  ThreadIdImpl(ThreadIdImpl&&) = delete;
+  ThreadIdImpl(const ThreadIdImpl&) = delete;
+  ThreadIdImpl& operator=(ThreadIdImpl&&) = delete;
+  ThreadIdImpl& operator=(const ThreadIdImpl&) = delete;
+  inline ~ThreadIdImpl() noexcept;
 
   IdAllocator<uint16_t>& _allocator;
   VersionedValue<uint16_t> _value;
 };
+} // namespace internal
+
+class ThreadId : public internal::ThreadIdImpl<false> {};
+class LeakyThreadId : public internal::ThreadIdImpl<true> {};
 
 BABYLON_NAMESPACE_END
 

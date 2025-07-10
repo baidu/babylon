@@ -1,7 +1,7 @@
 #pragma once
 
 #include "babylon/sanitizer_helper.h"        // BABYLON_LEAK_CHECK_DISABLER
-#include "babylon/concurrent/id_allocator.h" // IdAllocator, ThreadId
+#include "babylon/concurrent/id_allocator.h" // IdAllocator, ThreadId, LeakyThreadId
 
 #include <math.h> // 等baidu/adu-lab/energon-onboard升级完成后去掉
 
@@ -10,8 +10,9 @@ BABYLON_NAMESPACE_BEGIN
 // 提供了遍历功能的线程局部存储
 // 在提供接近thread_local的访问性能同时，支持遍历这些线程局部存储
 // 另一点和thread_local的区别是不再要求是static的，所以可以支持动态多个
-template <typename T>
+template <typename T, bool Leaky = false>
 class EnumerableThreadLocal {
+  using ThreadIdType = typename std::conditional<Leaky, LeakyThreadId, ThreadId>::type;
  public:
   // 可默认构造，可以移动，不能拷贝
   EnumerableThreadLocal() noexcept;
@@ -45,7 +46,8 @@ class EnumerableThreadLocal {
     auto snapshot = _storage.snapshot();
     snapshot.for_each(
         0,
-        ::std::min(ThreadId::end<T>(), static_cast<uint16_t>(snapshot.size())),
+        ::std::min(ThreadIdType::template end<T>(),
+                   static_cast<uint16_t>(snapshot.size())),
         callback);
   }
 
@@ -55,7 +57,8 @@ class EnumerableThreadLocal {
     auto snapshot = _storage.snapshot();
     snapshot.for_each(
         0,
-        ::std::min(ThreadId::end<T>(), static_cast<uint16_t>(snapshot.size())),
+        ::std::min(ThreadIdType::template end<T>(),
+                   static_cast<uint16_t>(snapshot.size())),
         callback);
   }
 
@@ -64,7 +67,7 @@ class EnumerableThreadLocal {
                             IsInvocable<C, T*, T*>::value>::type>
   inline void for_each_alive(C&& callback) {
     auto snapshot = _storage.snapshot();
-    ThreadId::for_each<T>([&](uint16_t begin, uint16_t end) {
+    ThreadIdType::template for_each<T>([&](uint16_t begin, uint16_t end) {
       snapshot.for_each(begin, end, callback);
     });
   }
@@ -74,7 +77,7 @@ class EnumerableThreadLocal {
   inline void for_each_alive(C&& callback) const {
     auto snapshot = _storage.snapshot();
     uint16_t size = snapshot.size();
-    ThreadId::for_each<T>([&](uint16_t begin, uint16_t end) {
+    ThreadIdType::template for_each<T>([&](uint16_t begin, uint16_t end) {
       begin = ::std::min(begin, size);
       end = ::std::min(end, size);
       snapshot.for_each(begin, end, callback);
@@ -92,8 +95,8 @@ class EnumerableThreadLocal {
   size_t _id {fetch_add_id()};
 };
 
-template <typename T>
-struct EnumerableThreadLocal<T>::Cache {
+template <typename T, bool Leaky>
+struct EnumerableThreadLocal<T, Leaky>::Cache {
   size_t id {0};
   T* item {nullptr};
 };
@@ -199,7 +202,6 @@ class CompactEnumerableThreadLocal {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wexit-time-destructors"
     BABYLON_LEAK_CHECK_DISABLER;
     static auto allocator = new IdAllocator<uint32_t>();
 #pragma GCC diagnostic pop
@@ -223,7 +225,6 @@ class CompactEnumerableThreadLocal {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wexit-time-destructors"
     BABYLON_LEAK_CHECK_DISABLER;
     static auto storage_vector = new StorageVector();
 #pragma GCC diagnostic pop
@@ -248,71 +249,72 @@ class CompactEnumerableThreadLocal {
 
 ////////////////////////////////////////////////////////////////////////////////
 // EnumerableThreadLocal begin
-template <typename T>
-inline EnumerableThreadLocal<T>::EnumerableThreadLocal() noexcept {
-  // 确保内部使用的ThreadId此时初始化，建立正确的析构顺序
-  ThreadId::end<T>();
+template <typename T, bool Leaky>
+inline EnumerableThreadLocal<T, Leaky>::EnumerableThreadLocal() noexcept {
+  // 确保内部使用的ThreadIdType此时初始化，建立正确的析构顺序
+  ThreadIdType::template end<T>();
 }
 
-template <typename T>
-EnumerableThreadLocal<T>::EnumerableThreadLocal(
+template <typename T, bool Leaky>
+EnumerableThreadLocal<T, Leaky>::EnumerableThreadLocal(
     EnumerableThreadLocal&& other) noexcept
     : EnumerableThreadLocal {} {
   *this = ::std::move(other);
 }
 
-template <typename T>
-EnumerableThreadLocal<T>& EnumerableThreadLocal<T>::operator=(
+template <typename T, bool Leaky>
+EnumerableThreadLocal<T, Leaky>& EnumerableThreadLocal<T, Leaky>::operator=(
     EnumerableThreadLocal&& other) noexcept {
   ::std::swap(_id, other._id);
   ::std::swap(_storage, other._storage);
   return *this;
 }
 
-template <typename T>
+template <typename T, bool Leaky>
 template <typename C>
-inline EnumerableThreadLocal<T>::EnumerableThreadLocal(C&& constructor) noexcept
+inline EnumerableThreadLocal<T, Leaky>::EnumerableThreadLocal(
+    C&& constructor) noexcept
     : _storage {::std::forward<C>(constructor)} {
-  // 确保内部使用的ThreadId此时初始化，建立正确的析构顺序
-  ThreadId::end<T>();
+  // 确保内部使用的ThreadIdType此时初始化，建立正确的析构顺序
+  ThreadIdType::template end<T>();
 }
 
-template <typename T>
-ABSL_ATTRIBUTE_NOINLINE void EnumerableThreadLocal<T>::set_constructor(
+template <typename T, bool Leaky>
+ABSL_ATTRIBUTE_NOINLINE void EnumerableThreadLocal<T, Leaky>::set_constructor(
     ::std::function<void(T*)> constructor) noexcept {
   _storage.set_constructor(constructor);
 }
 
-template <typename T>
-inline T& EnumerableThreadLocal<T>::local() noexcept {
+template <typename T, bool Leaky>
+inline T& EnumerableThreadLocal<T, Leaky>::local() noexcept {
   auto item = local_fast();
   if (ABSL_PREDICT_FALSE(item == nullptr)) {
-    item = &_storage.ensure(ThreadId::current_thread_id<T>().value);
+    item = &_storage.ensure(ThreadIdType::template current_thread_id<T>().value);
     _s_cache.id = _id;
     _s_cache.item = item;
   }
   return *item;
 }
 
-template <typename T>
+template <typename T, bool Leaky>
 ABSL_ATTRIBUTE_ALWAYS_INLINE inline T*
-EnumerableThreadLocal<T>::local_fast() noexcept {
+EnumerableThreadLocal<T, Leaky>::local_fast() noexcept {
   if (ABSL_PREDICT_TRUE(_s_cache.id == _id)) {
     return _s_cache.item;
   }
   return nullptr;
 }
 
-template <typename T>
+template <typename T, bool Leaky>
 ABSL_ATTRIBUTE_NOINLINE size_t
-EnumerableThreadLocal<T>::fetch_add_id() noexcept {
+EnumerableThreadLocal<T, Leaky>::fetch_add_id() noexcept {
   static ::std::atomic<size_t> next_id {1};
   return next_id.fetch_add(1, ::std::memory_order_relaxed);
 }
 
-template <typename T>
-thread_local
-    typename EnumerableThreadLocal<T>::Cache EnumerableThreadLocal<T>::_s_cache;
+template <typename T, bool Leaky>
+thread_local typename EnumerableThreadLocal<T, Leaky>::Cache
+EnumerableThreadLocal<T, Leaky>::_s_cache;
 // EnumerableThreadLocal end
 ////////////////////////////////////////////////////////////////////////////////
 

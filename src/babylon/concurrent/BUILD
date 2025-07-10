@@ -98,6 +98,7 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     ':vector',
+    '//src/babylon:sanitizer_helper',
   ],
 )
 
