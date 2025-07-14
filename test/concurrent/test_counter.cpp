@@ -6,11 +6,13 @@
 
 using ::babylon::ConcurrentAdder;
 using ::babylon::ConcurrentMaxer;
+using ::babylon::ConcurrentMiner;
 using ::babylon::ConcurrentSampler;
 using ::babylon::ConcurrentSummer;
 
-TEST(concurrent_adder, caculate_right) {
-  ConcurrentAdder adder;
+template <typename T>
+void test_concurrent_adder_caculate_right() {
+  ::babylon::GenericsConcurrentAdder<T> adder;
   ::std::thread a([&] {
     adder << 10;
   });
@@ -26,8 +28,20 @@ TEST(concurrent_adder, caculate_right) {
   ASSERT_EQ(8, adder.value());
 }
 
-TEST(concurrent_maxer, caculate_right) {
-  ConcurrentMaxer maxer;
+TEST(concurrent_adder, caculate_right) {
+  // 保证编译兼容性。
+  ConcurrentAdder adder;
+
+  test_concurrent_adder_caculate_right<ssize_t>();
+  test_concurrent_adder_caculate_right<int64_t>();
+  test_concurrent_adder_caculate_right<uint64_t>();
+  test_concurrent_adder_caculate_right<int32_t>();
+  test_concurrent_adder_caculate_right<uint32_t>();
+}
+
+template <typename T>
+void test_concurrent_maxer_caculate_right() {
+  ::babylon::GenericsConcurrentMaxer<T> maxer;
   ::std::thread a([&] {
     maxer << 10;
   });
@@ -43,9 +57,19 @@ TEST(concurrent_maxer, caculate_right) {
   ASSERT_EQ(10, maxer.value());
 }
 
-TEST(concurrent_maxer, empty_aware) {
+TEST(concurrent_maxer, caculate_right) {
+  // 保证编译兼容性。
   ConcurrentMaxer maxer;
-  ssize_t value = 10086;
+
+  test_concurrent_maxer_caculate_right<ssize_t>();
+  test_concurrent_maxer_caculate_right<int64_t>();
+  test_concurrent_maxer_caculate_right<int32_t>();
+}
+
+template <typename T>
+void test_concurrent_maxer_empty_aware() {
+  ::babylon::GenericsConcurrentMaxer<T> maxer;
+  T value = 10086;
   auto has_value = maxer.value(value);
   ASSERT_FALSE(has_value);
   ASSERT_EQ(10086, value);
@@ -69,8 +93,20 @@ TEST(concurrent_maxer, empty_aware) {
   ASSERT_EQ(0, maxer.value());
 }
 
-TEST(concurrent_maxer, resetable) {
+TEST(concurrent_maxer, empty_aware) {
+  // 保证编译兼容性。
   ConcurrentMaxer maxer;
+
+  test_concurrent_maxer_empty_aware<ssize_t>();
+  test_concurrent_maxer_empty_aware<int64_t>();
+  test_concurrent_maxer_empty_aware<uint64_t>();
+  test_concurrent_maxer_empty_aware<int32_t>();
+  test_concurrent_maxer_empty_aware<uint32_t>();
+}
+
+template <typename T>
+void test_concurrent_maxer_resetable() {
+  ::babylon::GenericsConcurrentMaxer<T> maxer;
   {
     ::std::thread a([&] {
       maxer << 10;
@@ -102,6 +138,119 @@ TEST(concurrent_maxer, resetable) {
     c.join();
   }
   ASSERT_EQ(7, maxer.value());
+}
+
+TEST(concurrent_maxer, resetable) {
+  // 保证编译兼容性。
+  ConcurrentMaxer maxer;
+
+  test_concurrent_maxer_resetable<ssize_t>();
+  test_concurrent_maxer_resetable<int64_t>();
+  test_concurrent_maxer_resetable<int32_t>();
+}
+
+template <typename T>
+void test_concurrent_miner_caculate_right() {
+  ::babylon::GenericsConcurrentMiner<T> miner;
+  ::std::thread a([&] {
+    miner << 10;
+  });
+  ::std::thread b([&] {
+    miner << 3;
+  });
+  ::std::thread c([&] {
+    miner << -5;
+  });
+  a.join();
+  b.join();
+  c.join();
+  ASSERT_EQ(-5, miner.value());
+}
+
+TEST(concurrent_miner, caculate_right) {
+  // 保证编译兼容性。
+  ConcurrentMiner miner;
+
+  test_concurrent_miner_caculate_right<ssize_t>();
+  test_concurrent_miner_caculate_right<int64_t>();
+  test_concurrent_miner_caculate_right<int32_t>();
+}
+
+template <typename T>
+void test_concurrent_miner_empty_aware() {
+  ::babylon::GenericsConcurrentMiner<T> miner;
+  T value = 10086;
+  auto has_value = miner.value(value);
+  ASSERT_FALSE(has_value);
+  ASSERT_EQ(10086, value);
+  ASSERT_EQ(0, miner.value());
+  ::std::thread([&] {
+    miner << 10;
+  }).join();
+  has_value = miner.value(value);
+  ASSERT_TRUE(has_value);
+  ASSERT_EQ(10, value);
+  ASSERT_EQ(10, miner.value());
+  miner.reset();
+  value = 10010;
+  has_value = miner.value(value);
+  ASSERT_FALSE(has_value);
+  ASSERT_EQ(10010, value);
+  ASSERT_EQ(0, miner.value());
+}
+
+TEST(concurrent_miner, empty_aware) {
+  // 保证编译兼容性。
+  ConcurrentMiner miner;
+
+  test_concurrent_miner_empty_aware<ssize_t>();
+  test_concurrent_miner_empty_aware<int64_t>();
+  test_concurrent_miner_empty_aware<int32_t>();
+}
+
+template <typename T>
+void test_concurrent_miner_resetable() {
+  ::babylon::GenericsConcurrentMiner<T> miner;
+  {
+    ::std::thread a([&] {
+      miner << 10;
+    });
+    ::std::thread b([&] {
+      miner << 3;
+    });
+    ::std::thread c([&] {
+      miner << -5;
+    });
+    a.join();
+    b.join();
+    c.join();
+  }
+  ASSERT_EQ(-5, miner.value());
+  miner.reset();
+  {
+    ::std::thread a([&] {
+      miner << 3;
+    });
+    ::std::thread b([&] {
+      miner << 7;
+    });
+    ::std::thread c([&] {
+      miner << -2;
+    });
+    a.join();
+    b.join();
+    c.join();
+  }
+  ASSERT_EQ(-2, miner.value());
+}
+
+TEST(concurrent_miner, resetable) {
+  // 保证编译兼容性。
+  ConcurrentMiner miner;
+
+  test_concurrent_miner_resetable<ssize_t>();
+  test_concurrent_miner_resetable<int64_t>();
+  test_concurrent_miner_resetable<int32_t>();
 }
 
 TEST(concurrent_summary, caculate_right) {
