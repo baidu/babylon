@@ -51,6 +51,9 @@ class LogStream : protected ::std::ostream {
   inline void set_line(int line) noexcept;
   inline int line() const noexcept;
 
+  inline void set_function(StringView function) noexcept;
+  inline StringView function() const noexcept;
+
   template <typename... Args>
   inline LogStream& begin(const Args&... args) noexcept;
   inline LogStream& noflush() noexcept;
@@ -137,6 +140,7 @@ class LogStream : protected ::std::ostream {
   LogSeverity _severity {LogSeverity::DEBUG};
   int _line {-1};
   StringView _file;
+  StringView _function;
 };
 
 // 便于实现LOG宏的RAII控制器
@@ -203,6 +207,14 @@ inline void LogStream::set_line(int line) noexcept {
 
 inline int LogStream::line() const noexcept {
   return _line;
+}
+
+inline void LogStream::set_function(StringView function) noexcept {
+  _function = function;
+}
+
+inline StringView LogStream::function() const noexcept {
+  return _function;
 }
 
 template <typename... Args>

@@ -41,7 +41,7 @@ Logger& Logger::operator=(const Logger& other) noexcept {
 }
 
 LogStream& Logger::stream(LogSeverity severity, StringView file,
-                          int line) noexcept {
+                          int line, StringView function) noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
@@ -52,7 +52,7 @@ LogStream& Logger::stream(LogSeverity severity, StringView file,
   // TODO(oathdruid): remove this after remove LogStreamProvider in interface.h
   if (ABSL_PREDICT_FALSE(!_initialized)) {
     if (severity >= LogInterface::min_severity()) {
-      return LogInterface::provider().stream(severity, file, line);
+      return LogInterface::provider().stream(severity, file, line, function);
     }
     return nls;
   }
@@ -66,6 +66,7 @@ LogStream& Logger::stream(LogSeverity severity, StringView file,
   stream.set_severity(severity);
   stream.set_file(file);
   stream.set_line(line);
+  stream.set_function(function);
   return stream;
 }
 

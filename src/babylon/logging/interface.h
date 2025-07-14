@@ -26,6 +26,10 @@ class LogStreamProvider {
   // 根据日志等级，文件名和行号获得日志流
   virtual LogStream& stream(int severity, StringView file,
                             int line) noexcept = 0;
+  virtual LogStream& stream(int severity, StringView file,
+                            int line, StringView /*function*/) noexcept {
+    return stream(severity, file, line);
+  }
 };
 
 // 用于设置和访问日志系统的接口层

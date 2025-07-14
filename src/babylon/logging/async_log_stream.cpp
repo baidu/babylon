@@ -27,12 +27,13 @@ void AsyncLogStream::default_header_formatter(AsyncLogStream& ls) noexcept {
   StringView severity_name = ls.severity();
   ::babylon::localtime(&now.tv_sec, &time_struct);
   thread_local int tid = ::syscall(__NR_gettid);
-  ls.format("%.*s %d-%02d-%02d %02d:%02d:%02d.%06d %d %.*s:%d] ",
+  ls.format("%.*s %d-%02d-%02d %02d:%02d:%02d.%06d %d %.*s:%d %.*s] ",
             severity_name.size(), severity_name.data(),
             time_struct.tm_year + 1900, time_struct.tm_mon + 1,
             time_struct.tm_mday, time_struct.tm_hour, time_struct.tm_min,
             time_struct.tm_sec, now.tv_usec, tid, ls.file().size(),
-            ls.file().data(), ls.line());
+            ls.file().data(), ls.line(), ls.function().size(),
+            ls.function().data());
 }
 
 AsyncLogStream::AsyncLogStream(AsyncFileAppender* appender,
