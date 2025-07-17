@@ -85,10 +85,15 @@ TEST_F(LoggerTest, stream_has_correct_basic_info) {
   ASSERT_EQ(::babylon::LogSeverity::DEBUG, logger.min_severity());
   for (auto i = 0; i < static_cast<int>(::babylon::LogSeverity::NUM); ++i) {
     auto severity = static_cast<::babylon::LogSeverity>(i);
-    ASSERT_EQ(severity, logger.stream(severity, __FILE__, __LINE__, __func__).severity());
-    ASSERT_EQ(__FILE__, logger.stream(severity, __FILE__, __LINE__, __func__).file());
+    ASSERT_EQ(severity,
+              logger.stream(severity, __FILE__, __LINE__, __func__).severity());
+    ASSERT_EQ(__FILE__,
+              logger.stream(severity, __FILE__, __LINE__, __func__).file());
+    // clang-format off
     ASSERT_EQ(__LINE__, logger.stream(severity, __FILE__, __LINE__, __func__).line());
-    ASSERT_EQ(__func__, logger.stream(severity, __FILE__, __LINE__, __func__).function());
+    // clang-format on
+    ASSERT_EQ(__func__,
+              logger.stream(severity, __FILE__, __LINE__, __func__).function());
   }
 }
 

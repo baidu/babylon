@@ -27,7 +27,7 @@ inline Future<Executor::ResultType<C&&, Args&&...>, F> Executor::execute(
                           ::std::move(args_tuple));
     }
   } s {.promise {},
-       .callable {::std::forward<C>(callable)},
+       .callable = ::std::forward<C>(callable),
        .args_tuple {::std::forward<Args>(args)...}};
   auto future = s.promise.get_future();
   MoveOnlyFunction<void(void)> function {::std::move(s)};
@@ -95,7 +95,7 @@ inline int Executor::submit(C&& callable, Args&&... args) noexcept {
       ::std::apply(::std::move(callable), ::std::move(args_tuple));
     }
   };
-  S s {.callable {::std::forward<C>(callable)},
+  S s {.callable = ::std::forward<C>(callable),
        .args_tuple {::std::forward<Args>(args)...}};
   MoveOnlyFunction<void(void)> function {::std::move(s)};
   return invoke(::std::move(function));

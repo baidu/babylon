@@ -6,6 +6,8 @@
 #include BABYLON_EXTERNAL(absl/base/attributes.h) // ABSL_ATTRIBUTE_ALWAYS_INLINE
 // clang-format on
 
+#include "fmt/format.h" // fmt::formatter
+
 #include <functional> // std::hash, std::equal_to
 #include <stdexcept>  // std::out_of_range
 
@@ -490,3 +492,23 @@ struct equal_to<::babylon::StringView> {
   }
 };
 } // namespace std
+
+namespace fmt {
+template <typename C, typename T, typename FC>
+struct formatter<::babylon::BasicStringView<C, T>, FC>
+    : public formatter<basic_string_view<C>, FC> {
+  using Base = formatter<basic_string_view<C>, FC>;
+  template <typename CT>
+  inline auto format(const ::babylon::BasicStringView<C, T>& sv,
+                     CT& ctx) const noexcept -> decltype(ctx.out()) {
+    return Base::format({sv.data(), sv.size()}, ctx);
+  }
+};
+} // namespace fmt
+
+#if __cpp_lib_format >= 201907L
+#include <format>
+template <typename C, typename T, typename FC>
+struct std::formatter<::babylon::BasicStringView<C, T>, FC>
+    : public ::std::formatter<::std::basic_string_view<C, T>, FC> {};
+#endif

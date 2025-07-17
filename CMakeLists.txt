@@ -34,13 +34,18 @@ if(BUILD_DEPS)
     URL "https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz"
     URL_HASH SHA256=8ad598c73ad796e0d8280b082cebd82a630d73e73cd3c70057938a6501bba5d7
   )
+  FetchContent_Declare(
+    fmt
+    URL "https://github.com/fmtlib/fmt/archive/refs/tags/8.1.1.tar.gz"
+    URL_HASH SHA256=3d794d3cf67633b34b2771eb9f073bde87e846e0d395d254df7b211ef1ec7346
+  )
   if(BUILD_TESTING AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     FetchContent_MakeAvailable(googletest)
   endif()
   set(protobuf_BUILD_TESTS OFF)
   set(ABSL_ENABLE_INSTALL ON)
   set(BOOST_INCLUDE_LIBRARIES preprocessor spirit)
-  FetchContent_MakeAvailable(absl protobuf boost)
+  FetchContent_MakeAvailable(absl protobuf boost fmt)
   include("${protobuf_SOURCE_DIR}/cmake/protobuf-generate.cmake")
 endif()
 
@@ -65,6 +70,7 @@ if(TARGET Boost::boost)
 else()
   target_link_libraries(babylon Boost::preprocessor Boost::spirit)
 endif()
+target_link_libraries(babylon fmt::fmt)
 set_source_files_properties(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/babylon/reusable/message.trick.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/babylon/reusable/patch/arena.cpp"

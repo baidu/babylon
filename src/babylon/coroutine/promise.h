@@ -74,10 +74,9 @@ class BasicPromise {
   // Use Transformer do real transform
   template <typename A>
     requires requires {
-               BasicPromise::Transformer<::std::remove_cvref_t<A>>::
-                   await_transform(::std::declval<BasicPromise&>(),
-                                   ::std::declval<A&&>());
-             }
+      BasicPromise::Transformer<::std::remove_cvref_t<A>>::await_transform(
+          ::std::declval<BasicPromise&>(), ::std::declval<A&&>());
+    }
   inline auto await_transform(A&& awaitable) noexcept;
 
  private:
@@ -260,10 +259,9 @@ inline void BasicPromise::resume(::std::coroutine_handle<> handle) noexcept {
 
 template <typename A>
   requires requires {
-             BasicPromise::Transformer<::std::remove_cvref_t<A>>::
-                 await_transform(::std::declval<BasicPromise&>(),
-                                 ::std::declval<A&&>());
-           }
+    BasicPromise::Transformer<::std::remove_cvref_t<A>>::await_transform(
+        ::std::declval<BasicPromise&>(), ::std::declval<A&&>());
+  }
 inline auto BasicPromise::await_transform(A&& awaitable) noexcept {
   return Transformer<::std::remove_cvref_t<A>>::await_transform(
       *this, ::std::forward<A>(awaitable));

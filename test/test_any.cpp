@@ -365,19 +365,6 @@ TEST(any, any_can_ref_to_other) {
   }
 }
 
-TEST(any, any_can_ref_to_other_contain_primitive) {
-  int32_t x = 1;
-  Any any;
-  any.ref(x);
-  Any any_ref_any;
-  any_ref_any.ref(any);
-  ASSERT_FALSE(any_ref_any.is_const_reference());
-  ASSERT_TRUE(any_ref_any.is_reference());
-  ASSERT_EQ(1, any_ref_any.as<int32_t>());
-  x = 2;
-  ASSERT_EQ(2, any_ref_any.as<int32_t>());
-}
-
 TEST(any, primitive_value_handle_separately) {
   {
     int64_t value = 0xFEFEFEFEFEFEFEFEL;
@@ -809,6 +796,7 @@ struct StaticInstance {
 
 static StaticInstance static_instance;
 
+#if BABYLON_HAS_INIT_PRIORITY
 TEST(any, static_initialize_works_fine) {
   ASSERT_NE(nullptr, static_instance.string.get<::std::string>());
   ASSERT_EQ(static_instance.pstring,
@@ -820,54 +808,7 @@ TEST(any, static_initialize_works_fine) {
   ASSERT_EQ(static_instance.pref, static_instance.ref.get<::std::string>());
   ASSERT_EQ(static_instance.pref, static_instance.pstring);
 }
-
-TEST(any, base_type_ref) {
-  int64_t i = 100000;
-  double d = 0.01;
-  bool flag = true;
-  float f = 0.2;
-  uint32_t k = 10;
-  Any any;
-  any.ref<int64_t>(i);
-  auto int_p = any.get<int64_t>();
-  ASSERT_EQ(*int_p, i);
-  any.ref<double>(d);
-  auto double_p = any.get<double>();
-  ASSERT_EQ(*double_p, d);
-  any.ref(f);
-  auto float_p = any.get<float>();
-  ASSERT_EQ(*float_p, f);
-  any.ref(k);
-  auto int32_p = any.get<uint32_t>();
-  ASSERT_EQ(*int32_p, k);
-  any.ref(flag);
-  auto bool_p = any.get<bool>();
-  ASSERT_EQ(*bool_p, flag);
-}
-
-TEST(any, base_type_cref) {
-  const int64_t i = 100000;
-  const double d = 0.01;
-  const bool flag = true;
-  const float f = 0.2;
-  const uint32_t k = 10;
-  Any any;
-  any.cref<int64_t>(i);
-  auto int_p = any.cget<int64_t>();
-  ASSERT_EQ(*int_p, i);
-  any.cref<double>(d);
-  auto double_p = any.cget<double>();
-  ASSERT_EQ(*double_p, d);
-  any.cref(f);
-  auto float_p = any.cget<float>();
-  ASSERT_EQ(*float_p, f);
-  any.cref(k);
-  auto int32_p = any.cget<uint32_t>();
-  ASSERT_EQ(*int32_p, k);
-  any.cref(flag);
-  auto bool_p = any.cget<bool>();
-  ASSERT_EQ(*bool_p, flag);
-}
+#endif // BABYLON_HAS_INIT_PRIORITY
 
 TEST(any, primitive_pass_with_unique_ptr) {
   Any any(::std::unique_ptr<int32_t>(new int32_t(-10086)));
@@ -1067,5 +1008,32 @@ TEST_F(AnyTest, release_inplace_get_nullptr_and_keep_inplace_inside) {
     ASSERT_EQ(nullptr, any.release<InplaceTrivialClass>());
     ASSERT_EQ(nullptr, any.release());
     ASSERT_EQ(10086, any.get<InplaceTrivialClass>()->v);
+  }
+}
+
+TEST_F(AnyTest, get_unchecked_work_with_correct_type) {
+  {
+    Any any(NormalClass {});
+    any.get<NormalClass>()->v1 = 10086;
+    any.get<NormalClass>()->v2 = 10010;
+    ASSERT_EQ(10086, any.get_unchecked<NormalClass>().v1);
+    ASSERT_EQ(10010, any.get_unchecked<NormalClass>().v2);
+  }
+  {
+    Any any(InplaceClass {});
+    any.get<InplaceClass>()->v = 11010;
+    ASSERT_EQ(11010, any.get_unchecked<InplaceClass>().v);
+  }
+  {
+    InplaceClass c;
+    Any any;
+    any.ref(c);
+    any.get<InplaceClass>()->v = 10086;
+    ASSERT_EQ(10086, any.get_unchecked<InplaceClass>().v);
+  }
+  {
+    Any any {static_cast<int>(0)};
+    *any.get<int>() = 10086;
+    ASSERT_EQ(10086, any.get_unchecked<int>());
   }
 }

@@ -88,6 +88,11 @@
 #else // !__has_include
 #define BABYLON_HAS_INCLUDE(header) false
 #endif // !__has_include
+#ifdef __has_feature
+#define BABYLON_HAS_FEATURE(feature) __has_feature(feature)
+#else // !__has_feature
+#define BABYLON_HAS_FEATURE(feature) false
+#endif // !__has_feature
 
 // c++14/c++17对constexpr进行了升级，有些场景只有在c++14/c++17后才能够constexpr
 // 制作对应的辅助宏来帮助
@@ -167,3 +172,20 @@
 #define BABYLON_EXTERNAL(file) #file
 #endif // !BABYLON_HAS_INCLUDE(<absl/base/config.h>)
 // clang-format on
+
+#if __has_attribute(init_priority) && \
+    (!defined(__clang__) || CLANG_VERSION >= 140000L)
+#define BABYLON_HAS_INIT_PRIORITY 1
+#define BABYLON_INIT_PRIORITY(priority) __attribute__((init_priority(priority)))
+#else
+#define BABYLON_HAS_INIT_PRIORITY 0
+#define BABYLON_INIT_PRIORITY(priority)
+#endif
+
+#if defined(__SANITIZE_ADDRESS__)
+#define BABYLON_HAS_ADDRESS_SANITIZER 1
+#elif BABYLON_HAS_FEATURE(address_sanitizer)
+#define BABYLON_HAS_ADDRESS_SANITIZER 1
+#else
+#define BABYLON_HAS_ADDRESS_SANITIZER 0
+#endif

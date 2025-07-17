@@ -69,8 +69,11 @@ class Any {
   inline explicit Any(::std::unique_ptr<T>&& value) noexcept;
 
   // 从对象拷贝或移动构造，自身会持有对象本体的拷贝或移动构造副本
-  template <typename T, typename ::std::enable_if<sizeof(uint64_t) < sizeof(T),
-                                                  int>::type = 0>
+  template <typename T,
+            typename ::std::enable_if<
+                !::std::is_same<Any, ::std::remove_cvref_t<T>>::value &&
+                    sizeof(uint64_t) < sizeof(T),
+                int>::type = 0>
   inline explicit Any(T&& value) noexcept;
   // 特化支持8字节以内小对象，内联存储
   template <typename T, typename ::std::enable_if<sizeof(T) <= sizeof(uint64_t),
@@ -155,7 +158,34 @@ class Any {
   // 尝试获取const ref也会取到nullptr
   template <typename T>
   inline T* get() noexcept;
-  inline void* get() noexcept;
+  template <typename T,
+            typename ::std::enable_if<sizeof(T) <= sizeof(int64_t) &&
+                                          ::std::is_trivial<T>::value,
+                                      int>::type = 0>
+  inline T& get_unchecked() noexcept;
+  template <typename T,
+            typename ::std::enable_if<sizeof(T) <= sizeof(int64_t) &&
+                                          !::std::is_trivial<T>::value,
+                                      int>::type = 0>
+  inline T& get_unchecked() noexcept;
+  template <typename T, typename ::std::enable_if<(sizeof(T) > sizeof(int64_t)),
+                                                  int>::type = 0>
+  inline T& get_unchecked() noexcept;
+  template <typename T,
+            typename ::std::enable_if<sizeof(T) <= sizeof(int64_t) &&
+                                          ::std::is_trivial<T>::value,
+                                      int>::type = 0>
+  inline const T& get_unchecked() const noexcept;
+  template <typename T,
+            typename ::std::enable_if<sizeof(T) <= sizeof(int64_t) &&
+                                          !::std::is_trivial<T>::value,
+                                      int>::type = 0>
+  inline const T& get_unchecked() const noexcept;
+  template <typename T, typename ::std::enable_if<(sizeof(T) > sizeof(int64_t)),
+                                                  int>::type = 0>
+  inline const T& get_unchecked() const noexcept;
+  inline const void* get_unchecked() const noexcept;
+  inline void* get_unchecked() noexcept;
 
   // 常量取值
   template <typename T, typename ::std::enable_if<sizeof(size_t) < sizeof(T),
@@ -222,10 +252,6 @@ class Any {
   struct TypeDescriptor {
     static void destructor(void* object) noexcept;
     static void deleter(void* object) noexcept;
-
-    static Meta meta_for_instance;
-    static Meta meta_for_inplace_trivial;
-    static Meta meta_for_inplace_non_trivial;
   };
 
   template <typename T>
@@ -260,6 +286,9 @@ class Any {
     };
   };
 
+  template <typename T>
+  struct StaticMeta;
+
   inline static uint64_t meta_for_instance(
       const Descriptor* descriptor) noexcept;
 
@@ -267,17 +296,14 @@ class Any {
   inline void* raw_pointer() noexcept;
   inline const void* const_raw_pointer() const noexcept;
 
-  template <typename T, typename ::std::enable_if<::std::is_integral<T>::value,
-                                                  int>::type = 0>
-  inline void construct_inplace(T&& value) noexcept;
   template <typename T,
-            typename ::std::enable_if<!::std::is_integral<T>::value &&
+            typename ::std::enable_if<!::std::is_arithmetic<T>::value &&
                                           (::std::is_array<T>::value ||
                                            ::std::is_function<T>::value),
                                       int>::type = 0>
   inline void construct_inplace(T&& value) noexcept;
   template <typename T,
-            typename ::std::enable_if<!::std::is_integral<T>::value &&
+            typename ::std::enable_if<!::std::is_arithmetic<T>::value &&
                                           !::std::is_array<T>::value &
                                               !::std::is_function<T>::value,
                                       int>::type = 0>

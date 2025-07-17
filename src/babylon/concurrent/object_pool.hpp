@@ -91,6 +91,11 @@ template <typename T>
 void ObjectPool<T>::push(::std::unique_ptr<T, Deleter>&& object) noexcept {
   push(::std::unique_ptr<T> {object.release()});
 }
+
+template <typename T>
+inline size_t ObjectPool<T>::free_object_number() const noexcept {
+  return _free_objects.size();
+}
 // ObjectPool end
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -431,29 +431,19 @@ void SharedMonotonicBufferResource::register_thread_constructor() noexcept {
 // SwissMemoryResource begin
 void SwissMemoryResource::set_page_allocator(
     PageAllocator& page_allocator) noexcept {
-  // 高版本protobuf，比如3.17.x，在Reset时就会使用alloc来分配一些初始空间
-  // 采用析构和再构造来避免这个空间持有，让底层内存可以完全释放
 #if GOOGLE_PROTOBUF_VERSION >= 3000000
-  _arena.reset();
+  _arena.store(nullptr, ::std::memory_order_relaxed);
 #endif // GOOGLE_PROTOBUF_VERSION >= 3000000
   SharedMonotonicBufferResource::release();
   SharedMonotonicBufferResource::set_page_allocator(page_allocator);
-#if GOOGLE_PROTOBUF_VERSION >= 3000000
-  _arena.reset(new ::google::protobuf::Arena(make_arena_options()));
-#endif // GOOGLE_PROTOBUF_VERSION >= 3000000
 }
 void SwissMemoryResource::set_upstream(
     ::std::pmr::memory_resource& upstream) noexcept {
-  // 高版本protobuf，比如3.17.x，在Reset时就会使用alloc来分配一些初始空间
-  // 采用析构和再构造来避免这个空间持有，让底层内存可以完全释放
 #if GOOGLE_PROTOBUF_VERSION >= 3000000
-  _arena.reset();
+  _arena.store(nullptr, ::std::memory_order_relaxed);
 #endif // GOOGLE_PROTOBUF_VERSION >= 3000000
   SharedMonotonicBufferResource::release();
   SharedMonotonicBufferResource::set_upstream(upstream);
-#if GOOGLE_PROTOBUF_VERSION >= 3000000
-  _arena.reset(new ::google::protobuf::Arena(make_arena_options()));
-#endif // GOOGLE_PROTOBUF_VERSION >= 3000000
 }
 void* SwissMemoryResource::arena_block_alloc(size_t size) noexcept {
   return ::operator new(size);
@@ -462,15 +452,10 @@ void SwissMemoryResource::arena_block_dealloc(void* ptr, size_t size) noexcept {
   ::operator delete(ptr, size);
 }
 void SwissMemoryResource::release() noexcept {
-  // 高版本protobuf，比如3.17.x，在Reset时就会使用alloc来分配一些初始空间
-  // 采用析构和再构造来避免这个空间持有，让底层内存可以完全释放
 #if GOOGLE_PROTOBUF_VERSION >= 3000000
-  _arena.reset();
+  _arena.store(nullptr, ::std::memory_order_relaxed);
 #endif // GOOGLE_PROTOBUF_VERSION >= 3000000
   SharedMonotonicBufferResource::release();
-#if GOOGLE_PROTOBUF_VERSION >= 3000000
-  _arena.reset(new ::google::protobuf::Arena(make_arena_options()));
-#endif // GOOGLE_PROTOBUF_VERSION >= 3000000
 }
 // SwissMemoryResource end
 ////////////////////////////////////////////////////////////////////////////////

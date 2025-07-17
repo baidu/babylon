@@ -4,6 +4,7 @@
 #include <arena_example.pb.h>
 #endif // BABYLON_USE_PROTOBUF
 
+#include "absl/container/flat_hash_map.h"
 #include "gtest/gtest.h"
 
 #include <vector>
@@ -460,6 +461,24 @@ TEST(MonotonicAllocator, support_pmr) {
   ASSERT_TRUE(resource.contains(&v));
   ASSERT_TRUE(resource.contains(&v[0]));
   ASSERT_TRUE(resource.contains(&v[0][0]));
+}
+
+TEST(MonotonicAllocator, support_absl_pmr) {
+  SwissMemoryResource resource;
+  using A = ::std::pmr::polymorphic_allocator<
+      ::std::pair<const ::std::pmr::string, ::std::pmr::string>>;
+  using M = ::absl::flat_hash_map<
+      ::std::pmr::string, ::std::pmr::string,
+      ::absl::container_internal::hash_default_hash<::std::string>,
+      ::absl::container_internal::hash_default_eq<::std::string>, A>;
+  auto& m = *MonotonicAllocator<>(resource).create_object<M>();
+  m.emplace("key",
+            "this is a "
+            "veryyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+            "yyyyyyyyyyyyyy long string");
+  ASSERT_TRUE(resource.contains(&m));
+  ASSERT_TRUE(resource.contains(&m["key"]));
+  ASSERT_TRUE(resource.contains(m["key"].data()));
 }
 #endif // __cpp_lib_memory_resource >= 201603L
 

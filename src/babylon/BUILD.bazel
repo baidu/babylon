@@ -209,6 +209,7 @@ cc_library(
   strip_include_prefix = '//src',
   deps = [
     ':environment',
+    '@fmt//:fmt',
   ],
 )
 

@@ -40,8 +40,8 @@ Logger& Logger::operator=(const Logger& other) noexcept {
   return *this;
 }
 
-LogStream& Logger::stream(LogSeverity severity, StringView file,
-                          int line, StringView function) noexcept {
+LogStream& Logger::stream(LogSeverity severity, StringView file, int line,
+                          StringView function) noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"

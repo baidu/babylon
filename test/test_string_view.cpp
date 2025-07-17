@@ -1,6 +1,6 @@
 #include "test_string_view.h"
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 
 #include <sstream>
 
@@ -82,12 +82,13 @@ TEST(string_view, get_char_as_constexpr) {
 
 TEST(string_view, locate_char_report_error) {
   constexpr StringView view = "10086";
+  char c = '\0';
   {
-    auto c = view.at(1);
+    c = view.at(1);
     ASSERT_EQ('0', c);
   }
 #if __cplusplus < 202002L
-  ASSERT_THROW(view.at(6), ::std::out_of_range);
+  ASSERT_THROW(c = view.at(6), ::std::out_of_range);
 #endif // __cplusplus < 202002L
 }
 
@@ -368,4 +369,12 @@ TEST(string_view, std_and_babylon_string_view_convertible_to_each_other) {
     v = bsv;
     ASSERT_EQ("10086", v);
   }
+}
+
+TEST(string_view, formattable) {
+  StringView view {"10086"};
+  ASSERT_EQ("10086", ::fmt::format("{}", view));
+#if __cpp_lib_format >= 201907L
+  ASSERT_EQ("10086", ::std::format("{}", view));
+#endif
 }

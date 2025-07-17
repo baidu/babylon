@@ -193,15 +193,15 @@ VersionedValue<uint16_t> ThreadIdImpl<Leaky>::current_thread_id() noexcept {
 template <bool Leaky>
 template <typename T>
 inline uint16_t ThreadIdImpl<Leaky>::end() noexcept {
-  return concurrent_id_allocator::IdAllocatorFotType<T, Leaky>::
-    instance().end();
+  return concurrent_id_allocator::IdAllocatorFotType<T, Leaky>::instance()
+      .end();
 }
 
 template <bool Leaky>
 template <typename T, typename C, typename>
 ABSL_ATTRIBUTE_NOINLINE void ThreadIdImpl<Leaky>::for_each(C&& callback) {
-  concurrent_id_allocator::IdAllocatorFotType<T, Leaky>::instance().
-    for_each(::std::forward<C>(callback));
+  concurrent_id_allocator::IdAllocatorFotType<T, Leaky>::instance().for_each(
+      ::std::forward<C>(callback));
 }
 
 template <bool Leaky>
