@@ -298,15 +298,20 @@ class SwissMemoryResource : public SharedMonotonicBufferResource {
  public:
   inline SwissMemoryResource() noexcept
       : SwissMemoryResource(SystemPageAllocator::instance()) {}
+  inline SwissMemoryResource(SwissMemoryResource&& other) noexcept
+      : SharedMonotonicBufferResource {::std::move(other)},
+        _arena {other._arena.load(::std::memory_order_relaxed)} {
+    other._arena.store(nullptr, ::std::memory_order_relaxed);
+  }
+  inline SwissMemoryResource& operator=(SwissMemoryResource&& other) noexcept {
+    _arena.store(other._arena.load(::std::memory_order_relaxed),
+                 ::std::memory_order_relaxed);
+    other._arena.store(nullptr, ::std::memory_order_relaxed);
+    return *this;
+  }
 
   inline SwissMemoryResource(PageAllocator& page_allocator) noexcept
-      : SharedMonotonicBufferResource(page_allocator)
-#if GOOGLE_PROTOBUF_VERSION >= 3000000
-        ,
-        _arena(new ::google::protobuf::Arena(make_arena_options()))
-#endif // GOOGLE_PROTOBUF_VERSION >= 3000000
-  {
-  }
+      : SharedMonotonicBufferResource(page_allocator) {}
 
   void set_page_allocator(PageAllocator& page_allocator) noexcept;
   void set_upstream(::std::pmr::memory_resource& upstream) noexcept;
@@ -315,7 +320,21 @@ class SwissMemoryResource : public SharedMonotonicBufferResource {
 
 #if GOOGLE_PROTOBUF_VERSION >= 3000000
   inline operator ::google::protobuf::Arena&() noexcept {
-    return *_arena;
+    auto arena = _arena.load(::std::memory_order_acquire);
+    if (ABSL_PREDICT_TRUE(arena)) {
+      return *arena;
+    }
+
+    using Arena = ::google::protobuf::Arena;
+    Arena* expected = nullptr;
+    auto new_arena =
+        reinterpret_cast<Arena*>(allocate<alignof(Arena)>(sizeof(Arena)));
+    new (new_arena) Arena {make_arena_options()};
+    if (!_arena.compare_exchange_strong(expected, new_arena,
+                                        ::std::memory_order_acq_rel)) {
+      return *expected;
+    }
+    return *new_arena;
   }
 #endif // GOOGLE_PROTOBUF_VERSION >= 3000000
 
@@ -340,7 +359,7 @@ class SwissMemoryResource : public SharedMonotonicBufferResource {
     return options;
   }
 
-  ::std::unique_ptr<::google::protobuf::Arena> _arena;
+  ::std::atomic<::google::protobuf::Arena*> _arena {nullptr};
 #endif // GOOGLE_PROTOBUF_VERSION >= 3000000
 };
 
@@ -497,7 +516,9 @@ SharedMonotonicBufferResource::allocate(size_t bytes,
 template <typename T>
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE void
 SharedMonotonicBufferResource::register_destructor(T* ptr) noexcept {
-  register_destructor(ptr, &destruct<T>);
+  if (!::std::is_trivially_destructible<T>::value) {
+    register_destructor(ptr, &destruct<T>);
+  }
 }
 
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE void

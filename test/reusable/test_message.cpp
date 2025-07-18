@@ -159,6 +159,7 @@ TEST_F(ReusableMessage, keep_repeated_sub_message_field_capacity) {
 #pragma GCC diagnostic pop
 }
 
+#if GOOGLE_PROTOBUF_HAS_DONATED_STRING
 TEST_F(ReusableMessage, recreate_string_on_arena) {
   auto message = manager.create_object<ArenaExample>();
   auto* pmessage = message.get();
@@ -175,6 +176,7 @@ TEST_F(ReusableMessage, recreate_string_on_arena) {
   ASSERT_TRUE(
       manager.resource().contains(message->mutable_m()->mutable_s()->data()));
 }
+#endif // GOOGLE_PROTOBUF_HAS_DONATED_STRING
 
 TEST_F(ReusableMessage,
        usable_with_base_protobuf_message_type_when_reflection) {

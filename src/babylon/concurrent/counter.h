@@ -1,8 +1,9 @@
 #pragma once
 
-#include <type_traits>                       // std::is_integral, std::is_floating_point
 #include "babylon/concurrent/thread_local.h" // CompactEnumerableThreadLocal
 #include "babylon/environment.h"
+
+#include <type_traits> // std::is_integral, std::is_floating_point
 
 #ifdef __x86_64__
 #include <x86intrin.h>
@@ -24,17 +25,18 @@ BABYLON_NAMESPACE_BEGIN
 // 但相应的读操作就需要遍历所有线程局部数据并再次累加才能得到结果
 template <typename T>
 class GenericsConcurrentAdder {
-  static_assert(
-    (::std::is_integral<T>::value ||
-      ::std::is_floating_point<T>::value) && 8 >= sizeof(T),
-    "ConcurrentSummer only supports integral or "
-    "floating point types with size <= 8 bytes");
+  static_assert((::std::is_integral<T>::value ||
+                 ::std::is_floating_point<T>::value) &&
+                    8 >= sizeof(T),
+                "ConcurrentSummer only supports integral or "
+                "floating point types with size <= 8 bytes");
 
  public:
   GenericsConcurrentAdder() noexcept = default;
   GenericsConcurrentAdder(GenericsConcurrentAdder&&) noexcept = default;
   GenericsConcurrentAdder(const GenericsConcurrentAdder&) = delete;
-  GenericsConcurrentAdder& operator=(GenericsConcurrentAdder&&) noexcept = default;
+  GenericsConcurrentAdder& operator=(GenericsConcurrentAdder&&) noexcept =
+      default;
   GenericsConcurrentAdder& operator=(const GenericsConcurrentAdder&) = delete;
   ~GenericsConcurrentAdder() noexcept = default;
 
@@ -86,8 +88,8 @@ namespace internal {
 template <typename T>
 struct MaxComparer {
   bool operator()(T lhs, T rhs) const {
-      return lhs > rhs;
-    }
+    return lhs > rhs;
+  }
 };
 template <typename T>
 struct MinComparer {
@@ -98,16 +100,16 @@ struct MinComparer {
 
 template <typename T, bool Max>
 class ConcurrentComparer {
-  static_assert(
-    (::std::is_integral<T>::value ||
-      ::std::is_floating_point<T>::value) && 8 >= sizeof(T),
-    "ConcurrentSummer only supports integral or "
-    "floating point types with size <= 8 bytes");
+  static_assert((::std::is_integral<T>::value ||
+                 ::std::is_floating_point<T>::value) &&
+                    8 >= sizeof(T),
+                "ConcurrentSummer only supports integral or "
+                "floating point types with size <= 8 bytes");
 
-    constexpr static T EXTREMUM =
+  constexpr static T EXTREMUM =
       Max ? std::numeric_limits<T>::min() : std::numeric_limits<T>::max();
-    typedef typename std::conditional<
-      Max, MaxComparer<T>, MinComparer<T>>::type Comparer;
+  typedef typename std::conditional<Max, MaxComparer<T>, MinComparer<T>>::type
+      Comparer;
 
  public:
   ConcurrentComparer() noexcept = default;
@@ -191,7 +193,8 @@ class GenericsConcurrentMaxer : public internal::ConcurrentComparer<T, true> {};
 using ConcurrentMaxer = GenericsConcurrentMaxer<ssize_t>;
 
 template <typename T>
-class GenericsConcurrentMiner : public internal::ConcurrentComparer<T, false> {};
+class GenericsConcurrentMiner : public internal::ConcurrentComparer<T, false> {
+};
 
 using ConcurrentMiner = GenericsConcurrentMiner<ssize_t>;
 
@@ -298,8 +301,7 @@ class ConcurrentSampler {
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
-    };
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
   };
 
   inline static uint16_t xorshift128_rand() noexcept;

@@ -27,6 +27,14 @@ http_archive(
 load('@com_github_nelhage_rules_boost//:boost/boost.bzl', 'boost_deps')
 boost_deps()
 
+http_archive(
+  name = 'fmt',
+  urls = ['https://github.com/fmtlib/fmt/archive/refs/tags/8.1.1.tar.gz'],
+  strip_prefix = 'fmt-8.1.1',
+  sha256 = '3d794d3cf67633b34b2771eb9f073bde87e846e0d395d254df7b211ef1ec7346',
+  build_file = "//bazel/fmt:BUILD.bazel",
+)
+
 ################################################################################
 # test only dependency
 http_archive(

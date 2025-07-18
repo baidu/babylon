@@ -6,6 +6,7 @@
 #include "babylon/logging/log_severity.h"            // babylon::LogSeverity
 #include "babylon/logging/log_stream.h"              // babylon::LogStream
 
+#include <array> // std::array
 #include <functional>
 
 BABYLON_NAMESPACE_BEGIN
@@ -19,8 +20,8 @@ class Logger final {
 
   inline bool initialized() const noexcept;
   inline LogSeverity min_severity() const noexcept;
-  LogStream& stream(LogSeverity severity, StringView file,
-                    int line, StringView function) noexcept;
+  LogStream& stream(LogSeverity severity, StringView file, int line,
+                    StringView function) noexcept;
 
  private:
   using ThreadLocalLogStream =

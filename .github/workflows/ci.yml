@@ -39,27 +39,6 @@ jobs:
         path: bazel-disk
         key: bazel-disk-basic-${{matrix.compiler.name}}-${{matrix.mode.name}}-${{matrix.std.name}}-${{matrix.stdlib.name}}-${{matrix.feature.name}}-${{github.sha}}
 
-  compatible:
-    strategy:
-      fail-fast: false
-      matrix:
-        compiler: [{name: gcc-9, flag: --action_env=CC=gcc-9}]
-    runs-on: ubuntu-20.04
-    name: compatible-${{matrix.compiler.name}}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/cache/restore@v4
-      with:
-        path: bazel-disk
-        key: bazel-disk-compatible-${{matrix.compiler.name}}-${{github.sha}}
-        restore-keys: bazel-disk-compatible-${{matrix.compiler.name}}
-    - run: bazel test --disk_cache=bazel-disk --verbose_failures --test_output=errors ${{matrix.compiler.flag}} test/...
-    - uses: actions/cache/save@v4
-      if: always()
-      with:
-        path: bazel-disk
-        key: bazel-disk-compatible-${{matrix.compiler.name}}-${{github.sha}}
-
   arenastring:
     strategy:
       fail-fast: false
@@ -131,7 +110,7 @@ jobs:
         key: bazel-disk-aarch64-${{github.sha}}
 
   workspace:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache/restore@v4
@@ -147,7 +126,7 @@ jobs:
         key: bazel-disk-workspace-${{github.sha}}
 
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache/restore@v4
@@ -168,7 +147,7 @@ jobs:
         key: bazel-disk-coverage-${{github.sha}}
 
   cmake:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: hendrikmuhs/ccache-action@v1.2

@@ -12,29 +12,36 @@
 
 BABYLON_NAMESPACE_BEGIN
 
+template <typename T>
+struct Any::StaticMeta {
+  static Meta meta_for_instance;
+  static Meta meta_for_inplace_trivial;
+  static Meta meta_for_inplace_non_trivial;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // Any::TypeDescriptor begin
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
-template <typename T, typename E>
-__attribute__((init_priority(101)))
-Any::Meta Any::TypeDescriptor<T, E>::meta_for_instance {
+template <typename T>
+BABYLON_INIT_PRIORITY(101)
+Any::Meta Any::StaticMeta<T>::meta_for_instance {
     .v = Any::meta_for_instance(
         &TypeDescriptor<typename ::std::decay<T>::type>().descriptor)};
 
-template <typename T, typename E>
-__attribute__((init_priority(101)))
-Any::Meta Any::TypeDescriptor<T, E>::meta_for_inplace_trivial {
+template <typename T>
+BABYLON_INIT_PRIORITY(101)
+Any::Meta Any::StaticMeta<T>::meta_for_inplace_trivial {
     .v = reinterpret_cast<uint64_t>(
              &TypeDescriptor<typename ::std::decay<T>::type>().descriptor) |
          static_cast<uint64_t>(HolderType::INPLACE_TRIVIAL) << 56 |
          static_cast<uint64_t>(Type::INSTANCE) << 48};
 
-template <typename T, typename E>
-__attribute__((init_priority(101)))
-Any::Meta Any::TypeDescriptor<T, E>::meta_for_inplace_non_trivial {
+template <typename T>
+BABYLON_INIT_PRIORITY(101)
+Any::Meta Any::StaticMeta<T>::meta_for_inplace_non_trivial {
     .v = reinterpret_cast<uint64_t>(
              &TypeDescriptor<typename ::std::decay<T>::type>().descriptor) |
          static_cast<uint64_t>(HolderType::INPLACE_NON_TRIVIAL) << 56 |
@@ -147,15 +154,16 @@ inline Any::~Any() noexcept {
 
 template <typename T>
 inline Any::Any(::std::unique_ptr<T>&& value) noexcept
-    : _meta {TypeDescriptor<typename ::std::decay<T>::type>()
-                 .meta_for_instance},
+    : _meta {StaticMeta<typename ::std::decay<T>::type>().meta_for_instance},
       _holder {.pointer_value = value.release()} {}
 
 template <typename T,
-          typename ::std::enable_if<sizeof(uint64_t) < sizeof(T), int>::type>
+          typename ::std::enable_if<
+              !::std::is_same<Any, ::std::remove_cvref_t<T>>::value &&
+                  sizeof(uint64_t) < sizeof(T),
+              int>::type>
 inline Any::Any(T&& value) noexcept
-    : _meta {TypeDescriptor<typename ::std::decay<T>::type>()
-                 .meta_for_instance},
+    : _meta {StaticMeta<typename ::std::decay<T>::type>().meta_for_instance},
       _holder {.pointer_value = new
                typename ::std::decay<T>::type(::std::forward<T>(value))} {}
 
@@ -164,9 +172,9 @@ template <typename T,
 inline Any::Any(T&& value) noexcept {
   typedef typename ::std::decay<T>::type DT;
   if CONSTEXPR_SINCE_CXX17 (::std::is_trivially_destructible<DT>::value) {
-    _meta = TypeDescriptor<DT>().meta_for_inplace_trivial;
+    _meta = StaticMeta<DT>().meta_for_inplace_trivial;
   } else {
-    _meta = TypeDescriptor<DT>().meta_for_inplace_non_trivial;
+    _meta = StaticMeta<DT>().meta_for_inplace_non_trivial;
   }
   construct_inplace(::std::forward<T>(value));
 }
@@ -184,28 +192,7 @@ inline Any::Any(T&& value) noexcept {
                         &TypeDescriptor<ctype>().descriptor) |                 \
                     static_cast<uint64_t>(HolderType::INSTANCE) << 56 |        \
                     static_cast<uint64_t>(Type::etype) << 48},                 \
-        _holder {.pointer_value = value.release()} {}                          \
-                                                                               \
-  template <>                                                                  \
-  inline Any& Any::cref<ctype>(const ctype& value) noexcept {                  \
-    destroy();                                                                 \
-    _meta.v =                                                                  \
-        reinterpret_cast<uint64_t>(&TypeDescriptor<ctype>().descriptor) |      \
-        static_cast<uint64_t>(HolderType::CONST_REFERENCE) << 56 |             \
-        static_cast<uint64_t>(Type::etype) << 48;                              \
-    _holder.const_pointer_value = &value;                                      \
-    return *this;                                                              \
-  }                                                                            \
-  template <>                                                                  \
-  inline Any& Any::ref<ctype>(ctype & value) noexcept {                        \
-    destroy();                                                                 \
-    _meta.v =                                                                  \
-        reinterpret_cast<uint64_t>(&TypeDescriptor<ctype>().descriptor) |      \
-        static_cast<uint64_t>(HolderType::MUTABLE_REFERENCE) << 56 |           \
-        static_cast<uint64_t>(Type::etype) << 48;                              \
-    _holder.pointer_value = &value;                                            \
-    return *this;                                                              \
-  }
+        _holder {.pointer_value = value.release()} {}
 
 BABYLON_TMP_SPECIALIZE_FOR_PRIMITIVE(int64_t, INT64, int64_v);
 BABYLON_TMP_SPECIALIZE_FOR_PRIMITIVE(int32_t, INT32, int64_v);
@@ -238,6 +225,8 @@ inline Any& Any::operator=(const Any& other) {
 
 template <typename T>
 inline Any& Any::ref(T& value) noexcept {
+  static_assert(sizeof(T) > sizeof(uint64_t) || !::std::is_trivial<T>::value,
+                "disable ref to small trivial type");
   destroy();
   _meta.v = reinterpret_cast<uint64_t>(&TypeDescriptor<T>().descriptor) |
             static_cast<uint64_t>(HolderType::MUTABLE_REFERENCE) << 56 |
@@ -248,6 +237,8 @@ inline Any& Any::ref(T& value) noexcept {
 
 template <typename T>
 inline Any& Any::cref(const T& value) noexcept {
+  static_assert(sizeof(T) > sizeof(uint64_t) || !::std::is_trivial<T>::value,
+                "disable ref to small trivial type");
   destroy();
   _meta.v = reinterpret_cast<uint64_t>(&TypeDescriptor<T>().descriptor) |
             static_cast<uint64_t>(HolderType::CONST_REFERENCE) << 56 |
@@ -292,8 +283,63 @@ inline T* Any::get() noexcept {
   return nullptr;
 }
 
-inline void* Any::get() noexcept {
+template <typename T, typename ::std::enable_if<sizeof(T) <= sizeof(int64_t) &&
+                                                    ::std::is_trivial<T>::value,
+                                                int>::type>
+inline T& Any::get_unchecked() noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+  return *reinterpret_cast<T*>(&_holder);
+#pragma GCC diagnostic pop
+}
+
+template <typename T,
+          typename ::std::enable_if<sizeof(T) <= sizeof(int64_t) &&
+                                        !::std::is_trivial<T>::value,
+                                    int>::type>
+inline T& Any::get_unchecked() noexcept {
+  return *reinterpret_cast<T*>(raw_pointer());
+}
+
+template <typename T,
+          typename ::std::enable_if<(sizeof(T) > sizeof(int64_t)), int>::type>
+inline T& Any::get_unchecked() noexcept {
+  return *reinterpret_cast<T*>(_holder.pointer_value);
+}
+
+template <typename T, typename ::std::enable_if<sizeof(T) <= sizeof(int64_t) &&
+                                                    ::std::is_trivial<T>::value,
+                                                int>::type>
+inline const T& Any::get_unchecked() const noexcept {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+  return *reinterpret_cast<const T*>(&_holder);
+#pragma GCC diagnostic pop
+}
+template <typename T,
+          typename ::std::enable_if<sizeof(T) <= sizeof(int64_t) &&
+                                        !::std::is_trivial<T>::value,
+                                    int>::type>
+inline const T& Any::get_unchecked() const noexcept {
+  return *reinterpret_cast<const T*>(const_raw_pointer());
+}
+
+template <typename T,
+          typename ::std::enable_if<(sizeof(T) > sizeof(int64_t)), int>::type>
+inline const T& Any::get_unchecked() const noexcept {
+  return *reinterpret_cast<const T*>(_holder.const_pointer_value);
+}
+
+inline void* Any::get_unchecked() noexcept {
   return raw_pointer();
+}
+
+inline const void* Any::get_unchecked() const noexcept {
+  return const_raw_pointer();
 }
 
 template <typename T,
@@ -392,6 +438,9 @@ inline uint64_t Any::meta_for_instance(const Descriptor* descriptor) noexcept {
 }
 
 inline void Any::destroy() noexcept {
+  if (ABSL_PREDICT_TRUE(_meta.m.type == Type::EMPTY)) {
+    return;
+  }
   switch (_meta.m.holder_type) {
     case HolderType::INSTANCE: {
       _meta.descriptor()->deleter(_holder.pointer_value);
@@ -419,13 +468,7 @@ inline const void* Any::const_raw_pointer() const noexcept {
 }
 
 template <typename T,
-          typename ::std::enable_if<::std::is_integral<T>::value, int>::type>
-inline void Any::construct_inplace(T&& value) noexcept {
-  _holder.uint64_v = value;
-}
-
-template <typename T,
-          typename ::std::enable_if<!::std::is_integral<T>::value &&
+          typename ::std::enable_if<!::std::is_arithmetic<T>::value &&
                                         (::std::is_array<T>::value ||
                                          ::std::is_function<T>::value),
                                     int>::type>
@@ -433,7 +476,7 @@ inline void Any::construct_inplace(T&& value) noexcept {
   _holder.const_pointer_value = &value;
 }
 template <typename T,
-          typename ::std::enable_if<!::std::is_integral<T>::value &&
+          typename ::std::enable_if<!::std::is_arithmetic<T>::value &&
                                         !::std::is_array<T>::value &
                                             !::std::is_function<T>::value,
                                     int>::type>
@@ -447,7 +490,7 @@ inline void Any::construct_inplace(T&& value) noexcept {
 
 template <typename T>
 inline ::std::unique_ptr<T> Any::release() noexcept {
-  if (ABSL_PREDICT_FALSE(_meta.v != TypeDescriptor<T>::meta_for_instance.v)) {
+  if (ABSL_PREDICT_FALSE(_meta.v != StaticMeta<T>::meta_for_instance.v)) {
     return nullptr;
   }
 

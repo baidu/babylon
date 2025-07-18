@@ -571,17 +571,20 @@ ABSL_ATTRIBUTE_ALWAYS_INLINE inline void MonotonicAllocator<T, M>::construct(
 #endif // __cpp_lib_memory_resource >= 201603L
 
 template <typename T, typename M>
-template <typename U, typename... Args,
-          typename ::std::enable_if<
-              BasicMonotonicAllocator<T, MonotonicAllocator<T, M>>::
-                      template BaseConstructible<U, Args...>::value
+template <
+    typename U, typename... Args,
+    typename ::std::enable_if<
+        BasicMonotonicAllocator<T, MonotonicAllocator<T, M>>::
+                template BaseConstructible<U, Args...>::value
 #if __cpp_lib_memory_resource >= 201603L
-                  && !UsesAllocatorConstructor::Constructible<
-                         U, ::std::pmr::polymorphic_allocator<U>,
-                         Args...>::USES_ALLOCATOR
+            && !(!UsesAllocatorConstructor::Constructible<
+                     U, MonotonicAllocator<U, M>, Args...>::USES_ALLOCATOR &&
+                 UsesAllocatorConstructor::Constructible<
+                     U, ::std::pmr::polymorphic_allocator<U>,
+                     Args...>::USES_ALLOCATOR)
 #endif // __cpp_lib_memory_resource >= 201603L
-              ,
-              int>::type>
+            ,
+        int>::type>
 inline void MonotonicAllocator<T, M>::construct(U* ptr,
                                                 Args&&... args) noexcept {
   Base::construct(ptr, ::std::forward<Args>(args)...);

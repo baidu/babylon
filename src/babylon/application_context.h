@@ -789,7 +789,8 @@ template <typename T>
 inline T* ApplicationContext::ComponentAccessor<T>::get() noexcept {
   auto& instance = _holder->get(*_context);
   if (instance) {
-    auto address = reinterpret_cast<intptr_t>(instance.get()) + _type_offset;
+    auto address =
+        reinterpret_cast<intptr_t>(instance.get_unchecked()) + _type_offset;
     return reinterpret_cast<T*>(address);
   }
   return nullptr;

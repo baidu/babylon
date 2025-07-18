@@ -6,6 +6,8 @@
 #include "babylon/protect.h"
 // clang-format on
 
+#include "fmt/format.h"
+
 #include <list>
 #include <map>
 #include <set>
@@ -108,6 +110,33 @@ constexpr Id TypeId<T>::ID;
 ///////////////////////////////////////////////////////////////////////////////
 
 BABYLON_NAMESPACE_END
+
+namespace fmt {
+template <typename C>
+struct formatter<::babylon::Id, C>
+    : public formatter<::babylon::StringView, C> {
+  using Base = formatter<::babylon::StringView, C>;
+  template <typename CT>
+  inline auto format(const ::babylon::Id& id, CT& ctx) const noexcept
+      -> decltype(ctx.out()) {
+    return Base::format(id.name, ctx);
+  }
+};
+} // namespace fmt
+
+#if __cpp_lib_format >= 201907L
+#include <format>
+template <typename C>
+struct std::formatter<::babylon::Id, C>
+    : public ::std::formatter<::babylon::StringView, C> {
+  using Base = ::std::formatter<::babylon::StringView, C>;
+  template <typename CT>
+  inline auto format(const ::babylon::Id& id, CT& ctx) const noexcept
+      -> decltype(ctx.out()) {
+    return Base::format(id.name, ctx);
+  }
+};
+#endif
 
 // clang-format off
 #include "babylon/unprotect.h"

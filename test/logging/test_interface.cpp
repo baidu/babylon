@@ -9,16 +9,15 @@ using ::babylon::LogStreamProvider;
 using ::babylon::StringView;
 
 struct MockLogStreamProvider : public LogStreamProvider {
-  LogStream& stream(int severity, StringView file,
-                    int line) noexcept override {
+  LogStream& stream(int severity, StringView file, int line) noexcept override {
     this->file = file;
     this->line = line;
     this->severity = severity;
     return ls;
   }
 
-  LogStream& stream(int severity, StringView file,
-                    int line, StringView function) noexcept override {
+  LogStream& stream(int severity, StringView file, int line,
+                    StringView function) noexcept override {
     this->file = file;
     this->line = line;
     this->function = function;

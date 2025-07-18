@@ -7,6 +7,7 @@
 // clang-format on
 
 #include <string>
+#include <vector>
 
 #ifndef ABSL_NAMESPACE_BEGIN
 #define ABSL_NAMESPACE_BEGIN
@@ -134,5 +135,82 @@ inline void stable_reserve(
 }
 #endif // __GLIBCXX__ && !_GLIBCXX_USE_CXX11_ABI && GLIBCXX_VERSION >=
        // 720191114L
+
+#if __GLIBCXX__
+template <
+    typename T, typename A,
+    typename = typename ::std::enable_if<::std::is_trivial<T>::value>::type>
+inline typename ::std::vector<T, A>::pointer resize_uninitialized(
+    ::std::vector<T, A>& vector,
+    typename ::std::vector<T, A>::size_type size) noexcept {
+  using VectorType = ::std::vector<T, A>;
+  struct VectorImplType : public VectorType::allocator_type {
+    typename VectorType::pointer _M_start;
+    typename VectorType::pointer _M_finish;
+    typename VectorType::pointer _M_end_of_storage;
+  };
+  static_assert(sizeof(VectorType) == sizeof(VectorImplType),
+                "GLIBCXX seems change its ABI");
+
+  vector.reserve(size);
+  auto& impl = reinterpret_cast<VectorImplType&>(vector);
+  impl._M_finish = impl._M_start + size;
+  return impl._M_start;
+}
+template <typename A>
+inline void resize_uninitialized(
+    ::std::vector<bool, A>& vector,
+    typename ::std::vector<bool, A>::size_type size) noexcept {
+  using VectorType = ::std::vector<bool, A>;
+  struct VectorImplType : public VectorType::allocator_type {
+    struct {
+      unsigned long* _M_p;
+      unsigned int _M_offset;
+    } _M_start;
+    struct {
+      unsigned long* _M_p;
+      unsigned int _M_offset;
+    } _M_finish;
+    void* _M_end_of_storage;
+  };
+  static_assert(sizeof(VectorType) == sizeof(VectorImplType),
+                "GLIBCXX seems change its ABI");
+
+  vector.reserve(size);
+  auto& impl = reinterpret_cast<VectorImplType&>(vector);
+  impl._M_finish._M_p = impl._M_start._M_p + size / sizeof(unsigned long) / 8;
+  impl._M_finish._M_offset = size % (sizeof(unsigned long) * 8);
+}
+#endif
+
+#if __GLIBCXX__ && _GLIBCXX_USE_CXX11_ABI
+inline ::std::tuple<char*, size_t> exchange_string_buffer(
+    ::std::string& string, char* buffer, size_t buffer_size) noexcept {
+  using StringType = ::std::string;
+  struct S {
+    struct AllocatorAndPointer : public StringType::allocator_type {
+      typename StringType::pointer pointer;
+    } allocator_and_pointer;
+    typename StringType::size_type size;
+    union {
+      typename StringType::value_type local_buf[0];
+      typename StringType::size_type capacity;
+    };
+  };
+  typename StringType::pointer old_buffer =
+      reinterpret_cast<S&>(string).allocator_and_pointer.pointer ==
+              reinterpret_cast<S&>(string).local_buf
+          ? nullptr
+          : reinterpret_cast<S&>(string).allocator_and_pointer.pointer;
+  typename StringType::size_type old_capacity =
+      reinterpret_cast<S&>(string).capacity;
+  reinterpret_cast<S&>(string).allocator_and_pointer.pointer = buffer;
+  reinterpret_cast<S&>(string).size = buffer_size - 1;
+  reinterpret_cast<S&>(string).capacity = buffer_size - 1;
+  reinterpret_cast<S&>(string).allocator_and_pointer.pointer[buffer_size - 1] =
+      typename StringType::value_type {};
+  return {old_buffer, old_capacity + 1};
+}
+#endif
 
 BABYLON_NAMESPACE_END

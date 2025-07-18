@@ -171,8 +171,8 @@ struct Executor::IsCoroutineTask {
 };
 template <typename C, typename... Args>
   requires requires {
-             typename ::std::remove_cvref_t<::std::invoke_result_t<C, Args...>>;
-           }
+    typename ::std::remove_cvref_t<::std::invoke_result_t<C, Args...>>;
+  }
 struct Executor::IsCoroutineTask<C, Args...> {
   static constexpr bool value = IsSpecialization<
       ::std::remove_cvref_t<::std::invoke_result_t<C, Args...>>,
@@ -193,9 +193,8 @@ template <typename A>
 struct Executor::AwaitResult {};
 template <typename A>
   requires requires {
-             typename coroutine::AwaitResultType<A,
-                                                 CoroutineTask<>::promise_type>;
-           }
+    typename coroutine::AwaitResultType<A, CoroutineTask<>::promise_type>;
+  }
 struct Executor::AwaitResult<A> {
   using AwaitResultType =
       coroutine::AwaitResultType<A, CoroutineTask<>::promise_type>;

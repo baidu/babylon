@@ -1,7 +1,7 @@
 #pragma once
 
-#include "babylon/sanitizer_helper.h"        // BABYLON_LEAK_CHECK_DISABLER
 #include "babylon/concurrent/id_allocator.h" // IdAllocator, ThreadId, LeakyThreadId
+#include "babylon/sanitizer_helper.h"        // BABYLON_LEAK_CHECK_DISABLER
 
 #include <math.h> // 等baidu/adu-lab/energon-onboard升级完成后去掉
 
@@ -12,7 +12,9 @@ BABYLON_NAMESPACE_BEGIN
 // 另一点和thread_local的区别是不再要求是static的，所以可以支持动态多个
 template <typename T, bool Leaky = false>
 class EnumerableThreadLocal {
-  using ThreadIdType = typename std::conditional<Leaky, LeakyThreadId, ThreadId>::type;
+  using ThreadIdType =
+      typename std::conditional<Leaky, LeakyThreadId, ThreadId>::type;
+
  public:
   // 可默认构造，可以移动，不能拷贝
   EnumerableThreadLocal() noexcept;
@@ -44,22 +46,20 @@ class EnumerableThreadLocal {
                             IsInvocable<C, T*, T*>::value>::type>
   inline void for_each(C&& callback) {
     auto snapshot = _storage.snapshot();
-    snapshot.for_each(
-        0,
-        ::std::min(ThreadIdType::template end<T>(),
-                   static_cast<uint16_t>(snapshot.size())),
-        callback);
+    snapshot.for_each(0,
+                      ::std::min(ThreadIdType::template end<T>(),
+                                 static_cast<uint16_t>(snapshot.size())),
+                      callback);
   }
 
   template <typename C, typename = typename ::std::enable_if<
                             IsInvocable<C, const T*, const T*>::value>::type>
   inline void for_each(C&& callback) const {
     auto snapshot = _storage.snapshot();
-    snapshot.for_each(
-        0,
-        ::std::min(ThreadIdType::template end<T>(),
-                   static_cast<uint16_t>(snapshot.size())),
-        callback);
+    snapshot.for_each(0,
+                      ::std::min(ThreadIdType::template end<T>(),
+                                 static_cast<uint16_t>(snapshot.size())),
+                      callback);
   }
 
   // 遍历所有【当前存在】的线程局部存储
@@ -185,14 +185,12 @@ class CompactEnumerableThreadLocal {
   using StorageVector = ConcurrentVector<Storage, 128>;
 
   template <bool L = Leaky>
-  static typename ::std::enable_if<L, uint32_t>::type
-  allocate_id() noexcept {
+  static typename ::std::enable_if<L, uint32_t>::type allocate_id() noexcept {
     BABYLON_LEAK_CHECK_DISABLER;
     return id_allocator().allocate().value;
   }
   template <bool L = Leaky>
-  static typename ::std::enable_if<!L, uint32_t>::type
-  allocate_id() noexcept {
+  static typename ::std::enable_if<!L, uint32_t>::type allocate_id() noexcept {
     return id_allocator().allocate().value;
   }
 
@@ -220,8 +218,8 @@ class CompactEnumerableThreadLocal {
   }
 
   template <bool L = Leaky>
-  static typename ::std::enable_if<L, Storage&>::type
-  storage(size_t slot_index) noexcept {
+  static typename ::std::enable_if<L, Storage&>::type storage(
+      size_t slot_index) noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
@@ -231,8 +229,8 @@ class CompactEnumerableThreadLocal {
     return storage_vector->ensure(slot_index);
   }
   template <bool L = Leaky>
-  static typename ::std::enable_if<!L, Storage&>::type
-  storage(size_t slot_index) noexcept {
+  static typename ::std::enable_if<!L, Storage&>::type storage(
+      size_t slot_index) noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
@@ -289,7 +287,8 @@ template <typename T, bool Leaky>
 inline T& EnumerableThreadLocal<T, Leaky>::local() noexcept {
   auto item = local_fast();
   if (ABSL_PREDICT_FALSE(item == nullptr)) {
-    item = &_storage.ensure(ThreadIdType::template current_thread_id<T>().value);
+    item =
+        &_storage.ensure(ThreadIdType::template current_thread_id<T>().value);
     _s_cache.id = _id;
     _s_cache.item = item;
   }
@@ -314,23 +313,22 @@ EnumerableThreadLocal<T, Leaky>::fetch_add_id() noexcept {
 
 template <typename T, bool Leaky>
 thread_local typename EnumerableThreadLocal<T, Leaky>::Cache
-EnumerableThreadLocal<T, Leaky>::_s_cache;
+    EnumerableThreadLocal<T, Leaky>::_s_cache;
 // EnumerableThreadLocal end
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename T, size_t CACHE_LINE_NUM, bool Leaky>
-CompactEnumerableThreadLocal<
-    T, CACHE_LINE_NUM, Leaky>::CompactEnumerableThreadLocal() noexcept
+CompactEnumerableThreadLocal<T, CACHE_LINE_NUM,
+                             Leaky>::CompactEnumerableThreadLocal() noexcept
     : // 分配一个独占的实例编号
       _instance_id {allocate_id()},
       // 使用storage[id / num].local()[id % num]槽位
       _cacheline_offset {_instance_id % NUM_PER_CACHELINE},
-      _storage {&storage(_instance_id / NUM_PER_CACHELINE)} {
-}
+      _storage {&storage(_instance_id / NUM_PER_CACHELINE)} {}
 
 template <typename T, size_t CACHE_LINE_NUM, bool Leaky>
-CompactEnumerableThreadLocal<T, CACHE_LINE_NUM, Leaky>::CompactEnumerableThreadLocal(
-    CompactEnumerableThreadLocal&& other) noexcept
+CompactEnumerableThreadLocal<T, CACHE_LINE_NUM, Leaky>::
+    CompactEnumerableThreadLocal(CompactEnumerableThreadLocal&& other) noexcept
     : CompactEnumerableThreadLocal() {
   *this = ::std::move(other);
 }
@@ -346,8 +344,8 @@ CompactEnumerableThreadLocal<T, CACHE_LINE_NUM, Leaky>::operator=(
 }
 
 template <typename T, size_t CACHE_LINE_NUM, bool Leaky>
-CompactEnumerableThreadLocal<
-    T, CACHE_LINE_NUM, Leaky>::~CompactEnumerableThreadLocal() noexcept {
+CompactEnumerableThreadLocal<T, CACHE_LINE_NUM,
+                             Leaky>::~CompactEnumerableThreadLocal() noexcept {
   // 清理缓存行中自己使用的部分，并释放实例编号
   _storage->for_each([&](CacheLine* iter, CacheLine* end) {
     for (; iter != end; ++iter) {

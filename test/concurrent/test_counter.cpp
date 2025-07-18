@@ -273,8 +273,8 @@ TEST(concurrent_summary, caculate_right) {
 
 TEST(concurrent_sampler, collect_sample_from_multithread) {
   ConcurrentSampler sampler;
-  uint64_t val64 = static_cast<uint64_t>(
-   ::std::numeric_limits<uint32_t>::max()) + 1;
+  uint64_t val64 =
+      static_cast<uint64_t>(::std::numeric_limits<uint32_t>::max()) + 1;
   ::std::thread a([&] {
     sampler << val64;
     sampler << 3;

@@ -199,6 +199,7 @@ TEST_F(CoroutineCancelableTest, concurrent_finish_and_cancel) {
   }
   latch.get_future().get();
   executor2.join();
+  executor.stop();
   BABYLON_LOG(INFO) << "finished " << finished << " canceled " << canceled;
 }
 

@@ -373,6 +373,8 @@ class MonotonicAllocator
   // 支持pmr容器
   template <typename U, typename... Args,
             typename = typename ::std::enable_if<
+                !UsesAllocatorConstructor::Constructible<
+                    U, MonotonicAllocator<U, M>, Args...>::USES_ALLOCATOR &&
                 UsesAllocatorConstructor::Constructible<
                     U, ::std::pmr::polymorphic_allocator<U>,
                     Args...>::USES_ALLOCATOR>::type>
@@ -380,16 +382,19 @@ class MonotonicAllocator
 #endif // __cpp_lib_memory_resource >= 201603L
 
   // 代理到默认实现
-  template <typename U, typename... Args,
-            typename ::std::enable_if<
-                Base::template BaseConstructible<U, Args...>::value
+  template <
+      typename U, typename... Args,
+      typename ::std::enable_if<
+          Base::template BaseConstructible<U, Args...>::value
 #if __cpp_lib_memory_resource >= 201603L
-                    && !UsesAllocatorConstructor::Constructible<
-                           U, ::std::pmr::polymorphic_allocator<U>,
-                           Args...>::USES_ALLOCATOR
+              && !(!UsesAllocatorConstructor::Constructible<
+                       U, MonotonicAllocator<U, M>, Args...>::USES_ALLOCATOR &&
+                   UsesAllocatorConstructor::Constructible<
+                       U, ::std::pmr::polymorphic_allocator<U>,
+                       Args...>::USES_ALLOCATOR)
 #endif // __cpp_lib_memory_resource >= 201603L
-                ,
-                int>::type = 0>
+              ,
+          int>::type = 0>
   inline void construct(U* ptr, Args&&... args) noexcept;
 
   template <typename U>
@@ -401,10 +406,15 @@ class MonotonicAllocator
 
   M* _resource {nullptr};
 };
-
-// 特化支持SwissMemoryResource，实现stl和protobuf的统一支持
+template <typename T = void>
+using ExclusiveAllocator =
+    MonotonicAllocator<T, ExclusiveMonotonicBufferResource>;
+template <typename T = void>
+using SharedAllocator = MonotonicAllocator<T, SharedMonotonicBufferResource>;
 template <typename T = void>
 using SwissAllocator = MonotonicAllocator<T, SwissMemoryResource>;
+
+// 特化支持SwissMemoryResource，实现stl和protobuf的统一支持
 template <typename T>
 class MonotonicAllocator<T, SwissMemoryResource>
     : public BasicMonotonicAllocator<T, SwissAllocator<T>> {
@@ -470,6 +480,9 @@ class MonotonicAllocator<T, SwissMemoryResource>
   // 支持pmr容器
   template <typename U, typename... Args,
             typename = typename ::std::enable_if<
+                !UsesAllocatorConstructor::Constructible<
+                    U, MonotonicAllocator<U, SwissMemoryResource>,
+                    Args...>::USES_ALLOCATOR &&
                 UsesAllocatorConstructor::Constructible<
                     U, ::std::pmr::polymorphic_allocator<U>,
                     Args...>::USES_ALLOCATOR>::type>
@@ -485,11 +498,14 @@ class MonotonicAllocator<T, SwissMemoryResource>
             typename ::std::enable_if<
                 Base::template BaseConstructible<U, Args...>::value
 #if __cpp_lib_memory_resource >= 201603L
-                    && !UsesAllocatorConstructor::Constructible<
-                           U, ::std::pmr::polymorphic_allocator<U>,
-                           Args...>::USES_ALLOCATOR
+                    && !(!UsesAllocatorConstructor::Constructible<
+                             U, MonotonicAllocator<U, SwissMemoryResource>,
+                             Args...>::USES_ALLOCATOR &&
+                         UsesAllocatorConstructor::Constructible<
+                             U, ::std::pmr::polymorphic_allocator<U>,
+                             Args...>::USES_ALLOCATOR)
 #endif // __cpp_lib_memory_resource >= 201603L
-                ,
+                    ,
                 int>::type = 0>
   inline void construct(U* ptr, Args&&... args) noexcept {
     Base::construct(ptr, ::std::forward<Args>(args)...);

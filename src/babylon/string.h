@@ -2,6 +2,9 @@
 
 #include "babylon/environment.h"
 
+#include <string>
+#include <tuple>
+
 BABYLON_NAMESPACE_BEGIN
 
 // 增强了absl::strings_internal::STLStringResizeUninitialized的能力
@@ -36,6 +39,11 @@ inline typename T::pointer resize_uninitialized(
 template <typename T>
 inline void stable_reserve(T& string,
                            typename T::size_type min_capacity) noexcept;
+
+#if __GLIBCXX__ && _GLIBCXX_USE_CXX11_ABI
+inline ::std::tuple<char*, size_t> exchange_string_buffer(
+    ::std::string& string, char* buffer, size_t buffer_size) noexcept;
+#endif // __GLIBCXX__ && _GLIBCXX_USE_CXX11_ABI
 
 BABYLON_NAMESPACE_END
 

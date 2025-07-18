@@ -95,7 +95,7 @@ class IdAllocator {
 namespace internal {
 template <bool Leaky>
 class ThreadIdImpl {
-public:
+ public:
   // 获取当前线程的标识
   // 支持最多活跃65534个线程，对于合理的服务端程序设计已经足够
   // T: 每个类型有自己的IdAllocator，在线程局部存储设计中可以用来隔离不同类型
@@ -119,7 +119,7 @@ public:
                 IsInvocable<C, uint16_t, uint16_t>::value>::type>
   static void for_each(C&& callback);
 
-private:
+ private:
   // 内部类型，用thread local持有，使用者不应尝试构造
   inline ThreadIdImpl(IdAllocator<uint16_t>& allocator);
   ThreadIdImpl(ThreadIdImpl&&) = delete;

@@ -34,9 +34,20 @@ TEST(type_traits, id_is_readable) {
   ss << TypeId<S<TypeId<::std::string>>>::ID;
   type_name = ss.str();
 #ifdef _GLIBCXX_RELEASE
-#ifdef __clang__
+#if CLANG_VERSION >= 140000 // && _GLIBCXX_RELEASE
   ASSERT_EQ(type_name, "S<babylon::TypeId<std::basic_string<char>>>");
-#elif _GLIBCXX_USE_CXX11_ABI
+#elif __clang__ // && CLANG_VERSION < 140000 && _GLIBCXX_RELEASE
+#if __cplusplus >= \
+    201703L // && __clang__ && CLANG_VERSION < 140000 && _GLIBCXX_RELEASE
+  ASSERT_EQ(type_name,
+            "S<babylon::TypeId<std::__cxx11::basic_string<char, "
+            "std::char_traits<char>, std::allocator<char>>>>");
+#else       // __cplusplus < 201703L && __clang__ && CLANG_VERSION < 140000 &&
+            // _GLIBCXX_RELEASE
+  ASSERT_EQ(type_name, "S<babylon::TypeId<std::__cxx11::basic_string<char>>>");
+#endif      // __cplusplus < 201703L && __clang__ && CLANG_VERSION < 140000 &&
+            // _GLIBCXX_RELEASE
+#elif _GLIBCXX_USE_CXX11_ABI // && !__clang__
   ASSERT_EQ(type_name,
             "S<babylon::TypeId<std::__cxx11::basic_string<char> > >");
 #else
@@ -50,10 +61,17 @@ TEST(type_traits, id_is_readable) {
   ss << F();
   type_name = ss.str();
 #ifdef __clang__
-  ASSERT_EQ(type_name, "(lambda at test/test_type_traits.cpp:13:17)");
+  ASSERT_NE(type_name.npos, type_name.find("test/test_type_traits.cpp:13:17)"));
 #else  // !__clang__
   ASSERT_EQ(type_name, "F()::<lambda(int)>");
 #endif // !__clang__
+}
+
+TEST(type_traits, id_is_formatable) {
+  ASSERT_EQ("int", ::fmt::format("{}", ::babylon::TypeId<int>::ID));
+#if __cpp_lib_format >= 201907L
+  ASSERT_EQ("int", ::std::format("{}", ::babylon::TypeId<int>::ID));
+#endif
 }
 
 struct CallableArgsTest : public ::testing::Test {

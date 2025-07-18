@@ -62,28 +62,31 @@ class ObjectPool {
   inline void push(::std::unique_ptr<T>&& object) noexcept;
   inline void push(::std::unique_ptr<T, Deleter>&& object) noexcept;
 
-  class Deleter {
-   public:
-    inline Deleter() noexcept = default;
-    inline Deleter(Deleter&& other) noexcept;
-    Deleter(const Deleter&) = delete;
-    inline Deleter& operator=(Deleter&& other) noexcept;
-    Deleter& operator=(const Deleter&) = delete;
-    inline ~Deleter() noexcept = default;
-
-    inline Deleter(ObjectPool<T>* pool) noexcept;
-
-    inline void operator()(T* ptr) noexcept;
-
-   private:
-    ObjectPool<T>* _pool {nullptr};
-  };
+  inline size_t free_object_number() const noexcept;
 
  private:
   ConcurrentBoundedQueue<::std::unique_ptr<T>> _free_objects;
   size_t _capacity {0};
   MoveOnlyFunction<::std::unique_ptr<T>()> _object_creator;
   MoveOnlyFunction<void(T&)> _object_recycler {[](T&) {}};
+};
+
+template <typename T>
+class ObjectPool<T>::Deleter {
+ public:
+  inline Deleter() noexcept = default;
+  inline Deleter(Deleter&& other) noexcept;
+  Deleter(const Deleter&) = delete;
+  inline Deleter& operator=(Deleter&& other) noexcept;
+  Deleter& operator=(const Deleter&) = delete;
+  inline ~Deleter() noexcept = default;
+
+  inline Deleter(ObjectPool<T>* pool) noexcept;
+
+  inline void operator()(T* ptr) noexcept;
+
+ private:
+  ObjectPool<T>* _pool {nullptr};
 };
 
 BABYLON_NAMESPACE_END

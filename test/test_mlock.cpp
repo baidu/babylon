@@ -12,7 +12,7 @@
 
 #include <fstream>
 
-#if !ABSL_HAVE_ADDRESS_SANITIZER and !ABSL_HAVE_THREAD_SANITIZER
+#if !BABYLON_HAS_ADDRESS_SANITIZER and !ABSL_HAVE_THREAD_SANITIZER
 
 using ::babylon::MemoryLocker;
 using ::babylon::StringView;
@@ -134,4 +134,4 @@ TEST_F(MemoryLockerTest, stop_when_destroy) {
   ASSERT_TRUE(region_in_memory());
 }
 
-#endif // !ABSL_HAVE_ADDRESS_SANITIZER and !ABSL_HAVE_THREAD_SANITIZER
+#endif // !BABYLON_HAS_ADDRESS_SANITIZER and !ABSL_HAVE_THREAD_SANITIZER
