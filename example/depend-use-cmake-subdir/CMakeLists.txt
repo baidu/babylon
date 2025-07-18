@@ -4,6 +4,7 @@ set(ABSL_ENABLE_INSTALL ON)
 add_subdirectory(abseil-cpp)
 set(protobuf_BUILD_TESTS OFF)
 add_subdirectory(protobuf)
+add_subdirectory(fmt)
 add_subdirectory(babylon)
 
 add_executable(example example.cpp)

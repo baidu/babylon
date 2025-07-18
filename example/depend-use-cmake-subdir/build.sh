@@ -1,9 +1,9 @@
 #!/bin/sh
 set -ex
 
-URL=https://github.com/baidu/babylon/releases/download/v1.4.3/v1.4.3.tar.gz
-NAME=babylon-1.4.3
-SHA256=88c2b933a5d031ec7f528e27f75e3904f4a0c63aef8f9109170414914041d0ec
+URL=https://github.com/baidu/babylon/archive/6de305913d5e632a19798573ef110955cbdc4560.tar.gz
+NAME=babylon-6de305913d5e632a19798573ef110955cbdc4560
+SHA256=5ec4a3fc659d69983453abcbc66a2a03b57fe87774105fff76c90895a3a168d3
 if ! echo "$SHA256 $NAME.tar.gz" | sha256sum -c; then
   wget $URL --continue -O $NAME.tar.gz
 fi
