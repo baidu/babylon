@@ -6,9 +6,9 @@ load('@bazel_tools//tools/build_defs/repo:http.bzl', 'http_archive')
 # babylon
 http_archive(
   name = 'com_baidu_babylon',
-  urls = ['https://github.com/baidu/babylon/releases/download/v1.4.2/v1.4.2.tar.gz'],
-  strip_prefix = 'babylon-1.4.2',
-  sha256 = 'd60ee9cd86a777137bf021c8861e97438a69cc857659d5eb39af9e8464434cf1',
+  urls = ['https://github.com/baidu/babylon/releases/download/v1.4.3/v1.4.3.tar.gz'],
+  strip_prefix = 'babylon-1.4.3',
+  sha256 = '88c2b933a5d031ec7f528e27f75e3904f4a0c63aef8f9109170414914041d0ec',
 )
 ################################################################################
 
@@ -38,4 +38,12 @@ http_archive(
 )
 load('@com_github_nelhage_rules_boost//:boost/boost.bzl', 'boost_deps')
 boost_deps()
+
+http_archive(
+  name = 'fmt',
+  urls = ['https://github.com/fmtlib/fmt/archive/refs/tags/8.1.1.tar.gz'],
+  strip_prefix = 'fmt-8.1.1',
+  sha256 = '3d794d3cf67633b34b2771eb9f073bde87e846e0d395d254df7b211ef1ec7346',
+  build_file = "@com_baidu_babylon//bazel/fmt:BUILD.bazel",
+)
 ################################################################################

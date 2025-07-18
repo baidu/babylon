@@ -14,3 +14,7 @@ elseif(TARGET Boost::preprocessor AND TARGET Boost::spirit)
 else()
   find_package(Boost REQUIRED)
 endif()
+
+if(NOT TARGET fmt::fmt)
+  find_package(fmt REQUIRED)
+endif()

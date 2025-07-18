@@ -1,4 +1,4 @@
-bazel_dep(name = 'babylon', version = '1.4.2')
+bazel_dep(name = 'babylon', version = '1.4.3')
 bazel_dep(name = 'brpc', version = '1.11.0')
 bazel_dep(name = 'spdlog', version = '1.14.1')
 bazel_dep(name = 'tcmalloc', version = '0.0.0-20240411-5ed309d')
@@ -10,3 +10,4 @@ archive_override(module_name = 'brpc',
   integrity = 'sha256-94aE0H4NZo72DSB0wtq6YlMZc9fOpGAlK4QHgG0FvXg=',
   strip_prefix = 'brpc-30a56dd153010c0be88d7c197712e5b95843ff9c',
 )
+single_version_override(module_name = 'fmt', version = '10.2.1.bcr.1')

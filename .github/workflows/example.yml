@@ -31,6 +31,7 @@ jobs:
       run: |
         sudo apt install libabsl-dev
         sudo apt install libboost-all-dev
+        sudo apt install libfmt-dev
         sudo apt install libprotobuf-dev
     - run: cd example/${{matrix.name}} && ./build.sh
 

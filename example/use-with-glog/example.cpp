@@ -25,7 +25,7 @@ class BabylonLogSink : public ::google::LogSink {
     }
 
     // write to root logger
-    auto& stream = logger.stream(severity, full_filename, line);
+    auto& stream = logger.stream(severity, full_filename, line, "");
     stream.begin();
     stream.write(message, message_len);
     stream.end();

@@ -1,4 +1,4 @@
-bazel_dep(name = 'babylon', version = '1.4.2')
+bazel_dep(name = 'babylon', version = '1.4.3')
 bazel_dep(name = 'brpc', version = '1.11.0')
 bazel_dep(name = 'tcmalloc', version = '0.0.0-20240411-5ed309d')
 
