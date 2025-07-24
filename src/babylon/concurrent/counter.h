@@ -28,7 +28,7 @@ class GenericsConcurrentAdder {
   static_assert((::std::is_integral<T>::value ||
                  ::std::is_floating_point<T>::value) &&
                     8 >= sizeof(T),
-                "ConcurrentSummer only supports integral or "
+                "GenericsConcurrentAdder only supports integral or "
                 "floating point types with size <= 8 bytes");
 
  public:
@@ -103,7 +103,7 @@ class ConcurrentComparer {
   static_assert((::std::is_integral<T>::value ||
                  ::std::is_floating_point<T>::value) &&
                     8 >= sizeof(T),
-                "ConcurrentSummer only supports integral or "
+                "ConcurrentComparer only supports integral or "
                 "floating point types with size <= 8 bytes");
 
   constexpr static T EXTREMUM =
