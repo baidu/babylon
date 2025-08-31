@@ -13,7 +13,7 @@ BABYLON_NAMESPACE_BEGIN
 template <typename T, bool Leaky = false>
 class EnumerableThreadLocal {
   using ThreadIdType =
-      typename std::conditional<Leaky, LeakyThreadId, ThreadId>::type;
+      typename ::std::conditional<Leaky, LeakyThreadId, ThreadId>::type;
 
  public:
   // 可默认构造，可以移动，不能拷贝
@@ -123,7 +123,7 @@ class CompactEnumerableThreadLocal {
   // 获得线程局部存储
   template <bool L = Leaky>
   inline typename ::std::enable_if<L, T&>::type local() {
-    BABYLON_LEAK_CHECK_DISABLER;
+    BABYLON_LEAK_CHECK_DISABLER();
     return _storage->local().value[_cacheline_offset];
   }
   template <bool L = Leaky>
@@ -181,12 +181,12 @@ class CompactEnumerableThreadLocal {
   struct alignas(BABYLON_CACHELINE_SIZE) CacheLine {
     T value[NUM_PER_CACHELINE];
   };
-  using Storage = EnumerableThreadLocal<CacheLine>;
+  using Storage = EnumerableThreadLocal<CacheLine, Leaky>;
   using StorageVector = ConcurrentVector<Storage, 128>;
 
   template <bool L = Leaky>
   static typename ::std::enable_if<L, uint32_t>::type allocate_id() noexcept {
-    BABYLON_LEAK_CHECK_DISABLER;
+    BABYLON_LEAK_CHECK_DISABLER();
     return id_allocator().allocate().value;
   }
   template <bool L = Leaky>
@@ -200,7 +200,7 @@ class CompactEnumerableThreadLocal {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
-    BABYLON_LEAK_CHECK_DISABLER;
+    BABYLON_LEAK_CHECK_DISABLER();
     static auto allocator = new IdAllocator<uint32_t>();
 #pragma GCC diagnostic pop
     return *allocator;
@@ -223,7 +223,7 @@ class CompactEnumerableThreadLocal {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
-    BABYLON_LEAK_CHECK_DISABLER;
+    BABYLON_LEAK_CHECK_DISABLER();
     static auto storage_vector = new StorageVector();
 #pragma GCC diagnostic pop
     return storage_vector->ensure(slot_index);

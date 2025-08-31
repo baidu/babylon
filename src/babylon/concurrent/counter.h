@@ -308,7 +308,7 @@ class ConcurrentSampler {
 
   SampleBucket* prepare_sample_bucket(uint64_t value) noexcept;
 
-  EnumerableThreadLocal<Sample> _storage;
+  EnumerableThreadLocal<Sample, true> _storage;
   uint8_t _bucket_capacity[32] = {30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
                                   30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
                                   30, 30, 30, 30, 30, 30, 30, 30, 30, 30};
