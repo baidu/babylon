@@ -147,8 +147,8 @@ struct IdAllocatorFotType {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
-    BABYLON_LEAK_CHECK_DISABLER;
-    static auto object = new IdAllocator<uint32_t>();
+    BABYLON_LEAK_CHECK_DISABLER();
+    static auto object = new IdAllocator<uint16_t>();
 #pragma GCC diagnostic pop
     return *object;
   }
@@ -184,6 +184,7 @@ VersionedValue<uint16_t> ThreadIdImpl<Leaky>::current_thread_id() noexcept {
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wexit-time-destructors"
+  BABYLON_LEAK_CHECK_DISABLER(Leaky);
   thread_local ThreadIdImpl id(
       concurrent_id_allocator::IdAllocatorFotType<T, Leaky>::instance());
 #pragma GCC diagnostic pop

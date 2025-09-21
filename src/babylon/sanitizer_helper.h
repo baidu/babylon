@@ -92,22 +92,32 @@ struct SanitizerHelper {
 #ifdef BABYLON_HAVE_LEAK_SANITIZER
 class LeakCheckDisabler {
  public:
-  LeakCheckDisabler() {
+  LeakCheckDisabler() : _disable_leak_check(true) {
     __lsan_disable();
+  }
+  LeakCheckDisabler(bool disable_leak_check)
+      : _disable_leak_check(disable_leak_check) {
+    if (_disable_leak_check) {
+      __lsan_disable();
+    }
   }
   LeakCheckDisabler(const LeakCheckDisabler&) = delete;
   LeakCheckDisabler& operator=(const LeakCheckDisabler&) = delete;
   ~LeakCheckDisabler() {
-    __lsan_enable();
+    if (_disable_leak_check) {
+      __lsan_enable();
+    }
   }
+ private:
+  bool _disable_leak_check;
 };
 
-#define BABYLON_LEAK_CHECK_DISABLER        \
-  LeakCheckDisabler __disabler_##__LINE__; \
+#define BABYLON_LEAK_CHECK_DISABLER(...)                \
+  LeakCheckDisabler __disabler_##__LINE__{__VA_ARGS__}; \
   ((void)0)
 
 #else
-#define BABYLON_LEAK_CHECK_DISABLER ((void)0)
+#define BABYLON_LEAK_CHECK_DISABLER(...) ((void)0)
 #endif // BABYLON_HAVE_LEAK_SANITIZER
 
 BABYLON_NAMESPACE_END
