@@ -5,33 +5,20 @@
 #include <memory> // std::allocator_traits
 
 #if GOOGLE_PROTOBUF_VERSION >= 3000000
-namespace google {
-namespace protobuf {
-namespace internal {
 // protobuf为了避免用户错误地在非Arena内存上调用Arena版本的构造函数
 // 将其设置了protected访问控制，并且从3.12开始将protoc生成的Message子类设置为final
 // 但是为了实现SwissAllocator的兼容分配，需要在已经分配好的内存上调用Arena版本的构造函数
-// 这里利用了Arena对GenericTypeHandler<T>的friend声明来绕过访问了控制
-// 通过Arena::CreateInArenaStorageInternal来达到目的，这也是protobuf::Map所使用的方法
+// 这里利用了Message子类对google::protobuf::Arena::InternalHelper<T>的friend声明来绕过访问了控制
 // 采用了NeverUsed这个内部定义类型来特化GenericTypeHandler，确保这个特化不会产生副作用
 template <>
-class GenericTypeHandler<::babylon::NeverUsed> {
+class google::protobuf::Arena::InternalHelper<::babylon::NeverUsed> {
  public:
   template <typename T, typename... Args>
   inline static void construct(T* ptr, ::google::protobuf::Arena* arena,
                                Args&&... args) {
-#if GOOGLE_PROTOBUF_VERSION >= 3006000
-    ::google::protobuf::Arena::CreateInArenaStorageInternal(
-        ptr, arena, std::true_type(), ::std::forward<Args>(args)...);
-#else  // GOOGLE_PROTOBUF_VERSION < 3006000
-    ::google::protobuf::Arena::CreateInArenaStorageInternal(
-        ptr, arena, true_type(), ::std::forward<Args>(args)...);
-#endif // GOOGLE_PROTOBUF_VERSION < 3006000
+    new (ptr) T {arena, ::std::forward<Args>(args)...};
   }
 };
-} // namespace internal
-} // namespace protobuf
-} // namespace google
 #endif // GOOGLE_PROTOBUF_VERSION >= 3000000
 
 BABYLON_NAMESPACE_BEGIN
@@ -664,16 +651,14 @@ template <typename T>
 template <typename U, typename>
 inline void SwissAllocator<T>::construct(U* ptr) {
   ::google::protobuf::Arena& arena = *this->resource();
-  ::google::protobuf::internal::GenericTypeHandler<NeverUsed>::construct(
-      ptr, &arena);
+  ::google::protobuf::Arena::InternalHelper<NeverUsed>::construct(ptr, &arena);
 }
 
 template <typename T>
 template <typename U, typename V, typename>
 inline void SwissAllocator<T>::construct(U* ptr, V&& other) {
   ::google::protobuf::Arena& arena = *this->resource();
-  ::google::protobuf::internal::GenericTypeHandler<NeverUsed>::construct(
-      ptr, &arena);
+  ::google::protobuf::Arena::InternalHelper<NeverUsed>::construct(ptr, &arena);
   *ptr = ::std::forward<V>(other);
 }
 #endif // GOOGLE_PROTOBUF_VERSION >= 3000000

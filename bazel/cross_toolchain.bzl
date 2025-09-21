@@ -1,4 +1,4 @@
-load('@bazel_tools//tools/cpp:cc_configure.bzl', 'cc_autoconf_impl')
+load("@rules_cc//cc/private/toolchain:cc_configure.bzl", 'cc_autoconf_impl')
 
 def cross_config_cc_impl(repository_ctx):
   cc_autoconf_impl(repository_ctx,

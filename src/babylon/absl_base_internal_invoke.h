@@ -3,8 +3,7 @@
 #include "babylon/environment.h"
 
 // clang-format off
-#include BABYLON_EXTERNAL(absl/base/config.h)
-#include BABYLON_EXTERNAL(absl/base/internal/invoke.h)
+#include BABYLON_EXTERNAL(absl/meta/type_traits.h)
 // clang-format on
 
 // add some essential features for old LTS abseil-cpp
@@ -39,9 +38,6 @@
 #endif // !ABSL_LTS_RELEASE_VERSION
 
 #if BABYLON_TMP_NEED_INVOKE_RESULT_R || BABYLON_TMP_NEED_INVOKE_RESULT_T
-// clang-format off
-#include BABYLON_EXTERNAL(absl/meta/type_traits.h)
-// clang-format on
 
 // very old abseil-cpp dont have these macros
 #ifndef ABSL_NAMESPACE_BEGIN

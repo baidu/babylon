@@ -2,6 +2,8 @@
 
 #include "babylon/serialization/traits.h"
 
+#include "google/protobuf/stubs/common.h" // GOOGLE_PROTOBUF_VERSION
+
 #if BABYLON_USE_PROTOBUF && GOOGLE_PROTOBUF_VERSION >= 3000000
 
 ////////////////////////////////////////////////////////////////////////////////

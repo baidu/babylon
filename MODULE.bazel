@@ -1,6 +1,6 @@
 module(
   name = 'babylon',
-  version = '1.4.3',
+  version = '1.4.4',
   compatibility_level = 1,
 )
 
@@ -11,19 +11,23 @@ module(
 bazel_dep(name = 'abseil-cpp', version = '20220623.1', repo_name = 'com_google_absl')
 bazel_dep(name = 'bazel_skylib', version = '1.0.3')
 bazel_dep(name = 'boost.preprocessor', version = '1.83.0.bcr.1')
-bazel_dep(name = 'boost.spirit', version = '1.83.0')
+bazel_dep(name = 'boost.spirit', version = '1.83.0.bcr.1')
 bazel_dep(name = 'fmt', version = '8.1.1')
 bazel_dep(name = 'protobuf', version = '3.19.6', repo_name = 'com_google_protobuf')
 ################################################################################
 
 ################################################################################
 # test only dependency
-single_version_override(module_name = 'abseil-cpp', version = '20240722.0')
-single_version_override(module_name = 'protobuf', version = '28.3')
-bazel_dep(name = 'googletest', version = '1.15.2', repo_name = 'com_google_googletest', dev_dependency = True)
-bazel_dep(name = 'platforms', version = '0.0.10', dev_dependency = True)
-bazel_dep(name = 'rules_cc', version = '0.0.13', dev_dependency = True)
-bazel_dep(name = 'rules_cuda', version = '0.2.3', dev_dependency = True)
+single_version_override(module_name = 'abseil-cpp', version = '20250814.0')
+single_version_override(module_name = 'bazel_skylib', version = '1.8.1')
+single_version_override(module_name = 'boost.preprocessor', version = '1.87.0')
+single_version_override(module_name = 'boost.spirit', version = '1.87.0')
+single_version_override(module_name = 'fmt', version = '11.2.0.bcr.1')
+single_version_override(module_name = 'protobuf', version = '32.1')
+bazel_dep(name = 'googletest', version = '1.17.0', repo_name = 'com_google_googletest', dev_dependency = True)
+bazel_dep(name = 'platforms', version = '1.0.0', dev_dependency = True)
+bazel_dep(name = 'rules_cc', version = '0.2.8', dev_dependency = True)
+bazel_dep(name = 'rules_cuda', version = '0.2.5', dev_dependency = True)
 
 # cuda toolchain
 cuda = use_extension('@rules_cuda//cuda:extensions.bzl', 'toolchain', dev_dependency = True)
