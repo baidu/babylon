@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(babylon VERSION 1.4.3)
+project(babylon VERSION 1.4.4)
 
 include(CTest)                      # for BUILD_TESTING option
 include(CMakePackageConfigHelpers)  # for write_basic_package_version_file

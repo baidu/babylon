@@ -160,6 +160,67 @@ MessageAllocationMetadata::FieldAllocationMetadata::get_repeated_enum_field(
           ::google::protobuf::FieldDescriptor::CPPTYPE_ENUM, -1, nullptr));
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+void MessageAllocationMetadata::FieldAllocationMetadata::update_repeated_field(
+    const ::google::protobuf::Message& message,
+    const ::google::protobuf::Reflection* reflection) noexcept {
+  switch (descriptor->cpp_type()) {
+#define __BABYLON_TMP_CASE(case_enum, type)                                  \
+  case ::google::protobuf::FieldDescriptor::case_enum: {                     \
+    auto capacity = static_cast<size_t>(                                     \
+        reflection->GetRepeatedField<type>(message, descriptor).Capacity()); \
+    if (repeated_reserved < capacity) {                                      \
+      repeated_reserved = capacity;                                          \
+    }                                                                        \
+    break;                                                                   \
+  }
+    __BABYLON_TMP_CASE(CPPTYPE_INT32, int32_t)
+    __BABYLON_TMP_CASE(CPPTYPE_UINT32, uint32_t)
+    __BABYLON_TMP_CASE(CPPTYPE_INT64, int64_t)
+    __BABYLON_TMP_CASE(CPPTYPE_UINT64, uint64_t)
+    __BABYLON_TMP_CASE(CPPTYPE_DOUBLE, double)
+    __BABYLON_TMP_CASE(CPPTYPE_FLOAT, float)
+    __BABYLON_TMP_CASE(CPPTYPE_BOOL, bool)
+    case ::google::protobuf::FieldDescriptor::CPPTYPE_ENUM: {
+      auto capacity = static_cast<size_t>(
+          get_repeated_enum_field(message, reflection, descriptor).Capacity());
+      if (repeated_reserved < capacity) {
+        repeated_reserved = capacity;
+      }
+      break;
+    }
+#undef __BABYLON_TMP_CASE
+#define __BABYLON_TMP_CASE(case_enum, type)                              \
+  case ::google::protobuf::FieldDescriptor::case_enum: {                 \
+    auto& repeated_field =                                               \
+        reflection->GetRepeatedPtrField<type>(message, descriptor);      \
+    auto capacity = static_cast<size_t>(                                 \
+        repeated_field.size() +                                          \
+        reinterpret_cast<                                                \
+            const ::google::protobuf::internal::RepeatedPtrFieldBase&>(  \
+            repeated_field)                                              \
+            .ClearedCount());                                            \
+    if (repeated_reserved < capacity) {                                  \
+      repeated_reserved = capacity;                                      \
+    }                                                                    \
+    auto begin = repeated_field.cbegin();                                \
+    auto end = repeated_field.cbegin() + static_cast<ssize_t>(capacity); \
+    for (; begin != end; ++begin) {                                      \
+      update(*begin);                                                    \
+    }                                                                    \
+    break;                                                               \
+  }
+      __BABYLON_TMP_CASE(CPPTYPE_STRING, ::std::string)
+      __BABYLON_TMP_CASE(CPPTYPE_MESSAGE, ::google::protobuf::Message)
+#undef __BABYLON_TMP_CASE
+    default:
+      assert(false);
+      break;
+  }
+}
+#pragma GCC diagnostic pop
+
 BABYLON_NAMESPACE_END
 
 #endif // GOOGLE_PROTOBUF_VERSION >= 3000000

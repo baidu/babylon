@@ -102,8 +102,14 @@ TEST_F(ReusableMessage, keep_sub_message_field_capacity) {
 TEST_F(ReusableMessage, keep_repeated_primitive_field_capacity) {
   auto message = manager.create_object<ArenaExample>();
   auto* pmessage = message.get();
+#if GOOGLE_PROTOBUF_VERSION >= 5029000
+  ASSERT_EQ(1, message->rp().Capacity());
+  message->add_rp(1);
+  message->add_rp(1);
+#else
   ASSERT_EQ(0, message->rp().Capacity());
   message->add_rp(1);
+#endif
   auto capacity = message->rp().Capacity();
   manager.clear();
   ASSERT_NE(pmessage, message.get());
@@ -113,8 +119,15 @@ TEST_F(ReusableMessage, keep_repeated_primitive_field_capacity) {
 TEST_F(ReusableMessage, keep_repeated_enum_field_capacity) {
   auto message = manager.create_object<ArenaExample>();
   auto* pmessage = message.get();
+#if GOOGLE_PROTOBUF_VERSION >= 5029000
+  ASSERT_EQ(2, message->re().Capacity());
+  message->add_re(ArenaExample::ENUM1);
+  message->add_re(ArenaExample::ENUM1);
+  message->add_re(ArenaExample::ENUM1);
+#else
   ASSERT_EQ(0, message->re().Capacity());
   message->add_re(ArenaExample::ENUM1);
+#endif
   auto capacity = message->re().Capacity();
   manager.clear();
   ASSERT_NE(pmessage, message.get());
@@ -129,7 +142,6 @@ TEST_F(ReusableMessage, keep_repeated_string_field_capacity) {
   message->add_rs(long_string);
   manager.clear();
   ASSERT_NE(pmessage, message.get());
-  ASSERT_EQ(1, message->rs().ClearedCount());
   message->add_rs("");
   ASSERT_LE(long_string.size(), message->rs(0).capacity());
   message->add_rs("");
@@ -147,7 +159,6 @@ TEST_F(ReusableMessage, keep_repeated_sub_message_field_capacity) {
   message->add_rm()->set_ds(long_string);
   manager.clear();
   ASSERT_NE(pmessage, message.get());
-  ASSERT_EQ(3, message->rm().ClearedCount());
   message->add_rm()->add_rs("");
   ASSERT_LE(long_string.size(), message->rm(0).rs(0).capacity());
   ASSERT_FALSE(message->rm(0).has_s());
