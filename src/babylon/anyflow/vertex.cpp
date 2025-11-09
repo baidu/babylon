@@ -230,8 +230,13 @@ void GraphVertex::invoke(VertexStack& runnable_vertexes) noexcept {
       _runnable_vertexes = &runnable_vertexes;
       run(GraphVertexClosure(*_closure, *this));
     } else {
-      _builder->graph().executor().run(this,
-                                       GraphVertexClosure(*_closure, *this));
+      GraphVertexClosure closure(*_closure, *this);
+      if (ABSL_PREDICT_FALSE(0 != _builder->graph().executor().run(this,
+                                                                   ::std::move(closure)))) {
+        // executor.run 返回失败时，closure 可能已被 move，需要重新创建来标记错误
+        GraphVertexClosure error_closure(*_closure, *this);
+        error_closure.done(-1);
+      }
     }
   } else {
     // 不允许平凡模式情况下，不设置_runnable_vertexes
