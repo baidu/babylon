@@ -1,2 +1,10 @@
 .idea/
 cmake-build-*
+bazel-bin
+bazel-genfiles
+bazel-out
+bazel-testlogs
+bazel-workspace
+bazel-babylon
+MODULE.bazel
+MODULE.bazel.lock

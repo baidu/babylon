@@ -52,18 +52,16 @@ Closure ThreadPoolGraphExecutor::create_closure() noexcept {
 
 int ThreadPoolGraphExecutor::run(GraphVertex* vertex,
                                  GraphVertexClosure&& closure) noexcept {
-  _executor.submit([captured_closure = ::std::move(closure), vertex]() mutable {
+  return _executor.submit([captured_closure = ::std::move(closure), vertex]() mutable {
     vertex->run(::std::move(captured_closure));
   });
-  return 0;
 }
 
 int ThreadPoolGraphExecutor::run(ClosureContext* closure,
                                  Closure::Callback* callback) noexcept {
-  _executor.submit([=] {
+  return _executor.submit([=] {
     closure->run(callback);
   });
-  return 0;
 }
 
 } // namespace anyflow
