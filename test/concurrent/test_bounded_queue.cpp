@@ -85,6 +85,22 @@ TEST(concurrent_bounded_queue, try_pop_fail_on_empty) {
   ASSERT_EQ("10010", s);
 }
 
+TEST(concurrent_bounded_queue, try_push_default_overload) {
+  ConcurrentBoundedQueue<::std::string> queue(1);
+  ASSERT_TRUE(queue.try_push("10086"));
+  ASSERT_FALSE(queue.try_push("10010"));
+  ::std::string s;
+  ASSERT_TRUE(queue.try_pop(s));
+  ASSERT_EQ("10086", s);
+  bool called = false;
+  ASSERT_TRUE(queue.try_push([&](::std::string& value) {
+    called = true;
+    value = "10010";
+  }));
+  ASSERT_TRUE(called);
+  ASSERT_TRUE(queue.try_pop(s));
+}
+
 TEST(concurrent_bounded_queue, try_pop_wakeup_blocking_push) {
   ConcurrentBoundedQueue<::std::string> queue;
   queue.push("10086");

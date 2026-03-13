@@ -465,14 +465,14 @@ template <typename U, typename ::std::enable_if<
                           ::std::is_assignable<T&, U>::value, int>::type>
 inline bool ABSL_ATTRIBUTE_ALWAYS_INLINE
 ConcurrentBoundedQueue<T, S>::try_push(U&& value) noexcept {
-  return try_push<true, true, true>(::std::forward<U>(value));
+  return try_push<true, true>(::std::forward<U>(value));
 }
 
 template <typename T, typename S>
 template <typename C, typename>
 inline bool ABSL_ATTRIBUTE_ALWAYS_INLINE
 ConcurrentBoundedQueue<T, S>::try_push(C&& callback) noexcept {
-  return try_push<true, true, true>(::std::forward<C>(callback));
+  return try_push<true, true>(::std::forward<C>(callback));
 }
 
 template <typename T, typename S>
